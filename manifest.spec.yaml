@@ -1,0 +1,92 @@
+# Hypothetical job specification
+# It includes a single source of *collected* data, and two different hypothetical model output
+# Expected result is as follows:
+#   1. 
+
+tables:
+
+  - data_name:        marinescot_collected           # Auto-generate from data_uri if not provided by fisdat
+    data_uri:         collected.data.scotland.csv    # Cannot be duplicated in job manifest
+    data_schema:      collected.schema.scotland.yaml # May be duplicated as may apply to multiple data files of same shape
+    # data_provenance:  collected                      # Likely not necessary, but this would be where to put this
+    grouping_columns:                                # Possible that there may be multiple rows per observation
+                      - site.id
+                      - date.collected
+    exposed_columns:                          # Auto-generated comparisons should compare the columns one-by-one, in the order given here
+                      - mature.lice.density   # 
+                      - immature.lice.density #
+                      - plankton.composition  #
+
+  - data_name:        marinescot_modelled
+    data_uri:         modelled.data.marinescot.csv
+    data_schema:      modelled.schema.marinescot.yaml
+    data_provenance:  modelled
+    grouping_columns: 
+                      - date
+    exposed_columns:
+                      - mature.lice.density
+                      - immature.lice.density
+
+  - data_name:        modelled_mowi_data
+    data_uri:         modelled.data.mowi.csv
+    data_schema:      modelled.schema.mowi.yaml
+    data_provenance:  modelled
+    grouping_columns: 
+                      - date.alignment
+    exposed_columns:
+                      - dens.mat.lice
+                      - dens.imm.lice
+                      - comp.plankton
+
+jobs:
+
+   - job_name:    mse_auto_generated_marinescot
+     job_type:    mse                           # MSE: mean standard error
+     job_auto:    true                          # May imply multiple *results*
+     job_sources:
+                - set_name: marinescot_collected
+                - set_name: marinescot_modelled
+     job_summary: >-
+         Auto-generated set of jobs (MSE): based on `grouping_columns' and `exposed_columns', graph from RDF schema; Marine Scotland data only
+
+   - job_name:    mse_auto_generated_mowi
+     job_type:    mse
+     job_auto:    true
+     job_sources:
+                - set_name: marinescot_collected
+                - set_name: modelled_mowi_data
+     job_summary: >-
+         Auto-generated set of jobs (MSE): Mowi modelled data vs Marine Scotland collected data
+
+   - job_name:    emd_manual_mature_dens
+     job_type:    emd                    # EMD: earth-movers' distance
+     job_auto:    false                  # Will not usually imply multiple results
+     job_sources:
+                - set_name:    marinescot_collected
+                  set_columns: mature.lice.density
+                - set_name:    modelled_mowi_data
+                  set_columns: dens.mat.lice
+     job_summary: >-
+         Manually-requested job (EMD): modelled mature lice density
+
+   - job_name:    emd_manual_immature_dens
+     job_type:    emd
+     job_auto:    false
+     job_sources: 
+                - set_name:    marinescot_collected
+                  set_columns: immature.lice.density
+                - set_name:    modelled_mowi_data
+                  set_columns: dens.imm.lice
+     job_summary: >-
+         Manually-requested job (EMD): modelled immature lice density
+
+   - job_name:    mse_manual_plankton
+     job_type:    mse
+     job_auto:    false
+     job_sources:
+                - set_name:    marinescot_collected
+                  set_columns: plankton.composition
+                - set_name:    modelled_mowi_data
+                  set_columns: comp.plankton
+     job_summary: >-
+         Manually-requested job (MSE): modelled and observed plankton composition
