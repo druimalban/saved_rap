@@ -5,11 +5,11 @@
 #
 # Expected result would be as follows:
 #
-#   1. MSE column-by-column of marinescot_collected and marinescot_modelled
-#   2. MSE column-by-column of marinescot_collected and modelled_mowi_data
+#   1. MAE column-by-column of marinescot_collected and marinescot_modelled
+#   2. MAE column-by-column of marinescot_collected and modelled_mowi_data
 #   3. EMD between the marinescot_modelled mature.lice.density and modelled_mowi_data dens.mat.lice columns
 #   4. EMD between the marinescot_modelled immature.lice.density and modelled_mowi_data dens.imm.lice columns
-#   5. MSE between the marinescot_collected plankton.composition and modelled_mowi_data comp.plankton columns
+#   5. MAE between the marinescot_collected plankton.composition and modelled_mowi_data comp.plankton columns
 #
 # The idea is that the auto-generated jobs will compare column-by-column,
 # so the order specified here will matter, but not the order in the data
@@ -65,23 +65,23 @@ tables:
 
 jobs:
 
-   - job_name:    mse_auto_generated_marinescot
-     job_type:    mse                           # MSE: mean standard error
+   - job_name:    mae_auto_generated_marinescot
+     job_type:    mae                           # MAEE: mean absolute error
      job_auto:    true                          # May imply multiple *results*
      job_sources:
                   - set_name: marinescot_collected
                   - set_name: marinescot_modelled
      job_summary: >-
-         Auto-generated set of jobs (MSE): based on `grouping_columns' and `exposed_columns', graph from RDF schema; Marine Scotland data only
+         Auto-generated set of jobs (MAE): based on `grouping_columns' and `exposed_columns', graph from RDF schema; Marine Scotland data only
 
-   - job_name:    mse_auto_generated_mowi
-     job_type:    mse
+   - job_name:    mae_auto_generated_mowi
+     job_type:    mae
      job_auto:    true
      job_sources:
                   - set_name: marinescot_collected
                   - set_name: modelled_mowi_data
      job_summary: >-
-         Auto-generated set of jobs (MSE): Mowi modelled data vs Marine Scotland collected data
+         Auto-generated set of jobs (MAE): Mowi modelled data vs Marine Scotland collected data
 
    - job_name:    emd_manual_mature_dens
      job_type:    emd                    # EMD: earth-movers' distance
@@ -105,8 +105,8 @@ jobs:
      job_summary: >-
          Manually-requested job (EMD): modelled immature lice density
 
-   - job_name:    mse_manual_plankton
-     job_type:    mse
+   - job_name:    mae_manual_plankton
+     job_type:    mae
      job_auto:    false
      job_sources:
                   - set_name:    marinescot_collected
@@ -114,4 +114,4 @@ jobs:
                   - set_name:    modelled_mowi_data
                     set_columns: comp.plankton
      job_summary: >-
-         Manually-requested job (MSE): modelled and observed plankton composition
+         Manually-requested job (MAE): modelled and observed plankton composition
