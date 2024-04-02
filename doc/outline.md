@@ -56,3 +56,21 @@ support and support for functional programming.
 | 7      | Create canonical URL of result and/or data-set     | RAP service                                                                                                            |
 
 ## Design of the RAP
+
+The RAP uses the Elixir GenStage framework. This has three concepts of a
+stage: a producer, a consumer, and a hybrid consumer-producer. It also
+has a concept of "back-pressure" as data passes through the pipeline,
+to manage demand.
+
+The stage where concurrency will be of most benefit is in the stage in
+which we run a given job. So, only this stage is to be supervised, the
+others are much simpler.
+
+```
+ _____________          ______________________          ____________________          _______________
+|  Producer:  | ___|\  |  Consumer-producer:  | ___|\  | Consumer-producer: | ___|\  |   Consumer:   |
+|             |      \ |                      |      \ |                    |      \ |               |
+| Monitor GCP | ___  / | Process job manifest | ___  / |     Run job(s)     | ___  / | Cache results |
+|_____________|    |/  |______________________|    |/  |____________________|    |/  |_______________|
+
+```
