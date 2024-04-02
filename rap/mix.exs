@@ -22,7 +22,8 @@ defmodule RAP.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:gen_stage, "~> 1.2"} #,
+      {:gen_stage, "~> 1.2"},
+      {:math, "~> 0.7"}
       # {:explorer, "~> 0.8"},
       # {:nx, "~> 0.7"}
     ]

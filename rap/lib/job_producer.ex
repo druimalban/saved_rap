@@ -21,15 +21,16 @@ defmodule RAP.Job.Producer do
     { :noreply, events, state }
   end
 
-  def trigger({job_code, col0, col1} = job_spec) do
-    Logger.info "Called Job.Producer.trigger ({ #{inspect job_code} ,#{inspect col0} ,#{inspect col1} })"
-    GenStage.cast __MODULE__, {:try_job, job_spec}
+  def trigger(jobs) do
+    Logger.info "Called Job.Producer.trigger ()"
+    #({ #{inspect job_code} ,#{inspect col0} ,#{inspect col1} })"
+    GenStage.cast __MODULE__, {:try_jobs, jobs}
   end
 
   # Second element is a list of events to despatch
   # At the moment, though, we just despatch one event.
-  def handle_cast {:try_job, job_spec }, state do
-    { :noreply, [job_spec], state }
+  def handle_cast {:try_jobs, jobs }, state do
+    { :noreply, jobs, state }
   end
   
 end
