@@ -1,18 +1,20 @@
 defmodule RAP.Job.Producer do
 
+  defstruct [ :gcp_bucket, :gcp_key ]
+  
   use GenStage
   require Logger
 
-  def start_link _args do
-    statinit = []
-    GenStage.start_link __MODULE__, statinit, name: __MODULE__
+  def start_link initial_state do
+    Logger.info "Called Job.Producer.start_link (initial_state = #{inspect initial_state})"
+    GenStage.start_link __MODULE__, initial_state, name: __MODULE__
   end
 
-  def init statinit do
-    Logger.info "Called Job.Producer.init (#{inspect statinit})"
-    { :producer, statinit }
+  def init initial_state do
+    Logger.info "Called Job.Producer.init (initial_state = #{inspect initial_state})"
+    { :producer, initial_state }
   end
-
+  
   def handle_demand demand, state do
     insd = inspect demand
     inss = inspect state
@@ -32,5 +34,8 @@ defmodule RAP.Job.Producer do
   def handle_cast {:try_jobs, jobs }, state do
     { :noreply, jobs, state }
   end
+
+
+
   
 end
