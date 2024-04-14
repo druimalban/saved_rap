@@ -53,9 +53,17 @@ defmodule RAP.Job.Producer do
   to be run.
   """
   def handle_cast {:try_jobs, manifest_path}, state do
+    Logger.info "Received :try_jobs signal"
+    Logger.info "Building RDF graph from turtle manifest #{manifest_path}"
     {:ok, graph}  = RDF.Turtle.read_file manifest_path
+
+    Logger.info "Loading RDF graph into Elixir/Grax structs"
     {:ok, struct} = Grax.load graph, SAVED.RootManifest, ManifestDesc
-    {:noreply, struct, state}
+
+    Logger.info "Detecting feasible jobs"
+    base_iri      = graph.base_iri |> RDF.IRI.to_string()
+    feasible_jobs = generate_jobs base_iri, struct
+    {:noreply, feasible_jobs, state}
   end
 
   @doc """
@@ -85,10 +93,9 @@ defmodule RAP.Job.Producer do
   <operation>_over_job and the mapping functions over the *source* component of
   the job should be called something like <operation>_over_job_source.
   """
-  def generate_jobs(base_iri, %RAP.Manifest.ManifestDesc{} = manifest) do
-    manifest.jobs
-    |> Enum.map(&job_sources_against_tables(base_iri, manifest.tables, &1))
-    |> Enum.map(&job_scope_against_tables/1)
+  def generate_jobs(base_iri, %RAP.Manifest.ManifestDesc{jobs: jobs, tables: tables} = manifest) do
+    jobs |> Enum.map(&job_sources_against_tables(base_iri, tables, &1))
+         |> Enum.map(&job_scope_against_tables/1)
   end
 
   defp expand_iri(base_iri, fp), do: RDF.iri(base_iri <> fp)
