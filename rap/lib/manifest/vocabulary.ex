@@ -6,7 +6,7 @@ defmodule RAP.TermHandler do
 
 end
 
-defmodule RAP.Vocabularies do
+defmodule RAP.Vocabulary do
   @moduledoc """
   A collection of RDF namespaces
 
@@ -45,10 +45,12 @@ defmodule RAP.Vocabularies do
   The Dublin Core Metadata Element Set, Version 1.1 vocabulary.
 
   See <http://purl.org/dc/elements/1.1/>
+
+  Named `dc:' in the LinkML prefixes section, so name it as such here.
   """
-  defvocab DCE,
+  defvocab DC,
     base_iri: "http://purl.org/dc/elements/1.1/",
-    file: "dce.nt",
+    file: "dc.nt",
     case_violations: :fail
   
   @vocabdoc """
@@ -106,29 +108,22 @@ defmodule RAP.Vocabularies do
   model. Answering this is probably pertinent to deciding how to define
   the equivalent Grax schema/struct into which our RDF job manifests are
   loaded/injected.
+
+  Unsetting the `strict' element of the vocabulary avoids having to
+  define arbitary instances of the manifest description, and the tables
+  and jobs descriptions, in the vocabulary. This would make sense for the
+  manifest itself (it's always called 'RootManifest'), but the manifest
+  can include a number of instances of tables or jobs, none of which are
+  more meaningful than the other. This is warned against in production
+  code by the RDF.ex documentation, but there is no other way to do this.
+  I suspect our use-case is fairly unusual, so ignore this for now, while
+  keeping it in mind, as this is really at the stage proof-of-concept.
   """
   defvocab SAVED,
     base_iri: "http://localhost/saved/",
     file: "saved.nt",
     case_violations: :ignore,
-    alias: [
-      JSON_LD: "JSON-LD",
-      LD_Patch: "LD%20Patch",
-      N_Quads: "N-Quads",
-      N_Triples: "N-Triples",
-      OWL_Functional_Syntax: "OWL%20Functional%20Syntax",
-      OWL_Manchester_Syntax: "OWL%20Manchester%20Syntax",
-      OWL_XML_Serialisation: "OWL%20XML%20Serialization",
-      POWDER_S: "POWDER-S",
-      PROV_N: "PROV-N", "PROV_XML": "PROV-XML",
-      RIF_XML_Syntax: "RIF%20XML%20Syntax",
-      SPARQL_Results_in_CSV: "SPARQL%20Results%20in%20CSV",
-      SPARQL_Results_in_JSON: "SPARQL%20Results%20in%20JSON",
-      SPARQL_Results_in_TSV: "SPARQL%20Results%20in%20TSV",
-      SPARQL_Results_in_XML: "SPARQL%20Results%20in%20XML",
-      RDF_XML: "rdf-xml"    
-    ],
-    strict: false  
-    #terms: {RAP.TermHandler, :sub_special, [:variant1]}
+    terms: {RAP.TermHandler, :sub_special, [:variant1]},
+    strict: false
 
 end

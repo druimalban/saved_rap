@@ -20,3 +20,12 @@ menagerie = [ job0dummy, job1dummy, job2dummy,
 	      job0mae,   job1mae,   job2mae,
 	      job0rmsd,  job1rmsd,  job2rmsd ]
 
+
+{:ok,graph} = RDF.Turtle.read_file "manual_test/manifest0.ttl"
+{:ok,egret} = Grax.load graph, RAP.Vocabulary.SAVED.RootManifest, RAP.Manifest.ManifestDesc
+[job0]   = egret.jobs
+tables   = egret.tables
+base_iri = "http://localhost/saved/"
+#[res0] = RAP.Job.Producer.check_sources_in_tables base_iri, tables, job0
+#res_inv = { :invalid_table, "arr", "inv" }
+
