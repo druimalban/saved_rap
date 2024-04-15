@@ -20,7 +20,7 @@ defmodule RAP.Job.Runner do
   def handle_events events, _from, state do
     ie = inspect events
     is = inspect state
-    Logger.info "Called Job.Runner.handle_events (event = #{ie}, _, state = #{is})"
+    Logger.info "Called Job.Runner.handle_events (events = #{ie}, _, state = #{is})"
     
     ne = events |> Enum.map(&RAP.Job.Spec.run_job/1)
     Logger.info "Result of Job.Runner.handle_events: #{inspect ne}"

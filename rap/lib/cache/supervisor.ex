@@ -9,7 +9,7 @@ defmodule RAP.Job.Cache.Supervisor do
     ConsumerSupervisor.start_link __MODULE__, initial_signal
   end
 
-  def init(:ok = initial_signal) do
+  def init(initial_signal) do
     Logger.info "Called Job.Cache.Supervisor.init (#{inspect initial_signal})"
 
     children = [

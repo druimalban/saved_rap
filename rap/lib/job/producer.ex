@@ -61,7 +61,7 @@ defmodule RAP.Job.Producer do
     {:ok, struct} = Grax.load graph, SAVED.RootManifest, ManifestDesc
 
     Logger.info "Detecting feasible jobs"
-    base_iri      = graph.base_iri |> RDF.IRI.to_string()
+    base_iri  = RDF.IRI.to_string graph.base_iri
     feasible_jobs = generate_jobs base_iri, struct
     {:noreply, feasible_jobs, state}
   end
@@ -98,22 +98,19 @@ defmodule RAP.Job.Producer do
          |> Enum.map(&job_scope_against_tables/1)
   end
 
-  defp expand_iri(base_iri, fp), do: RDF.iri(base_iri <> fp)
-
+  defp compare_table_call(base_iri, tables, source) do
+    target_iri   = RDF.iri(base_iri <> source.table)
+    target_table = tables |> Enum.find(fn (tab) ->
+      target_iri == tab.__id__
+    end)
+    case target_iri do
+      nil -> { :invalid_table, source, target_iri }
+      tab -> { :valid_table,   source, target_table }
+    end
+  end
+  
   defp job_sources_against_tables(base_iri, tables, job) do
-    table_iris = tables |> Enum.map(&(&1.__id__))
-    paired_iris = job.job_sources |> Enum.map(
-      fn (src) ->
-	target_iri = expand_iri(base_iri, src.table)
-	test_table = tables |> Enum.find(fn (tab) ->
-	  target_iri == tab.__id__
-	end)
-	if (is_nil test_table) do
-	  { :invalid_table, src, target_iri }
-	else
-	  { :valid_table,   src, test_table }	  
-	end
-      end)
+    paired_iris = job.job_sources |> Enum.map(&compare_table_call(base_iri, tables, &1))
     %RAP.Job.Producer{
       title: job.title, type: job.job_type, auto_generate: job.job_auto_generate,
       state: paired_iris
@@ -122,12 +119,12 @@ defmodule RAP.Job.Producer do
 
   defp compare_scope_pair({:invalid_table, _src, _iri} = source), do: source
   defp compare_scope_pair({:valid_table, src, table}) do
-    scope_table  = MapSet.new(table.scope)
-    scope_source = MapSet.new(src.scope)
+    scope_table     = MapSet.new(table.scope)
+    scope_source    = MapSet.new(src.scope)
     
     valid_columns   = MapSet.intersection(scope_source, scope_table) |> MapSet.to_list()
     invalid_columns = MapSet.difference(scope_source, scope_table)   |> MapSet.to_list()
-
+    
     %{ source: src, table: table, valid_columns: valid_columns, invalid_columns: invalid_columns }
   end
 
