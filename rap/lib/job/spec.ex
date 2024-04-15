@@ -3,16 +3,36 @@ defmodule RAP.Job.Spec do
   require Math
   require Logger
 
-  defstruct [ :title, :type, :result ]
-  
-  #def run_job({ "ignore", col0, col1 }), do: dummy(col0, col1)
-  #def run_job({ :job_mae, col0, col1 }), do: mae(col0, col1)
-  #def run_job({ :job_rmsd, col0, col1 }), do: rmsd(col0, col1)
-  #def run_job({ :job_emd, col0, col1 }), do: emd(col0, col1)
+  defstruct [ :title, :type, :signal, :result ]
+
+  defp cmd_wrapper(shell, command, args) do
+    System.cmd shell, [ command | args ]
+  end
 
   def run_job(%RAP.Job.Producer{title: title, type: "ignore"}) do
     Logger.info "Dummy job requested"
-    %RAP.Job.Spec{ title: title, type: "ignore", result: "Dummy/ignored job"}
+    %RAP.Job.Spec{ title: title, type: "ignore", signal: :ok, result: "Dummy/ignored job" }
+  end
+
+  def run_job(%RAP.Job.Producer{
+	title: title,
+	type: "ext_density_count" = type,
+	state: [%{table: %RAP.Manifest.TableDesc{resource_path: fp_dens_t}, valid_columns: [density, time]},
+	        %{table: %RAP.Manifest.TableDesc{resource_path: fp_counts}, valid_columns: [total]}]}
+  ) do
+    Logger.info "Call to external command/executable density_count_model requested"
+    
+    { res, sig } =
+      cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
+	    "data_cache/#{fp_counts}", total,
+	    "data_cache/#{fp_dens_t}", time,  density        ])
+    if (sig == 0) do
+      Logger.info "Call to external command/executable #{type} succeeded"
+      %RAP.Job.Spec{ title: title, type: type, signal: :ok,    result: res }
+    else
+      Logger.info "Call to external command/executable #{type} failed"
+      %RAP.Job.Spec{ title: title, type: type, signal: :error, result: res }
+    end
   end
   
   defp mae col0, col1 do
