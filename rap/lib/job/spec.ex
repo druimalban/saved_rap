@@ -20,7 +20,7 @@ defmodule RAP.Job.Spec do
 	state: [%{table: %RAP.Manifest.TableDesc{resource_path: fp_dens_t}, valid_columns: [density, time]},
 	        %{table: %RAP.Manifest.TableDesc{resource_path: fp_counts}, valid_columns: [total]}]}
   ) do
-    Logger.info "Call to external command/executable density_count_model requested"
+    Logger.info "Call to external command/executable #{type} requested"
     
     { res, sig } =
       cmd_wrapper("python3.9", "contrib/density_count_ode.py", [

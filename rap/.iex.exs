@@ -21,13 +21,34 @@ menagerie = [ job0dummy, job1dummy, job2dummy,
 	      job0rmsd,  job1rmsd,  job2rmsd ]
 
 
-{:ok,graph0} = RDF.Turtle.read_file "manual_test/manifest0.ttl"
-{:ok,graph1} = RDF.Turtle.read_file "manual_test/manifest1.ttl"
-{:ok,egret0} = Grax.load graph0, RAP.Vocabulary.SAVED.RootManifest, RAP.Manifest.ManifestDesc
-{:ok,egret1} = Grax.load graph1, RAP.Vocabulary.SAVED.RootManifest, RAP.Manifest.ManifestDesc
+# {:ok,graph0} = RDF.Turtle.read_file "manual_test/manifest0.ttl"
+# {:ok,graph1} = RDF.Turtle.read_file "manual_test/manifest1.ttl"
+# {:ok,egret0} = Grax.load graph0, RAP.Vocabulary.SAVED.RootManifest, RAP.Manifest.ManifestDesc
+# {:ok,egret1} = Grax.load graph1, RAP.Vocabulary.SAVED.RootManifest, RAP.Manifest.ManifestDesc
 
-tables   = egret1.tables
-base_iri = "http://localhost/saved/"
+# tables   = egret1.tables
+# base_iri = "http://localhost/saved/"
 #[res0] = RAP.Job.Producer.check_sources_in_tables base_iri, tables, job0
 #res_inv = { :invalid_table, "arr", "inv" }
 
+# {:ok, graph0} = RDF.Turtle.read_file "manual_test/manifest3.ttl"
+
+alias RDF.Graph
+import RDF.Sigils
+alias RAP.Vocabulary.SAVED
+alias RAP.Manifest.{ManifestDesc,SourceDesc,TableDesc,JobDesc}
+
+{:ok, graph0} = RDF.Turtle.read_file "manual_test/manifest3.ttl"
+# {:ok, egret0} = Grax.load graph0, SAVED.RootManifest, ManifestDesc
+#
+#graph0 =
+#  Graph.new(
+#      SAVED.Test
+#      |> RDF.first("test0")
+#      |> RDF.rest(SAVED.TestTest)
+#    )
+#    |> Graph.add(
+#      SAVED.TestTest
+#      |> RDF.first("test1")
+#      |> RDF.rest(RDF.nil)
+#    ) 
