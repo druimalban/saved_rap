@@ -36,19 +36,8 @@ menagerie = [ job0dummy, job1dummy, job2dummy,
 alias RDF.Graph
 import RDF.Sigils
 alias RAP.Vocabulary.SAVED
-alias RAP.Manifest.{ManifestDesc,SourceDesc,TableDesc,JobDesc}
+alias RAP.Manifest.{ManifestDesc,SourceDesc,TableDesc,JobDesc,Plumbing}
 
 {:ok, graph0} = RDF.Turtle.read_file "manual_test/manifest3.ttl"
-# {:ok, egret0} = Grax.load graph0, SAVED.RootManifest, ManifestDesc
-#
-#graph0 =
-#  Graph.new(
-#      SAVED.Test
-#      |> RDF.first("test0")
-#      |> RDF.rest(SAVED.TestTest)
-#    )
-#    |> Graph.add(
-#      SAVED.TestTest
-#      |> RDF.first("test1")
-#      |> RDF.rest(RDF.nil)
-#    ) 
+{:ok, egret0} = Grax.load graph0, SAVED.RootManifest, ManifestDesc
+

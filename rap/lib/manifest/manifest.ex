@@ -10,7 +10,7 @@ defmodule RAP.Manifest.TableDesc do
     property :resource_path, SAVED.resource_path, type: :string
     property :schema_path,   SAVED.schema_path,   type: :string
     property :resource_hash, SAVED.resource_hash, type: :string
-    property :scope,         SAVED.scope,         type: :any
+    property :scope,         SAVED.scope,         type: list_of(:string)
   end
 end
 
@@ -21,20 +21,40 @@ defmodule RAP.Manifest.SourceDesc do
   use RDF
   use Grax.Schema, depth: +5
   import RDF.Sigils
+  
+  alias RAP.Manifest.{Plumbing,SourceDesc}
   alias RAP.Vocabulary.SAVED
-  alias RAP.Manifest.Plumbing
 
   schema SAVED.SourceDesc do
     property :table, SAVED.table, type: :string, depth: +5
     property :scope, SAVED.scope, type: list_of(:string), from_rdf: :scope_from_rdf
   end
-  
-  def scope_from_rdf(types, desc, graph) do
+
+  def scope_from_rdf(types, _desc, graph) do
     values = types
     |> Enum.flat_map(&Plumbing.follow_subject(&1, graph))
     {:ok, values}
   end
 
+  def on_to_rdf(%SourceDesc{__id__: source_iri, scope: scope, table: table}, _graph, _opts) do
+    cond do
+      String.starts_with?(source_iri.value, "http://localhost/saved/source_") ->
+	{:ok,
+	 Plumbing.expand_source(
+	   String.replace(source_iri.value, "http://localhost/saved/source_", ""),
+	   scope,
+	   table
+	 )}
+      String.starts_with?(source_iri.value, "http://localhost/saved/") ->
+	{:ok,
+	 Plumbing.expand_source(
+	   String.replace(source_iri.value, "http://localhost/saved/", ""),
+	   scope,
+	   table
+	 )}
+    end
+  end
+  
 end
 
 defmodule RAP.Manifest.JobDesc do
@@ -72,8 +92,11 @@ defmodule RAP.Manifest.Plumbing do
 
   use RDF
   import RDF.Sigils
+
+  alias RDF.Graph
+  
   alias RAP.Vocabulary.SAVED
-  alias RAP.Manifest.{TableDesc, JobDesc, SourceDesc, ManifestDesc}
+  alias RAP.Manifest.{JobDesc, SourceDesc, ManifestDesc}
 
   def update_manifest(%ManifestDesc{tables: tabs, jobs: jobs} = manifest, source_scope) do
     updated_jobs = jobs |> Enum.map(&update_job_desc(&1, source_scope))
@@ -93,7 +116,7 @@ defmodule RAP.Manifest.Plumbing do
   # sub0: An RDF description. Get its predications pred0.
   # pred0: %{~I<rdf:first> => %{~L<literal> => nil}, ~I<rdf:rest> => %{next_iri}
   # sub1: Graph.fetch(next_iri)
-  # Very annoying as pattern-matching was too difficult
+  # Very annoying as pattern-matching was too difficult…
   defp get_only_match(struct) do
     struct
     |> Enum.find(fn ({key, _}) -> RDF.Literal.valid?(key) or RDF.IRI.valid?(key) end)
@@ -119,10 +142,49 @@ defmodule RAP.Manifest.Plumbing do
   def follow_subject(nil, _graph), do: nil
   def follow_subject(iri, graph) do
     {:ok, description} = graph |> RDF.Graph.fetch(iri)
-    description.predications |> kludge_predication(graph)
+    description.predications   |> kludge_predication(graph)
   end
-end
 
+  def expand_source(resource, columns, table) do
+    srv = "http://localhost/saved/"
+    len = inspect(length(columns))
+    
+    source_iri    = RDF.IRI.new(srv <> "source_" <> resource)
+    source_triple = RDF.triple(source_iri, RDF.type(), SAVED.SourceDesc)
 
-  #
+    table_triple  = RDF.triple(source_iri, SAVED.table, table)
+    
+    scope_iri     = RDF.IRI.new(srv <> "scope_" <> resource <> "_" <> len)
+    scope_triple  = RDF.triple(source_iri, SAVED.scope, scope_iri)
+
+    Graph.new(source_triple)
+    |> Graph.add(table_triple)
+    |> Graph.add(scope_triple)
+    |> expand_scope(resource, columns)
+  end
   
+  defp expand_scope(graph, resource, [column]) do
+    iri = RDF.IRI.new("http://localhost/saved/scope_" <> resource <> "_1")
+    graph
+    |> Graph.add(
+      iri
+      |> RDF.first(column)
+      |> RDF.rest(RDF.nil)
+    )
+  end
+  defp expand_scope(graph, resource, [head | tail] = columns) do
+    srv = "http://localhost/saved/scope_" <> resource <> "_"
+    n = length(columns)
+    iri      = RDF.IRI.new(srv <> inspect(n))
+    next_iri = RDF.IRI.new(srv <> inspect(n-1))
+    graph
+    |> Graph.add(
+      iri
+      |> RDF.first(head)
+      |> RDF.rest(next_iri)
+    )
+    |> Graph.add(
+      expand_scope(graph, resource, tail)
+    )
+  end
+end  
