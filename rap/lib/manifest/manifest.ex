@@ -22,7 +22,7 @@ defmodule RAP.Manifest.SourceDesc do
   use Grax.Schema, depth: +5
   import RDF.Sigils
   
-  alias RAP.Manifest.{Plumbing,SourceDesc}
+  alias RAP.Manifest.{Plumbing, SourceDesc}
   alias RAP.Vocabulary.SAVED
 
   schema SAVED.SourceDesc do
@@ -36,23 +36,8 @@ defmodule RAP.Manifest.SourceDesc do
     {:ok, values}
   end
 
-  def on_to_rdf(%SourceDesc{__id__: source_iri, scope: scope, table: table}, _graph, _opts) do
-    cond do
-      String.starts_with?(source_iri.value, "http://localhost/saved/source_") ->
-	{:ok,
-	 Plumbing.expand_source(
-	   String.replace(source_iri.value, "http://localhost/saved/source_", ""),
-	   scope,
-	   table
-	 )}
-      String.starts_with?(source_iri.value, "http://localhost/saved/") ->
-	{:ok,
-	 Plumbing.expand_source(
-	   String.replace(source_iri.value, "http://localhost/saved/", ""),
-	   scope,
-	   table
-	 )}
-    end
+  def on_to_rdf(%SourceDesc{} = source_desc, _graph, _opts) do
+    Plumbing.expand_subject(source_desc.__id__.value, source_desc.scope, source_desc.table)
   end
   
 end
@@ -92,8 +77,7 @@ defmodule RAP.Manifest.Plumbing do
 
   use RDF
   import RDF.Sigils
-
-  alias RDF.Graph
+  alias RDF.{Graph,NS}
   
   alias RAP.Vocabulary.SAVED
   alias RAP.Manifest.{JobDesc, SourceDesc, ManifestDesc}
@@ -116,15 +100,16 @@ defmodule RAP.Manifest.Plumbing do
   # sub0: An RDF description. Get its predications pred0.
   # pred0: %{~I<rdf:first> => %{~L<literal> => nil}, ~I<rdf:rest> => %{next_iri}
   # sub1: Graph.fetch(next_iri)
-  # Very annoying as pattern-matching was too difficult…
+  # Very annoying as pattern-matching on the key is not possible
   defp get_only_match(struct) do
     struct
-    |> Enum.find(fn ({key, _}) -> RDF.Literal.valid?(key) or RDF.IRI.valid?(key) end)
+    |> Map.to_list()
+    |> List.first()
     |> elem(0)
   end
   
   defp kludge_predication(%{term_to_iri(RDF.first) => struct_current_literal,
-			   term_to_iri(RDF.rest)  => remainder_struct},
+			    term_to_iri(RDF.rest)  => remainder_struct},
     graph) do
     
     actual_literal = struct_current_literal
@@ -144,8 +129,8 @@ defmodule RAP.Manifest.Plumbing do
     {:ok, description} = graph |> RDF.Graph.fetch(iri)
     description.predications   |> kludge_predication(graph)
   end
-
-  def expand_source(resource, columns, table) do
+  
+  defp expand_source(resource, columns, table) do
     srv = "http://localhost/saved/"
     len = inspect(length(columns))
     
@@ -154,17 +139,17 @@ defmodule RAP.Manifest.Plumbing do
 
     table_triple  = RDF.triple(source_iri, SAVED.table, table)
     
-    scope_iri     = RDF.IRI.new(srv <> "scope_" <> resource <> "_" <> len)
+    scope_iri     = RDF.IRI.new(srv <> "scope_" <> resource <> "_0")
     scope_triple  = RDF.triple(source_iri, SAVED.scope, scope_iri)
 
     Graph.new(source_triple)
     |> Graph.add(table_triple)
     |> Graph.add(scope_triple)
-    |> expand_scope(resource, columns)
+    |> expand_scope(resource, columns, 0)
   end
   
-  defp expand_scope(graph, resource, [column]) do
-    iri = RDF.IRI.new("http://localhost/saved/scope_" <> resource <> "_1")
+  defp expand_scope(graph, resource, [column], incr) do
+    iri = RDF.IRI.new("http://localhost/saved/scope_" <> resource <> "_" <> inspect(incr))
     graph
     |> Graph.add(
       iri
@@ -172,11 +157,10 @@ defmodule RAP.Manifest.Plumbing do
       |> RDF.rest(RDF.nil)
     )
   end
-  defp expand_scope(graph, resource, [head | tail] = columns) do
+  defp expand_scope(graph, resource, [head | tail] = columns, incr) do
     srv = "http://localhost/saved/scope_" <> resource <> "_"
-    n = length(columns)
-    iri      = RDF.IRI.new(srv <> inspect(n))
-    next_iri = RDF.IRI.new(srv <> inspect(n-1))
+    iri      = RDF.IRI.new(srv <> inspect(incr))
+    next_iri = RDF.IRI.new(srv <> inspect(incr+1))
     graph
     |> Graph.add(
       iri
@@ -184,7 +168,15 @@ defmodule RAP.Manifest.Plumbing do
       |> RDF.rest(next_iri)
     )
     |> Graph.add(
-      expand_scope(graph, resource, tail)
+      expand_scope(graph, resource, tail, incr+1)
     )
   end
+
+  def expand_subject("http://localhost/saved/source_" <> resource, scope, table) do
+    {:ok, expand_source(resource, scope, table)}
+  end
+  def expand_subject("http://localhost/saved/" <> resource, scope, table) do
+    {:ok, expand_source(resource, scope, table)}
+  end
+  
 end  
