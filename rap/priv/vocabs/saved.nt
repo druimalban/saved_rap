@@ -1,653 +1,778 @@
-<http://localhost/saved/description> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/schema_path> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_modelled> .
-<http://localhost/saved/meta> <http://www.w3.org/ns/shacl#declare> _:N6f9be0c226c042a39e9a42bf5e1463c1 .
-<http://localhost/saved/series> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/series> .
-<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"curie\"." .
-<http://localhost/saved/string> <http://localhost/saved/base> "str" .
-<http://localhost/saved/column_modelled> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_modelled> .
-<http://localhost/saved/boolean> <http://purl.org/dc/terms/description> "A binary (true or false) value" .
-<http://localhost/saved/nodeidentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/scope> .
-<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/job_sources> <http://purl.org/dc/terms/description> "Tables and columns from which to generate a job" .
-<http://localhost/saved/northing> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/northing> .
-<http://localhost/saved/resource_hash> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/any_of> _:Ned732df7133045278412693f5d7a1f6e .
-<http://localhost/saved/global_coordinate_system> <http://purl.org/dc/terms/description> "Global coordinate system (GCS) reference point of origin" .
-<http://localhost/saved/time> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/nodeidentifier> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/LatLonType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/jsonpath> .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/datetime> <http://localhost/saved/base> "XSDDateTime" .
-<http://localhost/saved/ncname> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Ncname> .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-_:N6f9be0c226c042a39e9a42bf5e1463c1 <http://www.w3.org/ns/shacl#prefix> "linkml" .
-<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Integer> .
-<http://localhost/saved/integer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/easting> .
-<http://localhost/saved/job_type> <http://purl.org/dc/terms/description> "Job type code" .
-<http://localhost/saved/scope> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/fish_mass> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/job_auto_generate> <http://purl.org/dc/terms/description> "Auto-generate job based on job type/ID and projected columns" .
-<http://localhost/saved/jsonpointer> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/LatLonType> <http://localhost/saved/base> "str" .
-_:Ned732df7133045278412693f5d7a1f6e <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/TableDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/date_or_datetime> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/datetime> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"float\"." .
-<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#note> "in non-RDF serializations MAY be serialized as the compact representation" .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/resource_path> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/fish_species_common> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/fish_species_scientific> .
-<http://localhost/saved/string> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/String> .
-_:Nd4a359d7a6d048ec8a83fc0fc2a1f742 <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/jobs> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/lice_af_total> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/date> .
-<http://localhost/saved/jsonpointer> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uri\"." .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/schema_path> .
-_:N4688e3afddc24f879e41fe4590b19339 <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/schema_path> <http://www.w3.org/2004/02/skos/core#broadMatch> <https://w3id.org/linkml/path> .
-<http://localhost/saved/lice_af_total> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/boolean> <http://localhost/saved/repr> "bool" .
-<http://localhost/saved/uri> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#anyURI> .
-<http://localhost/saved/count_fish_collected> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://localhost/saved/count_fish_interpolated> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/column_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_collected> .
-<http://localhost/saved/string> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/scope> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/nodeidentifier> <https://w3id.org/linkml/uri> <http://www.w3.org/ns/shex#nonLiteral> .
-<http://localhost/saved/nodeidentifier> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/nodeidentifier> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Nodeidentifier> .
-<http://localhost/saved/jsonpointer> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpointer\"." .
-<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"decimal\"." .
-<http://localhost/saved/jsonpath> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/nodeidentifier> <http://localhost/saved/base> "NodeIdentifier" .
-<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/ncname> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_species_common> .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/count_fish_collected> .
-<http://localhost/saved/uri> <http://purl.org/dc/terms/conformsTo> "https://www.ietf.org/rfc/rfc3987.txt" .
-<http://localhost/saved/site_id> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/float> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Float> .
-<http://localhost/saved/local_version> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/site_name> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/site_name> .
-<http://localhost/saved/integer> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/jsonpointer> <http://purl.org/dc/terms/conformsTo> "https://datatracker.ietf.org/doc/html/rfc6901" .
-<http://localhost/saved/date> <http://localhost/saved/base> "XSDDate" .
-<http://localhost/saved/jsonpath> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/uri> <http://localhost/saved/base> "URI" .
-<http://localhost/saved/column_modelled> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Float> .
+<http://localhost/saved/uri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
 <http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/float> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/time> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://schema.org/Number> .
-<http://localhost/saved/lice_af_total> <http://purl.org/dc/terms/description> "Total number of Salmon lice per fish" .
-<http://localhost/saved/table> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/fish_length> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/meta> <http://www.w3.org/ns/shacl#declare> _:N9f0fed1bfb5a4577943eb8c7cbd12ea9 .
-<http://localhost/saved/depth> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
-<http://localhost/saved/JobDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/lice_density_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/tables> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/table> <http://localhost/saved/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
-<http://localhost/saved/uri> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/global_coordinate_system> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/gcp_source> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/jobs> .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/sparqlpath> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Sparqlpath> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/job_auto_generate> .
-<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"integer\"." .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/uriorcurie> <http://localhost/saved/base> "URIorCURIE" .
-<http://localhost/saved/schema_path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/range> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/uri> .
-<http://localhost/saved/ManifestDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
-<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"double\"." .
+<http://localhost/saved/jobDensity__density_table> <http://purl.org/dc/terms/description> "Name of table which describes the density data file" .
+<http://localhost/saved/string> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
 <http://localhost/saved/lice_density_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/objectidentifier> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/lice_af_average> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/column_modelled> <http://purl.org/dc/terms/description> "Column describes modelled data" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/descriptive> .
-<http://localhost/saved/uriorcurie> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/jsonpath> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Jsonpath> .
-<http://localhost/saved/float> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#editorialNote> "In RDF serializations, a slot with range of string is treated as a literal or type xsd:string.   If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"string\"." .
-<http://localhost/saved/description> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/description> .
-<http://localhost/saved/sparqlpath> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/national_grid_reference> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/job_auto_generate> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/job_auto_generate> .
-<http://localhost/saved/count_fish_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/sparqlpath> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/ncname> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"ncname\"." .
-<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_af_total> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/modelled> .
-<http://localhost/saved/time> <http://purl.org/dc/terms/description> "A time object represents a (local) time of day, independent of any particular day" .
-<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#closeMatch> <http://schema.org/Float> .
-<http://localhost/saved/double> <http://purl.org/dc/terms/description> "A real number that conforms to the xsd:double specification" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/description> .
-<http://localhost/saved/curie> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/ncname> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/curie> <http://localhost/saved/base> "Curie" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/objectidentifier> .
-<http://localhost/saved/title> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/title> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/jsonpath> <http://purl.org/dc/terms/description> "A string encoding a JSON Path. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded in tree form." .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/LatLonType> <http://localhost/saved/pattern> "[0-9]+o [0-9]+.[0-9]+[N|W]" .
-<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_species_scientific> .
-<http://localhost/saved/fish_length> <http://purl.org/dc/terms/description> "Length of fish expressed (mm)" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/sparqlpath> .
-<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/gcp_source> <http://purl.org/dc/terms/description> "GCP account of the generator of the manifest" .
-<http://localhost/saved/fish_length> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
-<http://localhost/saved/national_grid_reference> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"time\"." .
-<http://localhost/saved/ncname> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/ncname> <http://localhost/saved/base> "NCName" .
-<http://localhost/saved/description> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/column_collected> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/description> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Text> .
-<http://localhost/saved/cage_id> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/cage_id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-_:Nb52f174db65c47d38318ace2ce74b876 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/resource_hash> <http://purl.org/dc/terms/description> "Hash of resource" .
-<http://localhost/saved/integer> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Integer> .
-<http://localhost/saved/uriorcurie> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uriorcurie\"." .
-<http://localhost/saved/column_descriptive> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
-<http://localhost/saved/job_type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/string> <http://purl.org/dc/terms/description> "A character string" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/site_id> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slot_usage> _:N61d9c69f96f44fae88daf024f983b0e3 .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/datetime> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#dateTime> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/uriorcurie> .
-<http://localhost/saved/depth> <http://purl.org/dc/terms/description> "Depth in metres" .
-<http://localhost/saved/resource_path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/jsonpointer> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Jsonpointer> .
-<http://localhost/saved/description> <http://purl.org/dc/terms/description> "Human-readable description of the information" .
-<http://localhost/saved/job_type> <http://localhost/saved/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
-<http://localhost/saved/tables> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/jobDummy__columns> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/scope> .
+<http://localhost/saved/ManifestDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
+<http://localhost/saved/table> <http://localhost/saved/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
+<http://localhost/saved/national_grid_reference> <http://purl.org/dc/terms/description> "National grid reference (NGR) point of origin" .
+<http://localhost/saved/boolean> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/date> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#date> .
+<http://localhost/saved/title> <http://purl.org/dc/terms/description> "A concise human-readable display label for the element. The title should mirror the name, and should use ordinary textual punctuation." .
 <http://localhost/saved/sparqlpath> <http://localhost/saved/base> "str" .
-<http://localhost/saved/title> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/title> .
-<http://localhost/saved/decimal> <http://purl.org/dc/terms/description> "A real number with arbitrary precision that conforms to the xsd:decimal specification" .
-<http://localhost/saved/site_id> <http://purl.org/dc/terms/description> "Fish farm station/site global ID" .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/gcp_source> .
-<http://localhost/saved/jsonpath> <http://localhost/saved/base> "str" .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/tables> .
-<http://localhost/saved/double> <http://localhost/saved/base> "float" .
-<http://localhost/saved/job_sources> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/boolean> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Boolean> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/float> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/easting> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/depth> .
-<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_af_average> .
-<http://localhost/saved/national_grid_reference> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-_:N4e90540f1e844f219d4b4f8cf8341435 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/datetime> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Datetime> .
-<http://localhost/saved/date> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/fish_species_common> <http://purl.org/dc/terms/description> "Common name of species sampled" .
-<http://localhost/saved/datetime> <http://purl.org/dc/terms/description> "The combination of a date and time" .
-_:N9f0fed1bfb5a4577943eb8c7cbd12ea9 <http://www.w3.org/ns/shacl#prefix> "saved" .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slot_usage> _:Nf1e8664cadaf494198e6a5c211563271 .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/local_version> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/depth> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/depth> .
-<http://localhost/saved/objectidentifier> <http://localhost/saved/base> "ElementIdentifier" .
-<http://localhost/saved/site_name> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/float> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#float> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/default_range> <http://localhost/saved/string> .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/any_of> _:Nb52f174db65c47d38318ace2ce74b876 .
-<http://localhost/saved/fish_length> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_length> .
-<http://localhost/saved/date_or_datetime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/range> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/decimal> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/ncname> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/cage_id> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/tables> .
-<http://localhost/saved/fish_mass> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/ncname> <http://purl.org/dc/terms/description> "Prefix part of CURIE" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_af_total> .
-<http://localhost/saved/uriorcurie> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#anyURI> .
-<http://localhost/saved/sparqlpath> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_hash> .
-<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/longitude> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/latitude> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/source_file_size> "294"^^<http://www.w3.org/2001/XMLSchema#integer> .
-<http://localhost/saved/table> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/table> .
-_:Ned732df7133045278412693f5d7a1f6e <https://w3id.org/linkml/range> <http://localhost/saved/LatLonType> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/id> <http://localhost/saved/meta/> .
-<http://localhost/saved/date_or_datetime> <http://localhost/saved/base> "str" .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
-<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/count_fish_collected> .
-<http://localhost/saved/meta> <http://localhost/saved/source_file> "meta.yaml" .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/jsonpointer> .
-<http://localhost/saved/curie> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_density_collected> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/domain_of> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/ncname> .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/sparqlpath> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/job_type> .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/site_name> <http://purl.org/dc/terms/description> "Fish farm station/site local name" .
-<http://localhost/saved/jobs> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/site_id> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/time> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/site_id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/resource_hash> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/date_or_datetime> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date_or_datetime\"." .
-<http://localhost/saved/jsonpointer> <http://purl.org/dc/terms/description> "A string encoding a JSON Pointer. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to a valid object within the current instance document when encoded in tree form." .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/resource_hash> .
-<http://localhost/saved/northing> <http://purl.org/dc/terms/description> "'X'-positional data relative to point of origin" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_path> .
-<http://localhost/saved/title> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"objectidentifier\"." .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/time> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Time> .
+<http://localhost/saved/columns> <http://purl.org/dc/terms/description> "A set of columns" .
+<http://localhost/saved/objectidentifier> <https://w3id.org/linkml/uri> <http://www.w3.org/ns/shex#iri> .
+<http://localhost/saved/date_or_datetime> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/cage_id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/range> <http://localhost/saved/TableDesc> .
 <http://localhost/saved/lice_af_average> <http://purl.org/dc/terms/description> "Average number of Salmon lice (adult female) per fish" .
+<http://localhost/saved/decimal> <http://purl.org/dc/terms/description> "A real number with arbitrary precision that conforms to the xsd:decimal specification" .
+<http://localhost/saved/lice_density_collected> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://localhost/saved/lice_density_modelled> .
+<http://localhost/saved/schema_path> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/schema_path> .
+<http://localhost/saved/fish_length> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_length> .
+<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/JobDummy> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/SourceDesc> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/attributes> <http://localhost/saved/density_table> .
+<http://localhost/saved/curie> <http://localhost/saved/base> "Curie" .
+<http://localhost/saved/cage_id> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/cage_id> .
+<http://localhost/saved/boolean> <http://localhost/saved/repr> "bool" .
+<http://localhost/saved/resource_path> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/fish_length> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/double> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Double> .
+<http://localhost/saved/column_modelled> <http://purl.org/dc/terms/description> "Column describes modelled data" .
+<http://localhost/saved/scope> <https://w3id.org/linkml/domain_of> <http://localhost/saved/SourceDesc> .
+<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/national_grid_reference> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__cage_table> .
+<http://localhost/saved/jsonpath> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/uri> <http://purl.org/dc/terms/description> "a complete URI" .
+<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://schema.org/Number> .
+<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#note> "in RDF serializations this MUST be expanded to a URI" .
+<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/national_grid_reference> .
+<http://localhost/saved/jobDensity__density_table> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/density_column> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Text> .
+<http://localhost/saved/jobDensity__cage_table> <http://www.w3.org/2004/02/skos/core#prefLabel> "cage_table" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/datetime> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/JobMAE> .
+<http://localhost/saved/JobDummy> <https://w3id.org/linkml/slot_usage> _:N97e4777c90b24700b2d5802c9719d1a9 .
+<http://localhost/saved/cage_table> <http://purl.org/dc/terms/description> "Name of table which describes the cage data file" .
+<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/jobDensity__density_table> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/jobDensity__density_column> <http://www.w3.org/2004/02/skos/core#prefLabel> "density_column" .
+<http://localhost/saved/density_column> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"integer\"." .
+<http://localhost/saved/jobMAE__collected_columns> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/curie> <http://purl.org/dc/terms/description> "a compact URI" .
+<http://localhost/saved/northing> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
+<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://purl.org/dc/elements/1.1/title> .
+<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/date> <http://localhost/saved/base> "XSDDate" .
+<http://localhost/saved/longitude> <https://w3id.org/linkml/any_of> _:N2f629f0308404cebae3e7379ac3a9ba3 .
+<http://localhost/saved/time> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#time> .
+<http://localhost/saved/easting> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/site_id> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/boolean> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Boolean> .
+<http://localhost/saved/sparqlpath> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/jsonpath> <http://purl.org/dc/terms/conformsTo> "https://www.ietf.org/archive/id/draft-goessner-dispatch-jsonpath-00.html" .
+<http://localhost/saved/local_version> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/name> .
+<http://localhost/saved/easting> <http://purl.org/dc/terms/description> "'Y'-positional data relative to point of origin" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__density_column> .
+<http://localhost/saved/integer> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#closeMatch> <http://schema.org/Float> .
+<http://localhost/saved/density_table> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/jobMAE__modelled_columns> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/core> .
+<http://localhost/saved/depth> <http://purl.org/dc/terms/description> "Depth in metres" .
+<http://localhost/saved/jobMAE__collected_columns> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/tables> .
+<http://localhost/saved/datetime> <http://localhost/saved/base> "XSDDateTime" .
+<http://localhost/saved/title> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#editorialNote> "URI is dateTime because OWL reasoners do not work with straight date or time" .
+<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#editorialNote> "In RDF serializations, a slot with range of string is treated as a literal or type xsd:string.   If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"string\"." .
+<http://localhost/saved/jobs> <http://purl.org/dc/terms/description> "Specification of operations to run on resources and schemas provided" .
+<http://localhost/saved/JobDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/modelled_columns> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/table> <http://purl.org/dc/terms/description> "Table description of a given resource, specifically matching the `atomic_name' field of a given instance of the `TableDesc' class." .
+<http://localhost/saved/site_id> <http://purl.org/dc/terms/description> "Fish farm station/site global ID" .
+<http://localhost/saved/density_table> <http://purl.org/dc/terms/description> "Name of table which describes the density data file" .
+<http://localhost/saved/jobDensity__density_table> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/latitude> <https://w3id.org/linkml/any_of> _:N21b30b63fc9245728f3141793fa770b7 .
+<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/depth> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/depth> .
+<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_af_average> .
+<http://localhost/saved/jobMAE__collected_columns> <http://www.w3.org/2004/02/skos/core#prefLabel> "collected_columns" .
+<http://localhost/saved/jobMAE__modelled_columns> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/modelled_columns> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/site_name> .
+<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#note> "in RDF serializations a slot with range of uri is treated as a literal or type xsd:anyURI unless it is an identifier or a reference to an identifier, in which case it is translated directly to a node" .
+<http://localhost/saved/ncname> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#editorialNote> "URI is dateTime because OWL reasoners don't work with straight date or time" .
+<http://localhost/saved/jobMAE__collected_columns> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/collected_columns> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/SourceDesc> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/gcp_source> .
+<http://localhost/saved/latitude> <http://purl.org/dc/terms/description> "Latitude" .
+<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#note> "in non-RDF serializations MAY be serialized as the compact representation" .
+_:N21b30b63fc9245728f3141793fa770b7 <https://w3id.org/linkml/range> <http://localhost/saved/LatLonType> .
+<http://localhost/saved/depth> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/cage_column> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/local_version> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+_:Naa6c4fc514bb45cbb8ddd4a9300e8879 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
+<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/sparqlpath> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/uriorcurie> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Uriorcurie> .
+<http://localhost/saved/nodeidentifier> <http://purl.org/dc/terms/description> "A URI, CURIE or BNODE that represents a node in a model." .
+<http://localhost/saved/jobDensity__cage_column> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/cage_column> .
+<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"boolean\"." .
+<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
+<http://localhost/saved/easting> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/easting> .
+<http://localhost/saved/column_collected> <http://purl.org/dc/terms/description> "Column describes collected data" .
+<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slot_usage> _:Nc5c4a9b31a4748f69832b4731d20530f .
+<http://localhost/saved/schema_path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/attributes> <http://localhost/saved/modelled_columns> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/JobDummy> .
+<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date\"." .
+<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"time\"." .
+<http://localhost/saved/collected_columns> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/columns> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/longitude> .
+<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Float> .
+<http://localhost/saved/description> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/description> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_mass> .
+<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_af_average> .
+<http://localhost/saved/local_version> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://purl.org/pav/version> .
+<http://localhost/saved/latitude> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/latitude> .
+<http://localhost/saved/resource_hash> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/resource_hash> .
+<http://localhost/saved/date> <http://purl.org/dc/terms/description> "a date (year, month and day) in an idealized calendar" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__density_time_column> .
+<http://localhost/saved/jobDummy__columns> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/uriorcurie> <http://purl.org/dc/terms/description> "a URI or a CURIE" .
+<http://localhost/saved/schema_path> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/density_column> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/fish_species_scientific> <http://purl.org/dc/terms/description> "Scientific name of species sampled" .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__density_column> .
+<http://localhost/saved/site_name> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/site_name> .
+<http://localhost/saved/scope> <https://w3id.org/linkml/owner> <http://localhost/saved/SourceDesc> .
+<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/gcp_source> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_collected> .
+<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_af_total> .
+<http://localhost/saved/cage_table> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/default_range> <http://localhost/saved/string> .
+<http://localhost/saved/double> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#double> .
+<http://localhost/saved/northing> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/northing> .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/identifier> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobs> .
+<http://localhost/saved/site_id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/easting> .
+<http://localhost/saved/string> <http://localhost/saved/base> "str" .
+<http://localhost/saved/float> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Float> .
+<http://localhost/saved/cage_table> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/cage_id> <http://purl.org/dc/terms/description> "Semi-numeric cage identifier, related to station/site" .
+<http://localhost/saved/date> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Date> .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/schema_path> .
+<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Time> .
+<http://localhost/saved/column_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_collected> .
+<http://localhost/saved/depth> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/jobDummy__columns> <http://purl.org/dc/terms/description> "A set of columns" .
+<http://localhost/saved/SourceDesc> <http://purl.org/dc/terms/description> "Job manifest: data-set and column selection attributes" .
+<http://localhost/saved/gcp_source> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/gcp_source> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/description> .
+<http://localhost/saved/schema_path> <http://purl.org/dc/terms/description> "Path or URI of schema associated with resource" .
+_:Nbe2ac2349167479fa732162f0acdac58 <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/resource_hash> <http://purl.org/dc/terms/description> "Hash of resource" .
+<http://localhost/saved/meta> <http://purl.org/dc/terms/license> "https://creativecommons.org/publicdomain/zero/1.0/" .
+<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
+<http://localhost/saved/date_or_datetime> <http://purl.org/dc/terms/description> "Either a date or a datetime" .
+<http://localhost/saved/jobDensity__density_column> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/density_column> .
+<http://localhost/saved/date_or_datetime> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/DateOrDatetime> .
+<http://localhost/saved/nodeidentifier> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Nodeidentifier> .
+<http://localhost/saved/schema_path> <http://www.w3.org/2004/02/skos/core#broadMatch> <https://w3id.org/linkml/path> .
+<http://localhost/saved/jobDensity__density_table> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/cage_column> <http://purl.org/dc/terms/description> "Name of column in cage table containing cage data" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/title> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#note> "Used for inheritance and type checking" .
+<http://localhost/saved/density_time_column> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+_:N30e3adb81c624901878f21a42aac3bc5 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
+<http://localhost/saved/double> <http://localhost/saved/base> "float" .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/jobs> .
+<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/jobs> .
+<http://localhost/saved/easting> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/column_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
+_:N318e0945619e4b3bb88d9f8b2342a71c <http://www.w3.org/ns/shacl#prefix> "linkml" .
+<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_density_collected> .
+<http://localhost/saved/local_version> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/jsonpath> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/string> .
+<http://localhost/saved/date_or_datetime> <http://localhost/saved/base> "str" .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/JobMAE> .
+<http://localhost/saved/date> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/uriorcurie> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/fish_length> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/density_time_column> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/jobDensity__density_time_column> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__density_time_column> .
+<http://localhost/saved/fish_mass> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_mass> .
+_:N2f629f0308404cebae3e7379ac3a9ba3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
+<http://localhost/saved/uriorcurie> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/gcp_source> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/gcp_source> .
+<http://localhost/saved/cage_column> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/jobDensity__density_time_column> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/uriorcurie> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/jsonpath> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpath\"." .
+<http://localhost/saved/string> <http://localhost/saved/imported_from> "linkml:types" .
+_:Nbe2ac2349167479fa732162f0acdac58 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
+<http://localhost/saved/modelled_columns> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/TableDesc> <http://purl.org/dc/terms/description> "Job manifest: data source descriptive attributes" .
+<http://localhost/saved/count_fish_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_af_average> .
+<http://localhost/saved/jobMAE__modelled_columns> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/jobDensity__density_time_column> <http://purl.org/dc/terms/description> "Name of column in density table containing time data" .
+<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/description> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/integer> <http://localhost/saved/base> "int" .
+<http://localhost/saved/LatLonType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/tables> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/jobMAE__modelled_columns> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/national_grid_reference> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/meta> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SchemaDefinition> .
+<http://localhost/saved/string> <http://purl.org/dc/terms/description> "A character string" .
+<http://localhost/saved/nodeidentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/schema_path> .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_path> .
+<http://localhost/saved/local_version> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/local_version> .
+_:Nbd3c266f89ab41008b525dbeee37cc75 <https://w3id.org/linkml/range> <http://localhost/saved/float> .
+<http://localhost/saved/uri> <http://purl.org/dc/terms/conformsTo> "https://www.ietf.org/rfc/rfc3987.txt" .
+<http://localhost/saved/fish_species_scientific> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
+<http://localhost/saved/double> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/class_uri> <http://localhost/saved/JobMAE> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/national_grid_reference> .
+<http://localhost/saved/jobDensity__cage_column> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/datetime> <http://purl.org/dc/terms/description> "The combination of a date and time" .
+<http://localhost/saved/nodeidentifier> <http://localhost/saved/base> "NodeIdentifier" .
+<http://localhost/saved/local_version> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/schema_path> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/datetime> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://localhost/saved/cage_table> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/date_or_datetime> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__density_table> .
+<http://localhost/saved/meta> <http://www.w3.org/ns/shacl#declare> _:N41b093f7bd334e5f9b23efabbb24befd .
+<http://localhost/saved/description> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/jobDensity__density_time_column> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/modelled_columns> <http://purl.org/dc/terms/description> "Names of input columns containing modelled or simulated values" .
+<http://localhost/saved/resource_path> <http://purl.org/dc/terms/description> "Path or URI of resource" .
+<http://localhost/saved/jsonpointer> <http://purl.org/dc/terms/description> "A string encoding a JSON Pointer. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to a valid object within the current instance document when encoded in tree form." .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/nodeidentifier> .
+<http://localhost/saved/JobDummy> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"double\"." .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/LatLonType> .
+<http://localhost/saved/JobMAE> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
+<http://localhost/saved/jobDensity__cage_table> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/cage_table> .
+<http://localhost/saved/jobDensity__density_time_column> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/slot_usage> _:Na97b41f13a324c5095c012d24f4687cd .
+<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/collected> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/count_fish_collected> .
+_:Naa6c4fc514bb45cbb8ddd4a9300e8879 <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
+<http://localhost/saved/fish_species_scientific> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/fish_species_common> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/northing> .
+<http://localhost/saved/easting> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/site_id> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/site_id> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/jobMAE__modelled_columns> <http://purl.org/dc/terms/description> "Names of input columns containing modelled or simulated values" .
+<http://localhost/saved/JobDummy> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDummy__columns> .
+<http://localhost/saved/decimal> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#decimal> .
+<http://localhost/saved/jobDummy__columns> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/uri> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Uri> .
+<http://localhost/saved/time> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/density_column> <http://purl.org/dc/terms/description> "Name of column in density table containing density data" .
+<http://localhost/saved/jobDensity__density_column> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/float> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/JobDummy> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
+<http://localhost/saved/meta> <http://localhost/saved/emit_prefixes> "saved" .
+<http://localhost/saved/site_id> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/site_id> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/descriptive> .
+<http://localhost/saved/resource_hash> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/density_time_column> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/JobDensity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
+<http://localhost/saved/jobMAE__modelled_columns> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/date_or_datetime> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_path> .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/scope> .
+<http://localhost/saved/datetime> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/jobMAE__modelled_columns> <http://www.w3.org/2004/02/skos/core#prefLabel> "modelled_columns" .
+<http://localhost/saved/modelled_columns> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobMAE__modelled_columns> .
+<http://localhost/saved/column_descriptive> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/description> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/northing> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/longitude> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/longitude> .
+<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"objectidentifier\"." .
+<http://localhost/saved/series> <http://purl.org/dc/terms/description> "Data series to which a given observation belongs" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_species_scientific> .
+<http://localhost/saved/jobDensity__cage_column> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_species_common> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/jobDensity__cage_table> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDensity> .
+_:N21b30b63fc9245728f3141793fa770b7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__density_table> .
+<http://localhost/saved/density_table> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/gcp_source> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/boolean> <http://purl.org/dc/terms/description> "A binary (true or false) value" .
+<http://localhost/saved/curie> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/curie> <http://purl.org/dc/terms/conformsTo> "https://www.w3.org/TR/curie/" .
+<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/scope> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/SourceDesc> .
+<http://localhost/saved/LatLonType> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/decimal> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Decimal> .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/date_or_datetime> <https://w3id.org/linkml/uri> <https://w3id.org/linkml/DateOrDatetime> .
+<http://localhost/saved/resource_hash> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/table> .
+<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/jobDensity__cage_column> <http://purl.org/dc/terms/description> "Name of column in cage table containing cage data" .
+<http://localhost/saved/datetime> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/column_modelled> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/meta> <http://localhost/saved/metamodel_version> "1.7.0" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_length> .
+<http://localhost/saved/decimal> <http://localhost/saved/base> "Decimal" .
+<http://localhost/saved/decimal> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/jsonpointer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/date_or_datetime> .
+<http://localhost/saved/jobMAE__collected_columns> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobMAE> .
+<http://localhost/saved/title> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/global_coordinate_system> .
+<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/JobDummy> <https://w3id.org/linkml/class_uri> <http://localhost/saved/JobDummy> .
+<http://localhost/saved/cage_column> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/resource_path> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/datetime> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/lice_density_collected> <http://purl.org/dc/terms/description> "Sampled lice density (lice per m³)" .
+<http://localhost/saved/meta> <http://localhost/saved/source_file> "meta.yaml" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/cage_id> .
+<http://localhost/saved/table> <https://w3id.org/linkml/domain_of> <http://localhost/saved/SourceDesc> .
+<http://localhost/saved/fish_mass> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
+<http://localhost/saved/table> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/series> .
+<http://localhost/saved/uriorcurie> <http://localhost/saved/base> "URIorCURIE" .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/latitude> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/latitude> .
+<http://localhost/saved/cage_id> <https://w3id.org/linkml/any_of> _:Naa6c4fc514bb45cbb8ddd4a9300e8879 .
+<http://localhost/saved/resource_path> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/resource_path> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/latitude> .
+<http://localhost/saved/depth> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/depth> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/id> <http://localhost/saved/meta/> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobMAE__collected_columns> .
+<http://localhost/saved/jobMAE__modelled_columns> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/uriorcurie> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uriorcurie\"." .
+<http://localhost/saved/jobs> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/longitude> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/column_descriptive> <http://purl.org/dc/terms/description> "Column describes data about the world" .
+<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/scope> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/SourceDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
+<http://localhost/saved/TableDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#closeMatch> <http://schema.org/URL> .
+<http://localhost/saved/national_grid_reference> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_af_total> .
+<http://localhost/saved/fish_mass> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/longitude> <https://w3id.org/linkml/any_of> _:N30e3adb81c624901878f21a42aac3bc5 .
+<http://localhost/saved/northing> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/northing> .
+<http://localhost/saved/jobDensity__density_table> <http://www.w3.org/2004/02/skos/core#prefLabel> "density_table" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/date> .
+<http://localhost/saved/resource_hash> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/collected_columns> <http://purl.org/dc/terms/description> "Names of input columns containing collected or observed values" .
+<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
+<http://localhost/saved/latitude> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/series> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/series> .
+<http://localhost/saved/date> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/nodeidentifier> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/site_name> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/meta> <http://purl.org/dc/terms/title> "SAVED meta-model" .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/scope> <http://purl.org/dc/terms/description> "Columns or dimensions of a given resource, which should be brought into the scope of a given context. Typical use of this list is to auto-generate a set of jobs or operations from this list, or to permit a set of manually-specified jobs or operations to use one or more of those listed." .
+<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/jsonpath> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/gcp_source> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/ncname> <http://localhost/saved/base> "NCName" .
+<http://localhost/saved/column_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_collected> .
+<http://localhost/saved/nodeidentifier> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/boolean> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/attributes> <http://localhost/saved/collected_columns> .
+<http://localhost/saved/resource_path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/cage_id> <https://w3id.org/linkml/any_of> _:Nbe2ac2349167479fa732162f0acdac58 .
+<http://localhost/saved/ncname> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/title> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/gcp_source> <http://purl.org/dc/terms/description> "GCP account of the generator of the manifest" .
+<http://localhost/saved/time> <http://localhost/saved/base> "XSDTime" .
+<http://localhost/saved/series> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/attributes> <http://localhost/saved/density_time_column> .
+<http://localhost/saved/lice_density_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
+<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/local_version> .
+<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/jobDensity__density_column> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/uri> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/count_fish_collected> .
+<http://localhost/saved/global_coordinate_system> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/density_table> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/tables> <http://purl.org/dc/terms/description> "Specification of mappings between resources and schemas, as well as columns or dimensions to bring into into scope" .
+<http://localhost/saved/integer> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Integer> .
+<http://localhost/saved/fish_length> <http://purl.org/dc/terms/description> "Length of fish expressed (mm)" .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/slots> <http://localhost/saved/jobMAE__collected_columns> .
+<http://localhost/saved/jobMAE__collected_columns> <https://w3id.org/linkml/owner> <http://localhost/saved/JobMAE> .
+<http://localhost/saved/uri> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/integer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/SourceDesc> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/class_uri> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/is_a> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/ncname> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Ncname> .
+<http://localhost/saved/jobDensity__cage_table> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
+<http://localhost/saved/jsonpointer> <http://purl.org/dc/terms/conformsTo> "https://datatracker.ietf.org/doc/html/rfc6901" .
+<http://localhost/saved/table> <https://w3id.org/linkml/owner> <http://localhost/saved/SourceDesc> .
+<http://localhost/saved/scope> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/range> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/jobDensity__cage_table> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/float> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#float> .
+<http://localhost/saved/description> <http://purl.org/dc/terms/description> "Human-readable description of the information" .
+<http://localhost/saved/lice_af_total> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
+<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/sparqlpath> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"sparqlpath\"." .
+<http://localhost/saved/meta> <http://localhost/saved/default_prefix> "saved" .
+<http://localhost/saved/site_name> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/count_fish_collected> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://localhost/saved/count_fish_interpolated> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/source_file_date> "2024-04-15T19:03:45"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://localhost/saved/integer> <http://purl.org/dc/terms/description> "An integer" .
+<http://localhost/saved/northing> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/scope> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/scope> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/is_a> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/jsonpath> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/gcp_source> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/JobMAE> <http://purl.org/dc/terms/description> "Mean absolute error (MAE): compare modelled and observed values of a series" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/double> .
+<http://localhost/saved/scope> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/JobDummy> <https://w3id.org/linkml/is_a> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/objectidentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/longitude> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/gcp_source> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/sparqlpath> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/jobDensity__density_time_column> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/jobDensity__cage_column> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+_:N41b093f7bd334e5f9b23efabbb24befd <http://www.w3.org/ns/shacl#prefix> "saved" .
+<http://localhost/saved/lice_af_total> <http://purl.org/dc/terms/description> "Total number of Salmon lice per fish" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/table> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/curie> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Curie> .
+<http://localhost/saved/atomic_name> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/lice_af_average> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/northing> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/column_modelled> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_modelled> .
+<http://localhost/saved/jobMAE__collected_columns> <http://purl.org/dc/terms/description> "Names of input columns containing collected or observed values" .
+<http://localhost/saved/atomic_name> <http://purl.org/dc/terms/description> "Short-form name / atom: lower-case, no special characters excepting underscores" .
+<http://localhost/saved/jobDensity__density_column> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_species_scientific> .
+<http://localhost/saved/longitude> <http://purl.org/dc/terms/description> "Longitude" .
+<http://localhost/saved/global_coordinate_system> <http://purl.org/dc/terms/description> "Global coordinate system (GCS) reference point of origin" .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/jobs> .
+<http://localhost/saved/tables> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Date> .
+<http://localhost/saved/float> <http://purl.org/dc/terms/description> "A real number that conforms to the xsd:float specification" .
+<http://localhost/saved/jobDummy__columns> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDummy> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
+<http://localhost/saved/fish_length> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
+<http://localhost/saved/ManifestDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/resource_hash> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__cage_column> .
+<http://localhost/saved/jobDummy__columns> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/jsonpointer> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpointer\"." .
+<http://localhost/saved/JobMAE> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
 <http://localhost/saved/curie> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
 <http://localhost/saved/column_modelled> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/column_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
-<http://localhost/saved/lice_density_collected> <http://purl.org/dc/terms/description> "Sampled lice density (lice per m³)" .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/easting> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/easting> .
-<http://localhost/saved/series> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/series> .
-<http://localhost/saved/job_auto_generate> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/double> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Double> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/local_version> .
-<http://localhost/saved/time> <http://localhost/saved/base> "XSDTime" .
-<http://localhost/saved/column_modelled> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_modelled> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/time> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#time> .
-<http://localhost/saved/uriorcurie> <http://purl.org/dc/terms/description> "a URI or a CURIE" .
-<http://localhost/saved/SourceDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
-<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Boolean> .
-<http://localhost/saved/table> <http://purl.org/dc/terms/description> "Table description of a given resource, specifically matching the `atomic_name' field of a given instance of the `TableDesc' class." .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/column_collected> <http://purl.org/dc/terms/description> "Column describes collected data" .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/job_sources> .
-<http://localhost/saved/date_or_datetime> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/global_coordinate_system> .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/local_version> .
-<http://localhost/saved/decimal> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_hash> .
-<http://localhost/saved/fish_mass> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_mass> .
-<http://localhost/saved/sparqlpath> <http://purl.org/dc/terms/description> "A string encoding a SPARQL Property Path. The value of the string MUST conform to SPARQL syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded as RDF." .
-<http://localhost/saved/date_or_datetime> <http://purl.org/dc/terms/description> "Either a date or a datetime" .
-<http://localhost/saved/fish_species_common> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/curie> <http://localhost/saved/repr> "str" .
-_:N4688e3afddc24f879e41fe4590b19339 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/title> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/jsonpointer> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/LatLonType> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/fish_species_scientific> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/depth> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_species_common> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/source_file_date> "2024-04-12T22:54:15"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-<http://localhost/saved/integer> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#integer> .
-<http://localhost/saved/date> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/double> .
-<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date\"." .
-_:N0296ba5c06a94aceb075f921f29abc39 <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
-<http://localhost/saved/job_auto_generate> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/collected> .
-<http://localhost/saved/datetime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/job_auto_generate> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/curie> <http://purl.org/dc/terms/description> "a compact URI" .
+<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
 <http://localhost/saved/fish_species_common> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_af_average> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/schema_path> .
-<http://localhost/saved/nodeidentifier> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/longitude> <http://purl.org/dc/terms/description> "Longitude" .
-<http://localhost/saved/datetime> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/tables> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/title> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/jsonpath> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/northing> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/northing> .
-<http://localhost/saved/title> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/title> .
-_:N6f9be0c226c042a39e9a42bf5e1463c1 <http://www.w3.org/ns/shacl#namespace> <https://w3id.org/linkml/> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/job> .
-<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/nodeidentifier> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"nodeidentifier\"." .
-<http://localhost/saved/fish_species_scientific> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/meta> <http://localhost/saved/emit_prefixes> "saved" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/boolean> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/uri> <http://purl.org/dc/terms/description> "a complete URI" .
-<http://localhost/saved/column_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_collected> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/boolean> .
-<http://localhost/saved/easting> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/datetime> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/DateTime> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/job_type> .
-<http://localhost/saved/TableDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
-<http://localhost/saved/title> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/cage_id> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/curie> .
-<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#note> "in RDF serializations this MUST be expanded to a URI" .
-<http://localhost/saved/site_id> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/site_id> .
-<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/lice_density_collected> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://localhost/saved/lice_density_modelled> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/latitude> .
-<http://localhost/saved/table> <https://w3id.org/linkml/owner> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/title> <http://purl.org/dc/terms/description> "A concise human-readable display label for the element. The title should mirror the name, and should use ordinary textual punctuation." .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/tables> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/series> .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/table> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/integer> <http://purl.org/dc/terms/description> "An integer" .
-<http://localhost/saved/series> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/table> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-_:Nd4a359d7a6d048ec8a83fc0fc2a1f742 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/easting> <http://purl.org/dc/terms/description> "'Y'-positional data relative to point of origin" .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/resource_path> .
-<http://localhost/saved/table> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/double> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/atomic_name> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/time> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Time> .
-<http://localhost/saved/LatLonType> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/identifier> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/slot_usage> _:N2cc04aef9c3f4197ae4aaa39b351f714 .
-<http://localhost/saved/site_name> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/site_name> .
-<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/atomic_name> <http://localhost/saved/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
-<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/date_or_datetime> <https://w3id.org/linkml/uri> <https://w3id.org/linkml/DateOrDatetime> .
-<http://localhost/saved/local_version> <http://purl.org/dc/terms/description> "Version number of local submission utility" .
-<http://localhost/saved/column_modelled> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/generation_date> "2024-04-13T17:55:26"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-<http://localhost/saved/easting> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/northing> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
-<http://localhost/saved/tables> <http://purl.org/dc/terms/description> "Specification of mappings between resources and schemas, as well as columns or dimensions to bring into into scope" .
-<http://localhost/saved/boolean> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/table> .
-<http://localhost/saved/description> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/global_coordinate_system> .
-<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_species_common> .
-<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#closeMatch> <http://schema.org/URL> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/job_sources> .
-<http://localhost/saved/date> <http://purl.org/dc/terms/description> "a date (year, month and day) in an idealized calendar" .
-<http://localhost/saved/easting> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/easting> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/longitude> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/job_type> .
-<http://localhost/saved/site_name> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/site_name> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/jobs> .
-<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/LatLonType> <https://w3id.org/linkml/uri> <http://localhost/saved/LatLon> .
-<http://localhost/saved/TableDesc> <http://purl.org/dc/terms/description> "Job manifest: data source descriptive attributes" .
-<http://localhost/saved/boolean> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/core> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/description> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_length> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_af_average> .
-<http://localhost/saved/gcp_source> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/uri> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/scope> .
-<http://localhost/saved/datetime> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#note> "Used for inheritance and type checking" .
-_:Nb52f174db65c47d38318ace2ce74b876 <https://w3id.org/linkml/range> <http://localhost/saved/LatLonType> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/decimal> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/latitude> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/table> .
-<http://localhost/saved/objectidentifier> <http://purl.org/dc/terms/description> "A URI or CURIE that represents an object in the model." .
-<http://localhost/saved/site_id> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/site_id> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/global_coordinate_system> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/schema_path> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/objectidentifier> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Objectidentifier> .
-<http://localhost/saved/job_type> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/jsonpath> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpath\"." .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/LatLonType> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/series> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/range> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/double> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#double> .
-<http://localhost/saved/boolean> <http://localhost/saved/base> "Bool" .
-<http://localhost/saved/cage_id> <http://purl.org/dc/terms/description> "Semi-numeric cage identifier, related to station/site" .
-<http://localhost/saved/resource_path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/any_of> _:Nd4a359d7a6d048ec8a83fc0fc2a1f742 .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/site_id> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/local_version> .
-<http://localhost/saved/ManifestDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/LatLonType> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/LatLonType> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/datetime> .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/scope> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/job_sources> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/jobs> <http://purl.org/dc/terms/description> "Specification of operations to run on resources and schemas provided" .
-<http://localhost/saved/description> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/fish_species_scientific> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/fish_species_common> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/date_or_datetime> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/DateOrDatetime> .
-<http://localhost/saved/meta> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SchemaDefinition> .
-<http://localhost/saved/JobDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/job_type> .
-<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/national_grid_reference> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/double> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/global_coordinate_system> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/northing> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_density_collected> .
-<http://localhost/saved/objectidentifier> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/date> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#date> .
-<http://localhost/saved/ncname> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/jobs> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"boolean\"." .
-<http://localhost/saved/fish_mass> <http://purl.org/dc/terms/description> "Weight of fish expressed (g)" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobs> .
-<http://localhost/saved/curie> <http://purl.org/dc/terms/conformsTo> "https://www.w3.org/TR/curie/" .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/job_auto_generate> <https://w3id.org/linkml/range> <http://localhost/saved/boolean> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/depth> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/fish_mass> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <https://w3id.org/linkml/types> .
-<http://localhost/saved/string> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slot_usage> _:N34f8ad19518c46269ad4bb37bcb582a3 .
-<http://localhost/saved/uriorcurie> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/sparqlpath> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/northing> .
-<http://localhost/saved/meta> <http://localhost/saved/metamodel_version> "1.7.0" .
-<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/owner> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/depth> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/depth> .
-<http://localhost/saved/job_auto_generate> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/column_descriptive> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/longitude> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/job_auto_generate> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/job_auto_generate> .
-<http://localhost/saved/local_version> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://purl.org/dc/elements/1.1/identifier> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_af_total> .
-<http://localhost/saved/fish_length> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_length> .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/gcp_source> .
-<http://localhost/saved/atomic_name> <http://purl.org/dc/terms/description> "Short-form name / atom: lower-case, no special characters excepting underscores" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/longitude> .
-<http://localhost/saved/table> <https://w3id.org/linkml/domain_of> <http://localhost/saved/SourceDesc> .
-<http://localhost/saved/curie> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Curie> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/cage_id> .
-<http://localhost/saved/fish_mass> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/national_grid_reference> <http://purl.org/dc/terms/description> "National grid reference (NGR) point of origin" .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_collected> .
-<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_species_scientific> .
-<http://localhost/saved/count_fish_collected> <http://purl.org/dc/terms/description> "Sampled number of fish in the farm" .
-<http://localhost/saved/series> <http://purl.org/dc/terms/description> "Data series to which a given observation belongs" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/depth> .
+<http://localhost/saved/fish_species_common> <http://purl.org/dc/terms/description> "Common name of species sampled" .
+<http://localhost/saved/latitude> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/jobDensity__cage_column> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/JobDummy> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/JobDummy> .
 <http://localhost/saved/fish_length> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_species_scientific> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/fish_species_scientific> <http://purl.org/dc/terms/description> "Scientific name of species sampled" .
-<http://localhost/saved/description> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/description> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Date> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/scope> .
-<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#editorialNote> "URI is dateTime because OWL reasoners don't work with straight date or time" .
-<http://localhost/saved/uriorcurie> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/title> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/jsonpath> <http://purl.org/dc/terms/conformsTo> "https://www.ietf.org/archive/id/draft-goessner-dispatch-jsonpath-00.html" .
-<http://localhost/saved/decimal> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#decimal> .
-<http://localhost/saved/meta> <http://purl.org/dc/terms/license> "https://creativecommons.org/publicdomain/zero/1.0/" .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_path> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/job_sources> .
-<http://localhost/saved/sparqlpath> <http://purl.org/dc/terms/conformsTo> "https://www.w3.org/TR/sparql11-query/#propertypaths" .
-<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_density_collected> .
-<http://localhost/saved/longitude> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/meta> <http://purl.org/dc/terms/title> "SAVED meta-model" .
-<http://localhost/saved/lice_af_average> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/schema_path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/scope> .
+<http://localhost/saved/fish_length> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_length> .
+<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/time> .
+<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/table> .
+<http://localhost/saved/jobDensity__cage_column> <http://www.w3.org/2004/02/skos/core#prefLabel> "cage_column" .
+<http://localhost/saved/local_version> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/local_version> .
+<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Integer> .
+<http://localhost/saved/time> <http://purl.org/dc/terms/description> "A time object represents a (local) time of day, independent of any particular day" .
+<http://localhost/saved/jobDensity__cage_table> <http://purl.org/dc/terms/description> "Name of table which describes the cage data file" .
+<http://localhost/saved/jsonpointer> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost/saved/JobDummy> <https://w3id.org/linkml/attributes> <http://localhost/saved/columns> .
+<http://localhost/saved/table> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/table> .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/JobDensity> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/tables> .
+<http://localhost/saved/cage_id> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/jobDensity__density_column> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/jsonpointer> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/column_collected> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/jobMAE__collected_columns> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/nodeidentifier> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"nodeidentifier\"." .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slot_usage> _:N818a583fd12c4995979fdb7f3ada2353 .
+_:Nbd3c266f89ab41008b525dbeee37cc75 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
+<http://localhost/saved/local_version> <http://purl.org/dc/terms/description> "Version number of local submission utility" .
+<http://localhost/saved/description> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/jobDummy__columns> <http://www.w3.org/2004/02/skos/core#prefLabel> "columns" .
+<http://localhost/saved/jsonpointer> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/LatLonType> <http://localhost/saved/pattern> "[0-9]+o [0-9]+.[0-9]+[N|W]" .
+<http://localhost/saved/uriorcurie> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#anyURI> .
+<http://localhost/saved/schema_path> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/schema_path> .
+<http://localhost/saved/JobDummy> <http://purl.org/dc/terms/description> "A 'dummy' job which will never be run. For a simple test job, try mean absolute error (MAE)." .
+<http://localhost/saved/JobDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/jsonpointer> .
 <http://localhost/saved/datetime> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"datetime\"." .
-<http://localhost/saved/latitude> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/SourceDesc> <http://purl.org/dc/terms/description> "Job manifest: data-set and column selection attributes" .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/string> .
-<http://localhost/saved/column_descriptive> <http://purl.org/dc/terms/description> "Column describes data about the world" .
-<http://localhost/saved/scope> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/time> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/date_or_datetime> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://purl.org/dc/elements/1.1/title> .
-<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/name> .
-<http://localhost/saved/description> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/description> .
-<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/any_of> _:N4688e3afddc24f879e41fe4590b19339 .
-<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Time> .
-<http://localhost/saved/job_auto_generate> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-_:N9f0fed1bfb5a4577943eb8c7cbd12ea9 <http://www.w3.org/ns/shacl#namespace> <http://localhost/saved/> .
-<http://localhost/saved/table> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/table> .
-<http://localhost/saved/float> <http://purl.org/dc/terms/description> "A real number that conforms to the xsd:float specification" .
-<http://localhost/saved/fish_length> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/uriorcurie> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Uriorcurie> .
-<http://localhost/saved/jsonpointer> <http://localhost/saved/base> "str" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/date_or_datetime> .
-<http://localhost/saved/ManifestDesc> <http://purl.org/dc/terms/description> "Job manifest: complete specification" .
-<http://localhost/saved/schema_path> <http://purl.org/dc/terms/description> "Path or URI of schema associated with resource" .
-<http://localhost/saved/nodeidentifier> <http://purl.org/dc/terms/description> "A URI, CURIE or BNODE that represents a node in a model." .
-<http://localhost/saved/SourceDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/date> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/depth> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/any_of> _:N0296ba5c06a94aceb075f921f29abc39 .
+<http://localhost/saved/title> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/title> .
+<http://localhost/saved/boolean> <http://localhost/saved/base> "Bool" .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
+<http://localhost/saved/jobDensity__density_time_column> <http://www.w3.org/2004/02/skos/core#prefLabel> "density_time_column" .
+<http://localhost/saved/title> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/title> .
+<http://localhost/saved/schema_path> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/series> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_density_collected> .
+<http://localhost/saved/fish_species_scientific> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
 <http://localhost/saved/atomic_name> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/integer> .
-<http://localhost/saved/series> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-_:N0296ba5c06a94aceb075f921f29abc39 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/resource_path> <http://purl.org/dc/terms/description> "Path or URI of resource" .
-<http://localhost/saved/objectidentifier> <https://w3id.org/linkml/uri> <http://www.w3.org/ns/shex#iri> .
-<http://localhost/saved/integer> <http://localhost/saved/base> "int" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_mass> .
-<http://localhost/saved/latitude> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/attributes> <http://localhost/saved/density_column> .
+<http://localhost/saved/date> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/boolean> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
 <http://localhost/saved/site_name> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#editorialNote> "URI is dateTime because OWL reasoners do not work with straight date or time" .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/latitude> <http://purl.org/dc/terms/description> "Latitude" .
-<http://localhost/saved/title> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/scope> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/national_grid_reference> .
-<http://localhost/saved/string> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/easting> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
-<http://localhost/saved/decimal> <http://localhost/saved/base> "Decimal" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/nodeidentifier> .
-<http://localhost/saved/sparqlpath> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"sparqlpath\"." .
-<http://localhost/saved/tables> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/tables> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/gcp_source> .
-<http://localhost/saved/jsonpointer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/decimal> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Decimal> .
-<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/count_fish_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/jsonpointer> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/uri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/column_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/northing> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-_:N4e90540f1e844f219d4b4f8cf8341435 <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/float> <http://localhost/saved/base> "float" .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/count_fish_collected> .
-<http://localhost/saved/JobDesc> <http://purl.org/dc/terms/description> "Job manifest: job specification attributes" .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/job_sources> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/job_sources> .
-<http://localhost/saved/jsonpath> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/northing> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/objectidentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/meta> <http://localhost/saved/default_prefix> "saved" .
-<http://localhost/saved/scope> <http://purl.org/dc/terms/description> "Columns or dimensions of a given resource, which should be brought into the scope of a given context. Typical use of this list is to auto-generate a set of jobs or operations from this list, or to permit a set of manually-specified jobs or operations to use one or more of those listed." .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/job_auto_generate> .
-<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#note> "in RDF serializations a slot with range of uri is treated as a literal or type xsd:anyURI unless it is an identifier or a reference to an identifier, in which case it is translated directly to a node" .
-<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_hash> .
+<http://localhost/saved/jobDensity__cage_column> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/jobDensity__density_time_column> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uri\"." .
+<http://localhost/saved/description> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/description> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
+<http://localhost/saved/uriorcurie> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/sparqlpath> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Sparqlpath> .
+<http://localhost/saved/resource_path> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/title> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/JobDummy> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__cage_column> .
+<http://localhost/saved/jsonpath> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Jsonpath> .
+<http://localhost/saved/JobDesc> <http://purl.org/dc/terms/description> "Job manifest: job specification attributes which specific job sub-classes inherit" .
 <http://localhost/saved/series> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/jsonpath> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/local_version> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://purl.org/pav/version> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/uri> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Uri> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/site_name> .
-<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/date> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Date> .
-<http://localhost/saved/uriorcurie> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/fish_mass> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_mass> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/any_of> _:N4e90540f1e844f219d4b4f8cf8341435 .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/resource_hash> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/gcp_source> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/cage_id> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/cage_id> .
+<http://localhost/saved/easting> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
+<http://localhost/saved/table> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/JobDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/latitude> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
+<http://localhost/saved/jobDensity__density_column> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/ncname> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/longitude> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/latitude> <https://w3id.org/linkml/any_of> _:Nbd3c266f89ab41008b525dbeee37cc75 .
+<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/global_coordinate_system> .
+<http://localhost/saved/ncname> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/series> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/series> .
+<http://localhost/saved/site_name> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/objectidentifier> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/jsonpath> .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/LatLonType> <http://localhost/saved/base> "str" .
+<http://localhost/saved/scope> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/cage_id> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/ncname> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/double> <http://purl.org/dc/terms/description> "A real number that conforms to the xsd:double specification" .
+<http://localhost/saved/longitude> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/longitude> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/curie> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/ncname> .
+<http://localhost/saved/latitude> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/jsonpath> <http://localhost/saved/base> "str" .
+<http://localhost/saved/jobDensity__density_time_column> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/density_time_column> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <https://w3id.org/linkml/types> .
+<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_species_common> .
+<http://localhost/saved/jsonpointer> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Jsonpointer> .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/slots> <http://localhost/saved/jobMAE__modelled_columns> .
+<http://localhost/saved/meta> <http://www.w3.org/ns/shacl#declare> _:N318e0945619e4b3bb88d9f8b2342a71c .
+<http://localhost/saved/objectidentifier> <http://purl.org/dc/terms/description> "A URI or CURIE that represents an object in the model." .
+_:N318e0945619e4b3bb88d9f8b2342a71c <http://www.w3.org/ns/shacl#namespace> <https://w3id.org/linkml/> .
+<http://localhost/saved/string> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/sparqlpath> <http://purl.org/dc/terms/conformsTo> "https://www.w3.org/TR/sparql11-query/#propertypaths" .
+<http://localhost/saved/date_or_datetime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/fish_mass> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/easting> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/easting> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/scope> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/tables> .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/slot_usage> _:N70df14cf7bed4bb1b828810a706bc828 .
+<http://localhost/saved/jobDensity__cage_column> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/job> .
+<http://localhost/saved/resource_hash> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
 <http://localhost/saved/gcp_source> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/column_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/double> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/local_version> .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/global_coordinate_system> .
+<http://localhost/saved/global_coordinate_system> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/uri> <http://localhost/saved/base> "URI" .
+<http://localhost/saved/SourceDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_hash> .
+<http://localhost/saved/columns> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/table> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/resource_hash> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/resource_hash> .
+<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slot_usage> _:N73f87b0b2daa49e9ab1c0bf712449ebb .
+<http://localhost/saved/datetime> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/DateTime> .
+<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"float\"." .
+<http://localhost/saved/title> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/jobDensity__cage_table> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/jobMAE__modelled_columns> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobMAE> .
+<http://localhost/saved/sparqlpath> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost/saved/TableDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
+<http://localhost/saved/objectidentifier> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/site_name> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/site_name> .
+<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/description> .
+<http://localhost/saved/schema_path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/float> <http://localhost/saved/base> "float" .
+<http://localhost/saved/jobDensity__cage_table> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/objectidentifier> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://purl.org/dc/elements/1.1/identifier> .
+<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/sparqlpath> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/description> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/collected_columns> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/integer> .
+<http://localhost/saved/nodeidentifier> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/jsonpath> <http://purl.org/dc/terms/description> "A string encoding a JSON Path. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded in tree form." .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/uri> .
+<http://localhost/saved/depth> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
+<http://localhost/saved/resource_path> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/resource_path> .
+<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_species_common> .
+<http://localhost/saved/objectidentifier> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Objectidentifier> .
+<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
+<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/count_fish_collected> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/attributes> <http://localhost/saved/cage_column> .
+<http://localhost/saved/time> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/objectidentifier> <http://localhost/saved/base> "ElementIdentifier" .
+<http://localhost/saved/ManifestDesc> <http://purl.org/dc/terms/description> "Job manifest: complete specification" .
+<http://localhost/saved/site_id> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/site_name> <http://purl.org/dc/terms/description> "Fish farm station/site local name" .
+<http://localhost/saved/column_descriptive> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_modelled> .
+<http://localhost/saved/fish_mass> <http://purl.org/dc/terms/description> "Weight of fish expressed (g)" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/generation_date> "2024-04-19T18:20:56"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/boolean> .
+<http://localhost/saved/string> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/String> .
+<http://localhost/saved/description> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/description> .
+<http://localhost/saved/jobDummy__columns> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDummy> .
+<http://localhost/saved/local_version> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
+<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/count_fish_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
+<http://localhost/saved/fish_mass> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/jobs> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/integer> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#integer> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/decimal> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/modelled> .
+<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_descriptive> .
+<http://localhost/saved/resource_path> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/JobDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/ncname> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"ncname\"." .
+<http://localhost/saved/float> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_density_collected> .
+<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/scope> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/scope> .
+<http://localhost/saved/jsonpath> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://localhost/saved/nodeidentifier> <https://w3id.org/linkml/uri> <http://www.w3.org/ns/shex#nonLiteral> .
+<http://localhost/saved/cage_id> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/scope> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/source_file_size> "294"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://localhost/saved/datetime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
+<http://localhost/saved/jobDummy__columns> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/columns> .
+<http://localhost/saved/LatLonType> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/column_modelled> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
+<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/sparqlpath> <http://purl.org/dc/terms/description> "A string encoding a SPARQL Property Path. The value of the string MUST conform to SPARQL syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded as RDF." .
+<http://localhost/saved/fish_species_common> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/fish_species_scientific> .
+<http://localhost/saved/resource_path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/column_modelled> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_modelled> .
+<http://localhost/saved/jsonpointer> <http://localhost/saved/base> "str" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/site_id> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/sparqlpath> .
+<http://localhost/saved/northing> <http://purl.org/dc/terms/description> "'X'-positional data relative to point of origin" .
+<http://localhost/saved/time> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/SourceDesc> <https://w3id.org/linkml/slot_usage> _:N2e1f01c0adb6433d9304127528bd0b24 .
+<http://localhost/saved/jobMAE__collected_columns> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/series> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/LatLonType> <https://w3id.org/linkml/uri> <http://localhost/saved/LatLon> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/tables> .
+<http://localhost/saved/ncname> <http://purl.org/dc/terms/description> "Prefix part of CURIE" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDummy__columns> .
+<http://localhost/saved/atomic_name> <http://localhost/saved/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
+<http://localhost/saved/density_time_column> <http://purl.org/dc/terms/description> "Name of column in density table containing time data" .
+<http://localhost/saved/site_id> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/resource_hash> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/jobDensity__density_column> <http://purl.org/dc/terms/description> "Name of column in density table containing density data" .
+<http://localhost/saved/modelled_columns> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/JobDensity> <https://w3id.org/linkml/attributes> <http://localhost/saved/cage_table> .
+<http://localhost/saved/date_or_datetime> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date_or_datetime\"." .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobDensity__cage_table> .
+<http://localhost/saved/count_fish_collected> <http://purl.org/dc/terms/description> "Sampled number of fish in the farm" .
+<http://localhost/saved/jobDensity__cage_table> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"decimal\"." .
+<http://localhost/saved/jobMAE__collected_columns> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/longitude> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/title> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/title> .
+<http://localhost/saved/jobDensity__density_column> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/lice_af_average> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/uriorcurie> .
+<http://localhost/saved/fish_mass> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_mass> .
+<http://localhost/saved/depth> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
+<http://localhost/saved/jobDensity__density_table> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDensity> .
+<http://localhost/saved/tables> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+_:N30e3adb81c624901878f21a42aac3bc5 <https://w3id.org/linkml/range> <http://localhost/saved/LatLonType> .
+_:N2f629f0308404cebae3e7379ac3a9ba3 <https://w3id.org/linkml/range> <http://localhost/saved/float> .
+<http://localhost/saved/jobMAE__modelled_columns> <https://w3id.org/linkml/owner> <http://localhost/saved/JobMAE> .
+_:N41b093f7bd334e5f9b23efabbb24befd <http://www.w3.org/ns/shacl#namespace> <http://localhost/saved/> .
+<http://localhost/saved/uri> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#anyURI> .
+<http://localhost/saved/schema_path> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/curie> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/LatLonType> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/LatLonType> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/JobDesc> .
+<http://localhost/saved/collected_columns> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/jobDensity__density_table> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/density_table> .
+<http://localhost/saved/jobs> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/columns> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/curie> <http://localhost/saved/repr> "str" .
+<http://localhost/saved/lice_af_total> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
+<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_species_scientific> .
+<http://localhost/saved/table> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/table> .
+<http://localhost/saved/datetime> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Datetime> .
+<http://localhost/saved/jobDensity__density_table> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_af_total> .
+<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Boolean> .
+<http://localhost/saved/JobMAE> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
+<http://localhost/saved/fish_species_common> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
+<http://localhost/saved/JobDensity> <http://purl.org/dc/terms/description> "Prediction of sea lice count given cage data, lice density and time series" .
+<http://localhost/saved/decimal> <http://localhost/saved/imported_from> "linkml:types" .
+<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/TableDesc> .
+<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"curie\"." .
+<http://localhost/saved/collected_columns> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
+<http://localhost/saved/jsonpointer> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
