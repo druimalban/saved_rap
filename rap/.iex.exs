@@ -38,8 +38,10 @@ import RDF.Sigils
 alias RAP.Vocabulary.SAVED
 alias RAP.Manifest.{ManifestDesc,SourceDesc,TableDesc,JobDesc,Plumbing}
 
-{:ok, graph0} = RDF.Turtle.read_file "manual_test/manifest3.ttl"
+#{:ok, graph0} = RDF.Turtle.read_file "manual_test/manifest3.ttl"
 # {:ok, egret0} = Grax.load graph0, SAVED.RootManifest, ManifestDesc
 
-{:ok, graph1} = RDF.Turtle.read_file "manual_test/manifest4.ttl"
+#{:ok, graph1} = RDF.Turtle.read_file "manual_test/manifest4.ttl"
 # {:ok, egret1} = Grax.load graph1, SAVED.RootManifest, ManifestDesc
+
+{:ok, graph} = RDF.Turtle.read_file "manual_test/manifest6.ttl"
