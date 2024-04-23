@@ -5,11 +5,11 @@ defmodule RAP.Manifest.TableDesc do
   alias RAP.Vocabulary.{DCTERMS, SAVED}
   
   schema SAVED.TableDesc do
-    property :title,         DCTERMS.title,       type: :string
-    property :description,   DCTERMS.description, type: :string
-    property :resource_path, SAVED.resource_path, type: :any_uri
-    property :schema_path,   SAVED.schema_path,   type: :any_uri
-    property :resource_hash, SAVED.resource_hash, type: :string
+    property :title,         DCTERMS.title,       type: :string,  required: false
+    property :description,   DCTERMS.description, type: :string,  required: false
+    property :resource_path, SAVED.resource_path, type: :any_uri, required: true
+    property :schema_path,   SAVED.schema_path,   type: :any_uri, required: true
+    property :resource_hash, SAVED.resource_hash, type: :string,  required: true
   end
 end
 
@@ -20,9 +20,9 @@ defmodule RAP.Manifest.ColumnDesc do
   alias RAP.Vocabulary.SAVED
 
   schema SAVED.ColumnDesc do
-    property :column,   SAVED.column,   type: :string
-    property :variable, SAVED.variable, type: :string
-    property :table,    SAVED.table,    type: :string
+    property :column,   SAVED.column,   type: :string, required: true
+    property :variable, SAVED.variable, type: :string, required: true
+    property :table,    SAVED.table,    type: :string, required: true
   end
 end
 
@@ -34,12 +34,13 @@ defmodule RAP.Manifest.JobDesc do
   alias RAP.Manifest.ColumnDesc
 
   schema SAVED.JobDesc do
-    property :title,    DCTERMS.title,  type: :string
-    property :job_type, SAVED.job_type, type: :string
+    property :title,       DCTERMS.title,       type: :string, required: false
+    property :description, DCTERMS.description, type: :string, required: false
+    property :job_type,    SAVED.job_type,      type: :string, required: true
     
     link job_scope_descriptive: SAVED.job_scope_descriptive, type: list_of(ColumnDesc), depth: +5
     link job_scope_collected:   SAVED.job_scope_collected,   type: list_of(ColumnDesc), depth: +5
-    link job_Scope_modelled:    SAVED.job_scope_modelled,    type: list_of(ColumnDesc), depth: +5
+    link job_scope_modelled:    SAVED.job_scope_modelled,    type: list_of(ColumnDesc), depth: +5
   end
 end
 
@@ -47,14 +48,17 @@ defmodule RAP.Manifest.ManifestDesc do
 
   use Grax.Schema, depth: +2
   import RDF.Sigils
-  alias RAP.Vocabulary.SAVED
+  alias RAP.Vocabulary.{DCTERMS, SAVED}
   alias RAP.Manifest.{TableDesc, JobDesc}
 
   schema SAVED.ManifestDesc do
-    property :local_version, SAVED.local_version
+    property :title,         DCTERMS.title,       type: :string, required: false, required: false
+    property :description,   DCTERMS.description, type: :string, required: false, required: false
+    property :gcp_source,    SAVED.gcp_source,    type: :string, required: false, required: false
+    property :local_version, SAVED.local_version, type: :string, required: false, required: true
 
     link tables: SAVED.tables, type: list_of(TableDesc), depth: +5
-    link jobs:   SAVED.jobs,   type: list_of(JobDesc), depth: +5
+    link jobs:   SAVED.jobs,   type: list_of(JobDesc),   depth: +5
   end
 end
 

@@ -1,3 +1,16 @@
+defmodule RAP.Job.Spec do
+  @moduledoc """
+  At the moment, this module just includes a single struct definition.
+  The aim here is to separate the declaration of the structure of the
+  job from the structure of the producer, which holds its own state.
+
+  This is better than having the job producer functions return a list
+  of its named struct.
+  """
+  defstruct [ :title, :description, :type, :pairs_descriptive, :pairs_collected, :pairs_modelled ]
+  
+end
+
 defmodule RAP.Job.Producer do
   @moduledoc """
   This is the producer stage of the RAP, which, given a turtle manifest
@@ -10,14 +23,14 @@ defmodule RAP.Job.Producer do
   It is possible that there will be no jobs possible, probably because
   the manifest is ill-formed.
   """  
-  defstruct [ :title, :type, :auto_generate, :state ]
-
   alias RAP.Vocabulary.SAVED
-  alias RAP.Manifest.{TableDesc,SourceDesc,JobDesc,ManifestDesc}
+  alias RAP.Manifest.{TableDesc, ColumnDesc, JobDesc, ManifestDesc}
   
   use GenStage
   require Logger
 
+  defstruct [ :title, :description, :staging_jobs ]
+  
   def start_link initial_state do
     Logger.info "Called Job.Producer.start_link (initial_state = #{inspect initial_state})"
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
@@ -58,12 +71,12 @@ defmodule RAP.Job.Producer do
     {:ok, graph}  = RDF.Turtle.read_file manifest_path
 
     Logger.info "Loading RDF graph into Elixir/Grax structs"
-    {:ok, struct} = Grax.load graph, SAVED.RootManifest, ManifestDesc
+     {:ok, struct} = Grax.load graph, SAVED.RootManifest, ManifestDesc
 
     Logger.info "Detecting feasible jobs"
     base_iri  = RDF.IRI.to_string graph.base_iri
     feasible_jobs = generate_jobs base_iri, struct
-    {:noreply, feasible_jobs, state}
+    {:noreply, [feasible_jobs], state}
   end
 
   @doc """
@@ -93,44 +106,43 @@ defmodule RAP.Job.Producer do
   <operation>_over_job and the mapping functions over the *source* component of
   the job should be called something like <operation>_over_job_source.
   """
-  def generate_jobs(base_iri, %RAP.Manifest.ManifestDesc{jobs: jobs, tables: tables} = manifest) do
-    jobs |> Enum.map(&job_sources_against_tables(base_iri, tables, &1))
-         |> Enum.map(&job_scope_against_tables/1)
-  end
-
-  defp compare_table_call(base_iri, tables, source) do
-    target_iri   = RDF.iri(base_iri <> source.table)
-    target_table = tables |> Enum.find(fn (tab) ->
+  defp compare_table_call(base_iri_text, tables, %ColumnDesc{table: table, column: label, variable: var}) do
+    target_iri = RDF.iri(base_iri_text <> table)
+    target_table = tables
+    |> Enum.find(fn (tab) ->
       target_iri == tab.__id__
     end)
-    case target_iri do
-      nil -> { :invalid_table, source, target_iri }
-      tab -> { :valid_table,   source, target_table }
+    case target_table do
+      nil -> { :invalid_table, var, label, target_iri   }
+      tab -> { :valid_table,   var, label, target_table }
     end
   end
-  
-  defp job_sources_against_tables(base_iri, tables, job) do
-    paired_iris = job.job_sources |> Enum.map(&compare_table_call(base_iri, tables, &1))
-    %RAP.Job.Producer{
-      title: job.title, type: job.job_type, auto_generate: job.job_auto_generate,
-      state: paired_iris
+
+  defp sort_scope({:valid_table,   _, _, _}, {:invalid_table, _, _, _}), do: true
+  defp sort_scope({:invalid_table, _, _, _}, {:valid_table,   _, _, _}), do: false
+  defp sort_scope({_, var0, _, _}, {_, var1, _, _}), do: var0 < var1
+  defp job_scope_against_tables(base_iri_text, tables, job) do
+    run_scope = fn (src) -> src
+      |> Enum.map(&compare_table_call(base_iri_text, tables, &1))
+      |> Enum.sort(&sort_scope/2)
+    end   
+    %RAP.Job.Spec{
+      title:             job.title,
+      description:       job.description,
+      type:              job.job_type,
+      pairs_descriptive: run_scope.(job.job_scope_descriptive),
+      pairs_collected:   run_scope.(job.job_scope_collected),
+      pairs_modelled:    run_scope.(job.job_scope_modelled)
     }
   end
 
-  defp compare_scope_pair({:invalid_table, _src, _iri} = source), do: source
-  defp compare_scope_pair({:valid_table, src, table}) do
-    scope_table     = MapSet.new(table.scope)
-    scope_source    = MapSet.new(src.scope)
-    
-    valid_columns   = MapSet.intersection(scope_source, scope_table) |> MapSet.to_list()
-    invalid_columns = MapSet.difference(scope_source, scope_table)   |> MapSet.to_list()
-    
-    %{ source: src, table: table, valid_columns: valid_columns, invalid_columns: invalid_columns }
+  def generate_jobs(base_iri_text, %ManifestDesc{} = manifest) do
+    processed_jobs = manifest.jobs
+    |> Enum.map(&job_scope_against_tables(base_iri_text, manifest.tables, &1))
+    %RAP.Job.Producer{
+      title:        manifest.title,
+      description:  manifest.description,
+      staging_jobs: processed_jobs
+    }    
   end
-
-  defp job_scope_against_tables(%RAP.Job.Producer{} = job_state) do
-    compared_scopes = job_state.state |> Enum.map(&compare_scope_pair/1)
-    Map.put job_state, :state, compared_scopes
-  end
-  
 end

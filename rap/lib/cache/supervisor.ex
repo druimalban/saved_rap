@@ -1,30 +1,33 @@
+defmodule RAP.Job.Cache do
+  
+  def start_link(%RAP.Job.Runner{results: res}) do
+    Task.start_link(fn ->
+      res |> Enum.map(&IO.puts(&1.result))
+    end)
+  end
+
+end
+
 defmodule RAP.Job.Cache.Supervisor do
 
   use ConsumerSupervisor
   require Logger
 
-  def start_link _args do
-    initial_signal = :ok
-    Logger.info "Called Job.Cache.Supervisor.start_link(_)"
-    ConsumerSupervisor.start_link __MODULE__, initial_signal
+  alias RAP.Job.Cache
+
+  def start_link(initial_signal) do
+    ConsumerSupervisor.start_link(__MODULE__, :ok)
   end
-
-  def init(initial_signal) do
-    Logger.info "Called Job.Cache.Supervisor.init (#{inspect initial_signal})"
-
+  
+  def init(:ok) do
     children = [
-      %{
-        id: RAP.Job.Cache,
-        start: { RAP.Job.Cache, :start_link, [] },
-        restart: :transient
-      }
-    ]
-    opts = [
-      strategy: :one_for_one,
-      subscribe_to: [{ RAP.Job.Runner, min_demand: 0, max_demand: 1 }]
+      worker(Cache, [], restart: :temporary)
     ]
 
-    ConsumerSupervisor.init children, opts
+    {
+      :ok, children, strategy: :one_for_one,
+      subscribe_to: [{ RAP.Job.Runner, min_demand: 0, max_demand: 1 }]
+    }
   end
 
 end
