@@ -1,12 +1,24 @@
 defmodule RAP.Storage do
+  @moduledoc """
+  This module really serves as 'plumbing' to name state and to store
+  results. The named struct is purposefully near-identical to the table
+  in the mnesia cache row because it should hold state and let us call
+  this immediately prior to injecting them into the cache.
+
+  There is a slight complication of different data formats for some of
+  these fields (e.g. LinkML YAML schemata vs turtle equivalent). Make it
+  work for one and then extend it.
+  """
   
   use Amnesia
 
   alias RAP.Job.Runner
-  
+
+  defstruct [ :uuid, :resource_file, :resource_schema, :job_manifest ]
+
   defdatabase DB do
     deftable Job, [:uuid, :resource_file, :resource_schema, :job_manifest, :job_results], type: :bag
-  end
+  end 
 end
 
 defmodule RAP.Storage.Transactions do
@@ -19,10 +31,10 @@ defmodule RAP.Storage.Transactions do
     Amnesia.transaction do
       %RAP.Storage.DB.Job{
 	uuid:            uuid,
-	resource_file:   "#{uuid}_#{fp}",
-	resource_schema: "#{uuid}_#{schema}",
-	job_manifest:    "#{uuid}_#{manifest}",
-	job_results:     results}
+	resource_file:   fp,
+	resource_schema: schema,
+	job_manifest:    manifest,
+	job_results:     results }
       |> RAP.Storage.DB.Job.write()
     end
   end

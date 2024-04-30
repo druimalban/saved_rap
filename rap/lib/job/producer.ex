@@ -75,22 +75,24 @@ defmodule RAP.Job.Producer do
     |> File.ls()
     |> elem(1)
     |> Enum.map(fn(dir) -> {dir, File.stat("/etc" <> "/" <> dir)} end)
-    |> Enum.filter(fn ({_, {:ok, %File.Stat{type: type}}}) -> type == :directory end)
+    |> Enum.filter(fn ({_, {:ok, %File.Stat{type: type}}}) -> type == :dir end)
     |> Enum.map(&elem &1, 0)
   end
   
   def watch_gcp(bucket_name) do
+    Logger.info("Call `Producer.watch_gcp (bucket: #{bucket_name})'")
     with {:ok, token} <- Goth.Token.for_scope(@scope),
 	 session      <- GcpConn.new(token.token)
-    do
+      do
       initial_ts = DateTime.utc_now() |> DateTime.to_unix()
-      monitor_session(session, bucket_name, initial_ts)
+      monitor_session(session, bucket_name, initial_ts, initial: true)
     else
       :error -> {:error, "Cannot obtain token"}
     end
   end
 
   def features_helper(%GcpObj{} = obj) do
+    Logger.info "Called `features_helper' on object #{obj.name}"
      %{id:         obj.id,
        bucket:     obj.bucket,
        md5:        obj.md5Hash,
@@ -114,11 +116,14 @@ defmodule RAP.Job.Producer do
   files.
   """
   def uuid_helper(gcp_object) do
+    Logger.info "Called `uuid_helper' on object #{gcp_object.name}"
     with [owner, _date, uuid, res | k] <- String.split(gcp_object.name, "/"),
 	 is_directory <- length(k) > 0
     do
-      gcp_object |>
-      Map.merge(%{owner: owner, uuid: uuid, file: res, dir: is_directory})
+      gcp_object
+      |> Map.merge(
+	%{owner: owner, uuid: uuid, file: res, dir: is_directory}
+      )
     else
       [x] -> {:error, gcp_object}
     end
@@ -140,23 +145,29 @@ defmodule RAP.Job.Producer do
   which will check the UUIDs against 1. completed jobs (an mnesia
   database) and 2. jobs, if any, currently running.
   """
-  def monitor_session(session, bucket_name, ts) do
+  def monitor_session(session, bucket_name, ts, initial \\ false) do
+    if initial do
+      Logger.info "Initial call to monitor_session (_session, bucket: #{bucket_name}, time stamp: #{inspect ts})"
+    end
     curr_ts = DateTime.utc_now() |> DateTime.to_unix
-    if (curr_ts - ts) > 300 do
-      with {:ok, %GcpObjs{items: objects}} <- GcpReqObjs.storage_objects_list(session, bucket_name) do
+    if (curr_ts - ts) < 300 and !initial do
+      monitor_session(session, bucket_name, ts)
+    else
+      with {:ok, %GcpObjs{items: objects}} <- GcpReqObjs.storage_objects_list(session, bucket_name)
+      do
 	objects
 	|> Enum.map(&features_helper/1)
-	|> Enum.map(&uuid_helper)
-	|> then(GenStage.cast(__MODULE__, {:check_then_run, &1}))
+	|> Enum.map(&uuid_helper/1)
+	|> then(&GenStage.cast(__MODULE__, {:check_then_run, &1}))
+	
+	new_ts = DateTime.utc_now() |> DateTime.to_unix
+	monitor_session(session, bucket_name, new_ts)
       else
 	{:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
+	  Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
 	  {:error, uri, code, msg}
       end
-      # We have no idea how long this will take so renew current
-      new_ts = DateTime.utc_now() |> DateTime.to_unix
-      monitor_session(session, bucket_name, new_ts)
     end
-    monitor_session(session, bucket_name, ts)
   end
   
 #  defp extract_gcp_object(gcp_object) do
@@ -175,8 +186,8 @@ defmodule RAP.Job.Producer do
   
   defp ets_feasible?(uuid) do
     case :ets.lookup(:uuid, uuid) do
-      nil -> true
-      _   ->
+      [] -> true
+      _  ->
 	Logger.info("Found job UUID #{uuid} is running!")
 	false
     end
@@ -212,17 +223,27 @@ defmodule RAP.Job.Producer do
   the only normalisation that need take place, because as it currently
   stands, the manifest refers to all of the dependent files.
   """
-  def handle_cast({:check_then_run, objs}) do
+  def handle_cast({:check_then_run, objs}, state) do
+    Logger.info "Received cast :check_then_run"
     uncached_jobs = objs
     |> Enum.map(& &1.uuid)
     |> Enum.uniq()
     |> Enum.filter(&Transactions.feasible?/1)
     |> Enum.filter(&ets_feasible?/1)
     
-    grouped_objs = objs
+    grouped_file_objs = objs
+    |> Enum.filter(&  !&1.dir)
     |> Enum.group_by(& &1.uuid)
+
+    show_obj_tiny = fn(uuid) ->
+      fps = grouped_file_objs |> Map.get(uuid) 
+      Logger.info "#{uuid} => #{inspect fps}"
+    end
     
-    {:noreply, non_running_jobs, state}
+    #grouped_file_objs |> Enum.each(&show_obj_tiny.(&1))
+    uncached_jobs |> Enum.each(show_obj_tiny)
+    
+    {:noreply, [], state}
   end
 
   def handle_cast({:storage_changed, str_invocation}, state) do
@@ -230,8 +251,6 @@ defmodule RAP.Job.Producer do
     { :noreply, [str_invocation], state }
   end
 
-  
-  
   @doc """
   Generic helper function which sends the :try_jobs signal. This is
   a place-holder which lets us manually trigger a job, since the aim is
