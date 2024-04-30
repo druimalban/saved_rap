@@ -11,6 +11,12 @@ defmodule RAP.Job.Spec do
   
 end
 
+defmodule RAP.Job.Staging do
+
+  defstruct [ :signal, :variable, :label, :target ]
+  
+end
+
 defmodule RAP.Job.Producer do
   @moduledoc """
   This is the producer stage of the RAP, which, given a turtle manifest
@@ -22,33 +28,210 @@ defmodule RAP.Job.Producer do
 
   It is possible that there will be no jobs possible, probably because
   the manifest is ill-formed.
-  """  
+  """
+  alias RAP.Storage.Transactions
   alias RAP.Vocabulary.SAVED
   alias RAP.Manifest.{TableDesc, ColumnDesc, JobDesc, ManifestDesc}
+  alias RAP.Job.{Producer, Spec, Staging}
+
+  alias GoogleApi.Storage.V1.Connection,    as: GcpConn
+  alias GoogleApi.Storage.V1.Model.Object,  as: GcpObj
+  alias GoogleApi.Storage.V1.Model.Objects, as: GcpObjs
+  alias GoogleApi.Storage.V1.Api.Objects,   as: GcpReqObjs
   
   use GenStage
   require Logger
 
+  import :timer, only: [ sleep: 1 ]
+
   defstruct [ :title, :description, :staging_jobs ]
+  @scope "https://www.googleapis.com/auth/cloud-platform"
   
-  def start_link initial_state do
-    Logger.info "Called Job.Producer.start_link (initial_state = #{inspect initial_state})"
-    GenStage.start_link __MODULE__, initial_state, name: __MODULE__
+  def start_link initial_ts do
+    Logger.info "Called Job.Producer.start_link (initial_ts = #{inspect initial_ts})"
+    GenStage.start_link __MODULE__, initial_ts, name: __MODULE__
   end
 
-  def init initial_state do
-    Logger.info "Called Job.Producer.init (initial_state = #{inspect initial_state})"
-    { :producer, initial_state }
+  def init initial_ts do
+    Logger.info "Called Job.Producer.init (initial_ts = #{inspect initial_ts})"
+    :ets.new(:uuid, [:set, :public, :named_table])
+    { :producer, initial_ts }
   end
   
-  def handle_demand demand, state do
+  def handle_demand demand, ts do
     insd = inspect demand
-    inss = inspect state
+    inss = inspect ts
     events = []
     Logger.info "Called Job.Producer.handle_demand (demand = #{insd}, state = #{inss})"
-    { :noreply, events, state }
+    { :noreply, events, ts }
   end
 
+  @doc """
+  Given a directory, check for sub-directories which will have UUIDs
+  This is primarily useful if we're monitoring local storage.
+  """
+  def get_local_uuids(directory) do
+    directory
+    |> File.ls()
+    |> elem(1)
+    |> Enum.map(fn(dir) -> {dir, File.stat("/etc" <> "/" <> dir)} end)
+    |> Enum.filter(fn ({_, {:ok, %File.Stat{type: type}}}) -> type == :directory end)
+    |> Enum.map(&elem &1, 0)
+  end
+  
+  def watch_gcp(bucket_name) do
+    with {:ok, token} <- Goth.Token.for_scope(@scope),
+	 session      <- GcpConn.new(token.token)
+    do
+      initial_ts = DateTime.utc_now() |> DateTime.to_unix()
+      monitor_session(session, bucket_name, initial_ts)
+    else
+      :error -> {:error, "Cannot obtain token"}
+    end
+  end
+
+  def features_helper(%GcpObj{} = obj) do
+     %{id:         obj.id,
+       bucket:     obj.bucket,
+       md5:        obj.md5Hash,
+       uri_media:  obj.mediaLink,
+       uri_self:   obj.selfLink,
+       ts_created: obj.timeCreated,
+       ts_updated: obj.updated,
+       mime_type:  obj.contentType,
+       name:       obj.name       }
+  end
+
+  @doc """
+  Given an object returned by GCP, the files of which are uploaded in the
+  following format, extract the useful parts from this well-known
+  object name.
+
+  The flat objects' names should be a string in the form
+  `<owner>/<yyyymmdd>/<uuid>/<file>', with or without a trailing slash.
+  The trailing slash conveniently tells us that it's a directory; objects
+  have `text/plain' for directories, `application/octet_stream' for empty
+  files.
+  """
+  def uuid_helper(gcp_object) do
+    with [owner, _date, uuid, res | k] <- String.split(gcp_object.name, "/"),
+	 is_directory <- length(k) > 0
+    do
+      gcp_object |>
+      Map.merge(%{owner: owner, uuid: uuid, file: res, dir: is_directory})
+    else
+      [x] -> {:error, gcp_object}
+    end
+  end
+
+  @doc """
+  Monitors the GCP objects every five minutes.
+
+  The Google GCP buckets have a fake directory structure: they're by
+  default stored in this flat object-based structure which the web
+  interface hides.
+
+  The API has several 'Folder' and 'ManagedFolder' functions but these
+  only work on buckets which have a 'hierarchical' namespace, and the
+  documentation is so bad that there does not appear to be a way to set
+  this on the web interface.
+
+  If the request is successful, cast to the check_then_run function
+  which will check the UUIDs against 1. completed jobs (an mnesia
+  database) and 2. jobs, if any, currently running.
+  """
+  def monitor_session(session, bucket_name, ts) do
+    curr_ts = DateTime.utc_now() |> DateTime.to_unix
+    if (curr_ts - ts) > 300 do
+      with {:ok, %GcpObjs{items: objects}} <- GcpReqObjs.storage_objects_list(session, bucket_name) do
+	objects
+	|> Enum.map(&features_helper/1)
+	|> Enum.map(&uuid_helper)
+	|> then(GenStage.cast(__MODULE__, {:check_then_run, &1}))
+      else
+	{:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
+	  {:error, uri, code, msg}
+      end
+      # We have no idea how long this will take so renew current
+      new_ts = DateTime.utc_now() |> DateTime.to_unix
+      monitor_session(session, bucket_name, new_ts)
+    end
+    monitor_session(session, bucket_name, ts)
+  end
+  
+#  defp extract_gcp_object(gcp_object) do
+#    acc_pattern  = "[A-z]|[0-9]+"
+#    date_pattern = "[0-9]{8}"
+#    uuid_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+#    atom_pattern = "[A-z]+[[0-9]|[A-z]|_|\.]*"
+#    string_regex = "^(#{acc_pattern})\/(#{date_pattern})\/(#{uuid_pattern})\/(#{atom_pattern})$"
+#    actual_regex = ~r"#{string_regex}"
+#
+#    case Regex.run(actual_regex, gcp_object.name) do
+#      [orig, owner, date, uuid, resource] -> {:ok, owner, date, uuid, resource, gcp_object.created}
+#      nil -> {:error, :invalid_gcp_object}
+#    end
+#  end
+  
+  defp ets_feasible?(uuid) do
+    case :ets.lookup(:uuid, uuid) do
+      nil -> true
+      _   ->
+	Logger.info("Found job UUID #{uuid} is running!")
+	false
+    end
+  end
+
+  # Group into enum:
+  # |> Enum.group_by(&(&1.uuid))
+  #
+  @doc """
+  There are two elements of this. Firstly, we have a notion of UUIDs
+  which have been cached. There is a single row per UUID because the UUID
+  has a notion of a job, or collection of jobs. Secondly, we have a
+  notion of files, and it is expected that there would be many different
+  files associated with an UUID.
+
+  The most efficient way to check which jobs are feasible is to summarise
+  the list of objects into unique UUIDs. This is just a map to extract
+  the UUIDs then run `Enum.uniq/2'. We then filter these unique UUIDs
+  using `Transactions.feasible/1' and `ets_feasible/1', which produce a
+  set of jobs which are neither cached (finished) nor currently running
+  (in Erlang term storage ~ `:ets').
+
+  We further group all objects provided by UUID. For each UUID which made
+  it out of the filtering, use this as the key to lookup the collection
+  of files associated with the UUID.
+
+  There are certain well-founded assumptions which are governed by the
+  functionality of `fisdat' and/or `fisup'. Firstly, there is at most one
+  manifest per UUID, because that's the single file we fed into `fisup'
+  in order to upload the files (and a unique UUID is created per
+  invocation of `fisup'). Secondly, the `fisup' program will have
+  normalised the name of the manifest to `manifest.ttl'. Indeed, this is
+  the only normalisation that need take place, because as it currently
+  stands, the manifest refers to all of the dependent files.
+  """
+  def handle_cast({:check_then_run, objs}) do
+    uncached_jobs = objs
+    |> Enum.map(& &1.uuid)
+    |> Enum.uniq()
+    |> Enum.filter(&Transactions.feasible?/1)
+    |> Enum.filter(&ets_feasible?/1)
+    
+    grouped_objs = objs
+    |> Enum.group_by(& &1.uuid)
+    
+    {:noreply, non_running_jobs, state}
+  end
+
+  def handle_cast({:storage_changed, str_invocation}, state) do
+    Logger.info "Received fake :storage_changed signal for #{str_invocation}"
+    { :noreply, [str_invocation], state }
+  end
+
+  
+  
   @doc """
   Generic helper function which sends the :try_jobs signal. This is
   a place-holder which lets us manually trigger a job, since the aim is
@@ -113,20 +296,21 @@ defmodule RAP.Job.Producer do
       target_iri == tab.__id__
     end)
     case target_table do
-      nil -> { :invalid_table, var, label, target_iri   }
-      tab -> { :valid_table,   var, label, target_table }
+      nil -> %Staging{ signal: :invalid_table, variable: var, label: label, target: target_iri   }
+      tab -> %Staging{ signal: :valid_table,   variable: var, label: label, target: target_table }
     end
   end
 
-  defp sort_scope({:valid_table,   _, _, _}, {:invalid_table, _, _, _}), do: true
-  defp sort_scope({:invalid_table, _, _, _}, {:valid_table,   _, _, _}), do: false
-  defp sort_scope({_, var0, _, _}, {_, var1, _, _}), do: var0 < var1
+  def sort_scope(%Staging{signal: :valid_table}, %Staging{signal: :invalid_table}), do: true
+  def sort_scope(%Staging{signal: :invalid_table}, %Staging{signal: :valid_table}), do: false
+  def sort_scope(%Staging{variable: var0}, %Staging{variable: var1}), do: var0 < var1
+
   defp job_scope_against_tables(base_iri_text, tables, job) do
     run_scope = fn (src) -> src
       |> Enum.map(&compare_table_call(base_iri_text, tables, &1))
       |> Enum.sort(&sort_scope/2)
     end   
-    %RAP.Job.Spec{
+    %Spec{
       title:             job.title,
       description:       job.description,
       type:              job.job_type,
@@ -139,7 +323,7 @@ defmodule RAP.Job.Producer do
   def generate_jobs(base_iri_text, %ManifestDesc{} = manifest) do
     processed_jobs = manifest.jobs
     |> Enum.map(&job_scope_against_tables(base_iri_text, manifest.tables, &1))
-    %RAP.Job.Producer{
+    %Producer{
       title:        manifest.title,
       description:  manifest.description,
       staging_jobs: processed_jobs

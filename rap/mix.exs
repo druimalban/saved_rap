@@ -22,8 +22,10 @@ defmodule RAP.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:amnesia,             "~> 0.2.8"},
       { :gen_stage,          "~> 1.2"  },
       { :google_api_storage, "~> 0.37" },
+      { :goth,               "~> 1.4"  },
       { :grax,               "~> 0.4"  },
       { :math,               "~> 0.7"  },
       { :rdf,                "~> 1.2"  }

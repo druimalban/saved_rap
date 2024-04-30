@@ -108,6 +108,16 @@ defmodule RAP.Vocabulary do
   model. Answering this is probably pertinent to deciding how to define
   the equivalent Grax schema/struct into which our RDF job manifests are
   loaded/injected.
+  """
+  defvocab SAVED,
+    base_iri: "http://marine.gov.scot/metadata/saved/schema/",
+    file: "saved.nt",
+    case_violations: :ignore,
+    terms: {RAP.TermHandler, :sub_special, [:variant1]},
+    strict: true
+
+  @vocabdoc """
+  SAVED data-model: RAP-specific namespace
 
   Unsetting the `strict' element of the vocabulary avoids having to
   define arbitary instances of the manifest description, and the tables
@@ -119,11 +129,9 @@ defmodule RAP.Vocabulary do
   I suspect our use-case is fairly unusual, so ignore this for now, while
   keeping it in mind, as this is really at the stage proof-of-concept.
   """
-  defvocab SAVED,
-    base_iri: "http://localhost/saved/",
-    file: "saved.nt",
-    case_violations: :ignore,
-    terms: {RAP.TermHandler, :sub_special, [:variant1]},
+  defvocab RAP,
+    base_iri: "http://marine.gov.scot/metadata/saved/rap/",
+    terms: [:RootManifest],
     strict: false
 
 end

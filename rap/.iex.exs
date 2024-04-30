@@ -24,9 +24,8 @@ base_iri = "http://localhost/saved/"
 
 alias RDF.Graph
 import RDF.Sigils
-alias RAP.Vocabulary.SAVED
 alias RAP.Manifest.{ManifestDesc,SourceDesc,TableDesc,JobDesc,Plumbing}
 alias RAP.Job.{Producer,Runner}
 
-{:ok, graph} = RDF.Turtle.read_file "manual_test/manifest7.ttl"
-{:ok, egret} = Grax.load graph, SAVED.RootManifest, ManifestDesc
+#{:ok, graph} = RDF.Turtle.read_file "manual_test/manifest7.ttl"
+#{:ok, egret} = Grax.load graph, SAVED.RootManifest, ManifestDesc

@@ -1,705 +1,752 @@
-<http://localhost/saved/boolean> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/path> <http://purl.org/dc/terms/description> "Path or URI" .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/column_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_collected> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/any_of> _:N5ed4410014684127a06e8a9dc96dec96 .
-<http://localhost/saved/atomic_name> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/title> <http://purl.org/dc/terms/description> "A concise human-readable display label for the element. The title should mirror the name, and should use ordinary textual punctuation." .
-<http://localhost/saved/tables> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/job_scope_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/job_type> .
-<http://localhost/saved/global_coordinate_system> <http://purl.org/dc/terms/description> "Global coordinate system (GCS) reference point of origin" .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/date> .
-<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/count_fish_collected> .
-<http://localhost/saved/meta> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SchemaDefinition> .
-<http://localhost/saved/date> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_species_common> .
-<http://localhost/saved/nodeidentifier> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/date_or_datetime> <http://localhost/saved/base> "str" .
-<http://localhost/saved/tables> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/tables> .
-<http://localhost/saved/hash> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/hash> .
-<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/datetime> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/DateTime> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
-<http://localhost/saved/date_or_datetime> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/scope> <http://purl.org/dc/terms/description> "A collection of column descriptions" .
-<http://localhost/saved/date_or_datetime> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/is_a> <http://localhost/saved/scope> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/variable> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/northing> <http://purl.org/dc/terms/description> "'X'-positional data relative to point of origin" .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/any_of> _:N0f5212f8d9974777a66fb901b7b4c403 .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/title> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/title> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/series> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/latitude> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/jobs> .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/description> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date\"." .
-<http://localhost/saved/LatLonType> <http://localhost/saved/base> "str" .
-<http://localhost/saved/double> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/integer> <http://purl.org/dc/terms/description> "An integer" .
-<http://localhost/saved/description> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_af_average> .
-<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/jobs> <http://purl.org/dc/terms/description> "Specification of operations to run on resources and schemas provided" .
-<http://localhost/saved/northing> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/depth> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/depth> .
-<http://localhost/saved/uri> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/latitude> <http://purl.org/dc/terms/description> "Latitude" .
-<http://localhost/saved/uri> <http://localhost/saved/imported_from> "linkml:types" .
-_:Nd9e2471a5f844bff9c0b94d2de99812e <http://www.w3.org/ns/shacl#prefix> "linkml" .
-<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Integer> .
-<http://localhost/saved/ManifestDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
-<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/uriorcurie> .
-<http://localhost/saved/LatLonType> <http://localhost/saved/pattern> "[0-9]+o [0-9]+.[0-9]+[N|W]" .
-<http://localhost/saved/local_version> <http://purl.org/dc/terms/description> "Version number of local submission utility" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/global_coordinate_system> .
-<http://localhost/saved/nodeidentifier> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/JobDesc> <http://purl.org/dc/terms/description> "Job manifest: job specification attributes which specific job sub-classes inherit" .
-<http://localhost/saved/variable> <https://w3id.org/linkml/owner> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/global_coordinate_system> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/integer> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/time> <http://purl.org/dc/terms/description> "A time object represents a (local) time of day, independent of any particular day" .
-<http://localhost/saved/boolean> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/double> <http://purl.org/dc/terms/description> "A real number that conforms to the xsd:double specification" .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/date_or_datetime> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/datetime> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_length> .
-<http://localhost/saved/column_modelled> <http://purl.org/dc/terms/description> "Column describes modelled data" .
-<http://localhost/saved/ColumnDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/table> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/northing> .
-<http://localhost/saved/lice_density_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/sparqlpath> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Sparqlpath> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/core> .
-<http://localhost/saved/nodeidentifier> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"nodeidentifier\"." .
-<http://localhost/saved/job_scope_modelled> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_density_collected> .
-<http://localhost/saved/easting> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/lice_af_average> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/easting> <http://purl.org/dc/terms/description> "'Y'-positional data relative to point of origin" .
-<http://localhost/saved/tables> <https://w3id.org/linkml/range> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/range> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/site_name> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/site_name> .
-<http://localhost/saved/northing> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/northing> .
-<http://localhost/saved/fish_length> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_length> .
-<http://localhost/saved/northing> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/jsonpath> <http://purl.org/dc/terms/description> "A string encoding a JSON Path. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded in tree form." .
-<http://localhost/saved/datetime> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"datetime\"." .
-<http://localhost/saved/description> <http://www.w3.org/2004/02/skos/core#exactMatch> <https://w3id.org/linkml/path> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/local_version> .
-_:Nd9e2471a5f844bff9c0b94d2de99812e <http://www.w3.org/ns/shacl#namespace> <https://w3id.org/linkml/> .
-<http://localhost/saved/site_name> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/range> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/lice_density_collected> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://localhost/saved/lice_density_modelled> .
-<http://localhost/saved/table> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/description> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/description> .
-<http://localhost/saved/easting> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/easting> .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_collected> .
-<http://localhost/saved/double> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/decimal> .
-<http://localhost/saved/objectidentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/time> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/double> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Double> .
-<http://localhost/saved/date> <http://localhost/saved/base> "XSDDate" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/tables> .
-<http://localhost/saved/count_fish_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/jsonpath> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Jsonpath> .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/nodeidentifier> .
-<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/integer> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#integer> .
-<http://localhost/saved/column> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_species_common> .
-<http://localhost/saved/TableDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/uriorcurie> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/job_scope_modelled> .
-<http://localhost/saved/lice_density_collected> <http://purl.org/dc/terms/description> "Sampled lice density (lice per m³)" .
-<http://localhost/saved/LatLonType> <https://w3id.org/linkml/uri> <http://localhost/saved/LatLon> .
-<http://localhost/saved/boolean> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/resource_hash> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/variable> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/schema_path> .
-<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/lice_density_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/column_modelled> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
-<http://localhost/saved/jsonpath> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/longitude> .
-<http://localhost/saved/latitude> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/description> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/description> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/description> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/description> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/scope> .
-<http://localhost/saved/objectidentifier> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/LatLonType> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/LatLonType> .
-<http://localhost/saved/objectidentifier> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Objectidentifier> .
-_:N0f5212f8d9974777a66fb901b7b4c403 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/northing> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
-<http://localhost/saved/series> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/job_scope_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/table> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/table> .
-<http://localhost/saved/lice_af_average> <http://purl.org/dc/terms/description> "Average number of Salmon lice (adult female) per fish" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/double> .
-<http://localhost/saved/time> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#time> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/is_a> <http://localhost/saved/path> .
-<http://localhost/saved/longitude> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/nodeidentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#note> "in non-RDF serializations MAY be serialized as the compact representation" .
-<http://localhost/saved/column> <https://w3id.org/linkml/owner> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/column> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/range> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/is_a> <http://localhost/saved/scope> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_path> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/ColumnDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/column> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/variable> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/date_or_datetime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/title> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/time> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Time> .
-<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_density_collected> .
-<http://localhost/saved/site_id> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/is_a> <http://localhost/saved/hash> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/hash> .
-<http://localhost/saved/depth> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/depth> .
-<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Text> .
-_:N3e51efc4914c4a8e990ce1c176a0e2f6 <http://www.w3.org/ns/shacl#prefix> "saved" .
-<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/TableDesc> <http://purl.org/dc/terms/description> "Job manifest: data source descriptive attributes" .
-<http://localhost/saved/easting> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/uriorcurie> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/string> <http://purl.org/dc/terms/description> "A character string" .
-<http://localhost/saved/time> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/site_id> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/gcp_source> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/uri> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/uri> <http://purl.org/dc/terms/conformsTo> "https://www.ietf.org/rfc/rfc3987.txt" .
-<http://localhost/saved/objectidentifier> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/tables> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_af_total> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/double> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#double> .
-<http://localhost/saved/uri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/lice_af_total> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/LatLonType> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/depth> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/site_id> .
-<http://localhost/saved/series> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/site_id> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/site_id> .
-<http://localhost/saved/title> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/national_grid_reference> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/hash> <http://www.w3.org/2004/02/skos/core#exactMatch> <https://w3id.org/linkml/hash> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/descriptive> .
-<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/uriorcurie> <http://localhost/saved/base> "URIorCURIE" .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/job_scope_collected> .
-<http://localhost/saved/ncname> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"ncname\"." .
-<http://localhost/saved/gcp_source> <http://purl.org/dc/terms/description> "GCP account of the generator of the manifest" .
-<http://localhost/saved/local_version> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://purl.org/pav/version> .
-<http://localhost/saved/easting> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/easting> .
-<http://localhost/saved/column_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/latitude> .
-<http://localhost/saved/column_modelled> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_modelled> .
-<http://localhost/saved/job_scope_collected> <http://purl.org/dc/terms/description> "A collection of column descriptions which are collected or sampled" .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/schema_path> .
-<http://localhost/saved/uriorcurie> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Uriorcurie> .
-<http://localhost/saved/datetime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/time> <http://localhost/saved/base> "XSDTime" .
-<http://localhost/saved/decimal> <http://localhost/saved/base> "Decimal" .
-<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/lice_af_total> .
-<http://localhost/saved/ColumnDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/site_name> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/job_type> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/date> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Date> .
-<http://localhost/saved/resource_hash> <http://purl.org/dc/terms/description> "Checksum of resource" .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/jobs> .
-<http://localhost/saved/count_fish_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/string> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/resource_path> .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/hash> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/northing> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/column> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/job_scope_modelled> .
-<http://localhost/saved/column_collected> <http://purl.org/dc/terms/description> "Column describes collected data" .
-<http://localhost/saved/variable> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/variable> .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/job_scope_descriptive> .
-<http://localhost/saved/float> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Float> .
-<http://localhost/saved/jsonpath> <http://localhost/saved/imported_from> "linkml:types" .
-_:N3b4d8e1dc1fb498cab00991a55825838 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/series> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/series> .
-<http://localhost/saved/path> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/path> .
-<http://localhost/saved/curie> <http://purl.org/dc/terms/conformsTo> "https://www.w3.org/TR/curie/" .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slot_usage> _:N394be4297bc946f5936f1bf9e2927dd8 .
-<http://localhost/saved/count_fish_collected> <http://purl.org/dc/terms/description> "Sampled number of fish in the farm" .
-<http://localhost/saved/path> <https://w3id.org/linkml/range> <http://localhost/saved/uriorcurie> .
-<http://localhost/saved/global_coordinate_system> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/objectidentifier> <http://purl.org/dc/terms/description> "A URI or CURIE that represents an object in the model." .
-<http://localhost/saved/jsonpointer> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpointer\"." .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/easting> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/cage_id> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/any_of> _:N30cb3b023685494c86b4c0126d9e8e74 .
-<http://localhost/saved/jobs> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_hash> .
-<http://localhost/saved/lice_af_total> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/tables> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#note> "Used for inheritance and type checking" .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/range> <http://localhost/saved/uriorcurie> .
-<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/column_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
-<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"float\"." .
-<http://localhost/saved/ColumnDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"boolean\"." .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/jsonpointer> <http://localhost/saved/base> "str" .
-<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/fish_mass> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_mass> .
-<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/uriorcurie> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/double> <http://localhost/saved/base> "float" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/meta> <http://www.w3.org/ns/shacl#declare> _:Nd9e2471a5f844bff9c0b94d2de99812e .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/float> .
-<http://localhost/saved/resource_path> <http://purl.org/dc/terms/description> "Path or URI of resource" .
-<http://localhost/saved/column> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/source_file_date> "2024-04-15T19:03:45"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-<http://localhost/saved/jsonpointer> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/sparqlpath> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/description> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/local_version> .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/datetime> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/jsonpointer> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/boolean> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Boolean> .
-<http://localhost/saved/uriorcurie> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#anyURI> .
-<http://localhost/saved/series> <http://purl.org/dc/terms/description> "Data series to which a given observation belongs" .
-<http://localhost/saved/path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/tables> <http://purl.org/dc/terms/description> "Specification of mappings between resources and schemas, as well as columns or dimensions to bring into into scope" .
-<http://localhost/saved/column_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column_collected> .
-<http://localhost/saved/jsonpath> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/integer> <http://localhost/saved/base> "int" .
-_:N5ed4410014684127a06e8a9dc96dec96 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/depth> .
-<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/global_coordinate_system> .
-<http://localhost/saved/column_descriptive> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/string> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/ColumnDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/local_version> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/title> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/title> .
-<http://localhost/saved/curie> <http://purl.org/dc/terms/description> "a compact URI" .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/schema_path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/ColumnDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/variable> .
-<http://localhost/saved/column> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/integer> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/is_a> <http://localhost/saved/path> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/site_name> .
-<http://localhost/saved/fish_species_common> <http://purl.org/dc/terms/description> "Common name of species sampled" .
-<http://localhost/saved/date_or_datetime> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/DateOrDatetime> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/job_scope_collected> .
-<http://localhost/saved/fish_mass> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/modelled> .
-_:N59302d1b94bb49c98f3ba75debdb1e90 <https://w3id.org/linkml/range> <http://localhost/saved/LatLonType> .
-<http://localhost/saved/title> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/date_or_datetime> .
-<http://localhost/saved/JobDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/job_scope_descriptive> .
-<http://localhost/saved/count_fish_collected> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://localhost/saved/count_fish_interpolated> .
-<http://localhost/saved/jsonpath> <http://localhost/saved/base> "str" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/series> .
-<http://localhost/saved/table> <http://localhost/saved/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/gcp_source> .
-<http://localhost/saved/description> <http://purl.org/dc/terms/description> "Human-readable description of the information" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_mass> .
-<http://localhost/saved/depth> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/boolean> .
-<http://localhost/saved/curie> <http://localhost/saved/base> "Curie" .
-<http://localhost/saved/depth> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/source_file_size> "294"^^<http://www.w3.org/2001/XMLSchema#integer> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/jobs> .
-<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/job_type> .
-<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/count_fish_collected> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/job> .
-<http://localhost/saved/site_name> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/datetime> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/jsonpointer> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/site_id> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/description> .
-<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"integer\"." .
-<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/jsonpath> <http://purl.org/dc/terms/conformsTo> "https://www.ietf.org/archive/id/draft-goessner-dispatch-jsonpath-00.html" .
-<http://localhost/saved/job_type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/national_grid_reference> .
-<http://localhost/saved/atomic_name> <http://localhost/saved/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
-<http://localhost/saved/decimal> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/jsonpath> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/fish_mass> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/date> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#date> .
-<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_af_total> .
-<http://localhost/saved/scope> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/uriorcurie> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/tables> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/tables> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/scope> .
-<http://localhost/saved/hash> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/hash> .
-<http://localhost/saved/datetime> <http://purl.org/dc/terms/description> "The combination of a date and time" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/jsonpath> .
-<http://localhost/saved/lice_af_average> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/lice_af_average> .
-<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
-_:N0f5212f8d9974777a66fb901b7b4c403 <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/ColumnDesc> <https://w3id.org/linkml/slot_usage> _:N15a903531c1a4ab48f5770c624f1e560 .
-<http://localhost/saved/meta> <http://localhost/saved/emit_prefixes> "saved" .
-<http://localhost/saved/easting> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
-<http://localhost/saved/meta> <http://localhost/saved/metamodel_version> "1.7.0" .
-<http://localhost/saved/jobs> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/cage_id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/float> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#float> .
-<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://purl.org/dc/elements/1.1/identifier> .
-<http://localhost/saved/job_type> <http://purl.org/dc/terms/description> "Short job type" .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/decimal> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#decimal> .
-<http://localhost/saved/ncname> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Ncname> .
-<http://localhost/saved/fish_species_common> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/fish_species_scientific> .
-<http://localhost/saved/float> <http://purl.org/dc/terms/description> "A real number that conforms to the xsd:float specification" .
-<http://localhost/saved/depth> <http://purl.org/dc/terms/description> "Depth in metres" .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/sparqlpath> <http://purl.org/dc/terms/description> "A string encoding a SPARQL Property Path. The value of the string MUST conform to SPARQL syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded as RDF." .
-<http://localhost/saved/column_modelled> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/decimal> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/schema_path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-_:N3b4d8e1dc1fb498cab00991a55825838 <https://w3id.org/linkml/range> <http://localhost/saved/LatLonType> .
-<http://localhost/saved/uri> <http://localhost/saved/base> "URI" .
-<http://localhost/saved/jsonpointer> <http://purl.org/dc/terms/conformsTo> "https://datatracker.ietf.org/doc/html/rfc6901" .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/nodeidentifier> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Nodeidentifier> .
-<http://localhost/saved/jsonpointer> <http://purl.org/dc/terms/description> "A string encoding a JSON Pointer. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to a valid object within the current instance document when encoded in tree form." .
-<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_species_scientific> .
-<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"curie\"." .
-<http://localhost/saved/jsonpath> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpath\"." .
-<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#note> "in RDF serializations a slot with range of uri is treated as a literal or type xsd:anyURI unless it is an identifier or a reference to an identifier, in which case it is translated directly to a node" .
-<http://localhost/saved/string> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/boolean> <http://localhost/saved/repr> "bool" .
-<http://localhost/saved/site_name> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/boolean> <http://purl.org/dc/terms/description> "A binary (true or false) value" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <http://localhost/saved/collected> .
-<http://localhost/saved/ManifestDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_density_collected> .
-<http://localhost/saved/jsonpath> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/integer> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Integer> .
-<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#closeMatch> <http://schema.org/Float> .
-<http://localhost/saved/gcp_source> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"decimal\"." .
-<http://localhost/saved/jsonpointer> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/sparqlpath> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"sparqlpath\"." .
-<http://localhost/saved/fish_length> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-_:N59302d1b94bb49c98f3ba75debdb1e90 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/fish_species_scientific> <http://purl.org/dc/terms/description> "Scientific name of species sampled" .
-<http://localhost/saved/path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/fish_mass> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/any_of> _:N309348581b02415690d49620192bf553 .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/datetime> .
-<http://localhost/saved/title> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/title> .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/local_version> .
-_:N309348581b02415690d49620192bf553 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/job_scope_descriptive> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/range> <http://localhost/saved/uriorcurie> .
-<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/job_scope_descriptive> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/fish_length> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/uriorcurie> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uriorcurie\"." .
-<http://localhost/saved/date_or_datetime> <https://w3id.org/linkml/uri> <https://w3id.org/linkml/DateOrDatetime> .
-<http://localhost/saved/date_or_datetime> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date_or_datetime\"." .
-<http://localhost/saved/jsonpointer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/time> .
-<http://localhost/saved/sparqlpath> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/local_version> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/objectidentifier> <http://localhost/saved/base> "ElementIdentifier" .
-<http://localhost/saved/sparqlpath> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/depth> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/northing> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/northing> .
-<http://localhost/saved/string> <http://localhost/saved/base> "str" .
-<http://localhost/saved/datetime> <http://localhost/saved/base> "XSDDateTime" .
-<http://localhost/saved/ncname> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Time> .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/default_range> <http://localhost/saved/string> .
-<http://localhost/saved/meta> <http://www.w3.org/ns/shacl#declare> _:N3e51efc4914c4a8e990ce1c176a0e2f6 .
-<http://localhost/saved/meta> <http://localhost/saved/default_prefix> "saved" .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-_:N30cb3b023685494c86b4c0126d9e8e74 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/AnonymousSlotExpression> .
-<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#editorialNote> "URI is dateTime because OWL reasoners don't work with straight date or time" .
-<http://localhost/saved/column> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/column> .
-<http://localhost/saved/scope> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/fish_species_scientific> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/path> <http://www.w3.org/2004/02/skos/core#exactMatch> <https://w3id.org/linkml/path> .
-<http://localhost/saved/local_version> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/string> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/scope> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/sparqlpath> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/tables> .
-<http://localhost/saved/fish_species_scientific> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/fish_species_common> .
-<http://localhost/saved/resource_path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/owner> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/title> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://purl.org/dc/elements/1.1/title> .
-<http://localhost/saved/curie> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/sparqlpath> <http://localhost/saved/base> "str" .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/job_scope_collected> .
-<http://localhost/saved/title> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/curie> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/longitude> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/nodeidentifier> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/TableDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/ClassDefinition> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/job_scope_descriptive> .
-<http://localhost/saved/schema_path> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/schema_path> .
-_:N3e51efc4914c4a8e990ce1c176a0e2f6 <http://www.w3.org/ns/shacl#namespace> <http://localhost/saved/> .
-<http://localhost/saved/uriorcurie> <http://purl.org/dc/terms/description> "a URI or a CURIE" .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/resource_hash> .
-<http://localhost/saved/fish_length> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_length> .
-<http://localhost/saved/national_grid_reference> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-<http://localhost/saved/ncname> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/lice_density_collected> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/float> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/hash> <http://purl.org/dc/terms/description> "Checksum of some file" .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/sparqlpath> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/nodeidentifier> <https://w3id.org/linkml/uri> <http://www.w3.org/ns/shex#nonLiteral> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/datetime> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Datetime> .
-<http://localhost/saved/table> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/ncname> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/job_type> .
-<http://localhost/saved/fish_length> <http://purl.org/dc/terms/description> "Length of fish expressed (mm)" .
-<http://localhost/saved/table> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/range> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/ncname> <http://purl.org/dc/terms/description> "Prefix part of CURIE" .
-<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"time\"." .
-_:N5ed4410014684127a06e8a9dc96dec96 <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/national_grid_reference> <http://purl.org/dc/terms/description> "National grid reference (NGR) point of origin" .
-<http://localhost/saved/column_collected> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/title> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_path> .
-<http://localhost/saved/table> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/table> .
-<http://localhost/saved/meta> <http://localhost/saved/source_file> "meta.yaml" .
-<http://localhost/saved/gcp_source> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/ncname> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/ColumnDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/hash> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/ManifestDesc> <http://purl.org/dc/terms/description> "Job manifest: complete specification" .
-<http://localhost/saved/float> <http://localhost/saved/imported_from> "linkml:types" .
-<http://localhost/saved/uri> <http://purl.org/dc/terms/description> "a complete URI" .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/job_scope_modelled> <http://purl.org/dc/terms/description> "A collection of column descriptions which are modelled or simulated" .
-<http://localhost/saved/tables> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/curie> <http://www.w3.org/2004/02/skos/core#note> "in RDF serializations this MUST be expanded to a URI" .
-<http://localhost/saved/fish_length> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uri\"." .
-<http://localhost/saved/jobs> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/job_scope_descriptive> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/imports> <https://w3id.org/linkml/types> .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/site_id> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/site_id> .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/gcp_source> .
-<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/fish_mass> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/date_or_datetime> <http://purl.org/dc/terms/description> "Either a date or a datetime" .
-<http://localhost/saved/tables> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/longitude> .
-<http://localhost/saved/column_descriptive> <http://purl.org/dc/terms/description> "Column describes data about the world" .
-<http://localhost/saved/curie> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Curie> .
-<http://localhost/saved/fish_mass> <http://purl.org/dc/terms/description> "Weight of fish expressed (g)" .
-<http://localhost/saved/objectidentifier> <https://w3id.org/linkml/uri> <http://www.w3.org/ns/shex#iri> .
-<http://localhost/saved/schema_path> <http://purl.org/dc/terms/description> "Path or URI of schema associated with resource" .
-<http://localhost/saved/job_scope_collected> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/job_scope_collected> .
-<http://localhost/saved/uri> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Uri> .
-<http://localhost/saved/column_modelled> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/meta> <http://purl.org/dc/terms/title> "SAVED meta-model" .
-<http://localhost/saved/variable> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/variable> .
-<http://localhost/saved/date> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Date> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/national_grid_reference> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/schema_path> .
-<http://localhost/saved/jsonpointer> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Jsonpointer> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/ncname> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/date> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/decimal> <http://purl.org/dc/terms/description> "A real number with arbitrary precision that conforms to the xsd:decimal specification" .
-<http://localhost/saved/variable> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/table> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/any_of> _:N3b4d8e1dc1fb498cab00991a55825838 .
-<http://localhost/saved/meta> <http://purl.org/dc/terms/license> "https://creativecommons.org/publicdomain/zero/1.0/" .
-<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_species_common> .
-<http://localhost/saved/fish_species_scientific> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/site_id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/column> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/variable> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/classes> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/lice_af_average> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/jobs> .
-<http://localhost/saved/column_modelled> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/column_modelled> .
-<http://localhost/saved/count_fish_collected> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
-<http://localhost/saved/path> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/path> .
-<http://localhost/saved/time> <http://www.w3.org/2004/02/skos/core#editorialNote> "URI is dateTime because OWL reasoners do not work with straight date or time" .
-<http://localhost/saved/description> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/description> .
-<http://localhost/saved/resource_path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/objectidentifier> .
-<http://localhost/saved/column> <http://purl.org/dc/terms/description> "Column name in table" .
-<http://localhost/saved/uri> <http://www.w3.org/2004/02/skos/core#closeMatch> <http://schema.org/URL> .
-<http://localhost/saved/nodeidentifier> <http://localhost/saved/base> "NodeIdentifier" .
-<http://localhost/saved/ncname> <http://localhost/saved/base> "NCName" .
-<http://localhost/saved/curie> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost/saved/fish_species_common> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_collected> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/table> .
-<http://localhost/saved/job_scope_descriptive> <https://w3id.org/linkml/is_a> <http://localhost/saved/scope> .
-<http://localhost/saved/title> <https://w3id.org/linkml/owner> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/string> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/String> .
-<http://localhost/saved/decimal> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Decimal> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/curie> .
-<http://localhost/saved/sparqlpath> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/cage_id> .
-<http://localhost/saved/column_descriptive> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/job_type> <http://localhost/saved/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
-<http://localhost/saved/atomic_name> <http://purl.org/dc/terms/description> "Short-form name / atom: lower-case, no special characters excepting underscores" .
-<http://localhost/saved/local_version> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/id> <http://localhost/saved/meta/> .
-<http://localhost/saved/float> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Float> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slot_usage> _:N1ad58bdda19f40d3a5be48574b1c373d .
-<http://localhost/saved/latitude> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-_:N309348581b02415690d49620192bf553 <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/cage_id> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/descriptive> .
-_:N30cb3b023685494c86b4c0126d9e8e74 <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/job_type> <https://w3id.org/linkml/domain_of> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/count_fish_collected> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/resource_hash> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/domain_of> <http://localhost/saved/TableDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/generation_date> "2024-04-21T12:50:28"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/fish_species_scientific> .
-<http://localhost/saved/fish_species_common> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/collected/> .
-<http://localhost/saved/lice_af_average> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/job_scope_descriptive> <http://purl.org/dc/terms/description> "A collection of column descriptions which describe something about the world" .
-<http://localhost/saved/integer> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/curie> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/LatLonType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/datetime> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#dateTime> .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/range> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/uri> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#anyURI> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/latitude> .
-<http://localhost/saved/column_descriptive> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/core> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/string> <http://www.w3.org/2004/02/skos/core#editorialNote> "In RDF serializations, a slot with range of string is treated as a literal or type xsd:string.   If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"string\"." .
-<http://localhost/saved/site_name> <http://purl.org/dc/terms/description> "Fish farm station/site local name" .
-<http://localhost/saved/variable> <https://w3id.org/linkml/domain_of> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/hash> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/resource_path> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/resource_path> .
-<http://localhost/saved/lice_af_total> <https://w3id.org/linkml/range> <http://localhost/saved/integer> .
-<http://localhost/saved/sparqlpath> <http://purl.org/dc/terms/conformsTo> "https://www.w3.org/TR/sparql11-query/#propertypaths" .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/atomic_name> .
-<http://localhost/saved/job_scope_modelled> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/job_scope_modelled> .
-<http://localhost/saved/site_id> <http://purl.org/dc/terms/description> "Fish farm station/site global ID" .
-<http://localhost/saved/date> <http://purl.org/dc/terms/description> "a date (year, month and day) in an idealized calendar" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/jsonpointer> .
-<http://localhost/saved/lice_af_total> <http://purl.org/dc/terms/description> "Total number of Salmon lice per fish" .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column_modelled> .
-<http://localhost/saved/site_name> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/site_name> .
-<http://localhost/saved/fish_mass> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/fish_mass> .
-<http://localhost/saved/float> <http://localhost/saved/base> "float" .
-<http://localhost/saved/table> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/series> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/series> .
-<http://localhost/saved/series> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/variable> <http://purl.org/dc/terms/description> "Name of variable underpinning column, specific to the job" .
-<http://localhost/saved/ncname> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/job_scope_modelled> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/slots> <http://localhost/saved/job_type> .
-<http://localhost/saved/LatLonType> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/national_grid_reference> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/national_grid_reference> .
-<http://localhost/saved/time> <http://localhost/saved/repr> "str" .
-<http://localhost/saved/atomic_name> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://localhost/saved/name> .
-<http://localhost/saved/longitude> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/ColumnDesc> <http://purl.org/dc/terms/description> "Job manifest: column scope description and annotations\nThis has three elements:\n  1. The column name\n  2. The table from which the column is or columns are drawn\n  3. The variable underpinning the column, which is specific to the job." .
-<http://localhost/saved/boolean> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
-<http://localhost/saved/nodeidentifier> <http://purl.org/dc/terms/description> "A URI, CURIE or BNODE that represents a node in a model." .
-<http://localhost/saved/longitude> <https://w3id.org/linkml/any_of> _:N59302d1b94bb49c98f3ba75debdb1e90 .
-<http://localhost/saved/cage_id> <https://w3id.org/linkml/range> <http://localhost/saved/string> .
-<http://localhost/saved/global_coordinate_system> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/global_coordinate_system> .
-<http://localhost/saved/TableDesc> <https://w3id.org/linkml/slot_usage> _:N1b3be30c77704ba5a417790e24e441ee .
-<http://localhost/saved/resource_hash> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/resource_hash> .
-<http://localhost/saved/longitude> <http://purl.org/dc/terms/description> "Longitude" .
-<http://localhost/saved/tables> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/JobDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://localhost/saved/job/> .
-<http://localhost/saved/ManifestDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/boolean> <http://localhost/saved/base> "Bool" .
-<http://localhost/saved/date> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/job_scope_modelled> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/identifier> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
-<http://localhost/saved/table> <http://purl.org/dc/terms/description> "Table description from which column is drawn, specifically matching the `atomic_name' field of a given instance of a `TableDesc' class." .
-<http://localhost/saved/decimal> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://schema.org/Number> .
-<http://localhost/saved/cage_id> <http://purl.org/dc/terms/description> "Semi-numeric cage identifier, related to station/site" .
-<http://localhost/saved/double> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"double\"." .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/path> .
-<http://localhost/saved/resource_hash> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/atomic_name> <https://w3id.org/linkml/owner> <http://localhost/saved/ManifestDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/types> <http://localhost/saved/LatLonType> .
-<http://localhost/saved/fish_species_scientific> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/fish_species_scientific> .
-<http://localhost/saved/easting> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/fish_species_common> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/SlotDefinition> .
-<http://localhost/saved/JobDesc> <https://w3id.org/linkml/class_uri> <http://localhost/saved/JobDesc> .
-<http://localhost/saved/objectidentifier> <http://www.w3.org/2004/02/skos/core#editorialNote> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"objectidentifier\"." .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/description> .
-<http://localhost/saved/table> <https://w3id.org/linkml/owner> <http://localhost/saved/ColumnDesc> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/column> .
-<http://localhost/saved/latitude> <https://w3id.org/linkml/is_a> <http://localhost/saved/column_descriptive> .
-<http://localhost/saved/meta> <https://w3id.org/linkml/slots> <http://localhost/saved/cage_id> .
-<http://localhost/saved/scope> <https://w3id.org/linkml/slot_uri> <http://localhost/saved/scope> .
-<http://localhost/saved/integer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/saved/TypeDefinition> .
-<http://localhost/saved/gcp_source> <https://w3id.org/linkml/definition_uri> <http://localhost/saved/gcp_source> .
-<http://localhost/saved/fish_length> <https://w3id.org/linkml/range> <http://localhost/saved/float> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <http://marine.gov.scot/metadata/saved/schema/repr> "bool" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/path> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://www.w3.org/2004/02/skos/core#note> "in RDF serializations a slot with range of uri is treated as a literal or type xsd:anyURI unless it is an identifier or a reference to an identifier, in which case it is translated directly to a node" .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+_:N7d068d58d9a04aa5930be74f1eda7aba <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/LatLonType> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/default_range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/path> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/imports> <http://marine.gov.scot/metadata/saved/schema/collected> .
+<http://marine.gov.scot/metadata/saved/schema/national_grid_reference> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/provenance> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Objectidentifier> .
+<http://marine.gov.scot/metadata/saved/schema/site_id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/title> .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+_:N3efc3b133b454424a24d7daca22e9d31 <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/integer> .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://purl.org/dc/terms/description> "A time object represents a (local) time of day, independent of any particular day" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/site_name> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/site_name> .
+<http://marine.gov.scot/metadata/saved/schema/column_collected> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://marine.gov.scot/metadata/saved/schema/metamodel_version> "1.7.0" .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/depth> <http://purl.org/dc/terms/description> "Depth in metres" .
+_:N3efc3b133b454424a24d7daca22e9d31 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/AnonymousSlotExpression> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SchemaDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_total> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/lice_af_total> .
+<http://marine.gov.scot/metadata/saved/schema/notes> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://marine.gov.scot/metadata/saved/schema/provenance> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://marine.gov.scot/metadata/saved/schema/base> "URI" .
+<http://marine.gov.scot/metadata/saved/schema/float> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Float> .
+<http://marine.gov.scot/metadata/saved/schema/fish_mass> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/table> <http://purl.org/dc/terms/description> "Table description from which column is drawn, specifically matching the `atomic_name' field of a given instance of a `TableDesc' class." .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_common> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_collected> <http://purl.org/dc/terms/description> "Sampled lice density (lice per m³)" .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_average> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/collected/> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_average> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Boolean> .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"time\"." .
+<http://marine.gov.scot/metadata/saved/schema/title> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/longitude> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <http://purl.org/dc/terms/description> "Path or URI of schema associated with resource" .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_collected> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <http://purl.org/dc/terms/description> "A string encoding a JSON Path. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded in tree form." .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/series> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/series> .
+<http://marine.gov.scot/metadata/saved/schema/gcp_source> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/gcp_source> .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/DateTime> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/description> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/description> .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <http://purl.org/dc/terms/conformsTo> "https://www.ietf.org/archive/id/draft-goessner-dispatch-jsonpath-00.html" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/tables> .
+<http://marine.gov.scot/metadata/saved/schema/column_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/core/> .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/atomic_name> .
+<http://marine.gov.scot/metadata/saved/schema/easting> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <http://purl.org/dc/terms/description> "A binary (true or false) value" .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://marine.gov.scot/metadata/saved/schema/notes> "URI is dateTime because OWL reasoners do not work with straight date or time" .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/resource_path> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_scope_collected> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/national_grid_reference> .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Date> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/imports> <http://marine.gov.scot/metadata/saved/schema/core> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/notes> .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/description> .
+<http://marine.gov.scot/metadata/saved/schema/series> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/series> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://www.w3.org/2004/02/skos/core#note> "in RDF serializations this MUST be expanded to a URI" .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+_:N448882d4d8b44fdbb0fa8a159349ef87 <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/identifier> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/title> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/cage_id> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/integer> <http://purl.org/dc/terms/description> "An integer" .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <http://purl.org/dc/terms/conformsTo> "https://datatracker.ietf.org/doc/html/rfc6901" .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/modelled/> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/resource_path> .
+<http://marine.gov.scot/metadata/saved/schema/string> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_total> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/collected/> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/gcp_source> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/depth> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/depth> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://purl.org/pav/version> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Uri> .
+<http://marine.gov.scot/metadata/saved/schema/table> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/local_version> .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <https://w3id.org/linkml/any_of> _:Nbe79f87c6378480881c343ee86b8ae03 .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Ncname> .
+<http://marine.gov.scot/metadata/saved/schema/national_grid_reference> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/national_grid_reference> .
+<http://marine.gov.scot/metadata/saved/schema/column_collected> <http://purl.org/dc/terms/description> "Column describes collected data" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/latitude> .
+<http://marine.gov.scot/metadata/saved/schema/float> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#float> .
+<http://marine.gov.scot/metadata/saved/schema/series> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/date_or_datetime> .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://marine.gov.scot/metadata/saved/schema/series> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/column> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_average> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/description> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/description> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/classes> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/variable> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/resource_hash> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#anyURI> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_total> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/integer> .
+_:Nbe79f87c6378480881c343ee86b8ae03 <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/LatLonType> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://purl.org/dc/terms/title> "SAVED meta-model" .
+<http://marine.gov.scot/metadata/saved/schema/string> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <http://purl.org/dc/terms/description> "Version number of local submission utility" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/type> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/source_file_date> "2024-04-24T16:47:54"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/series> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/title> .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date\"." .
+<http://marine.gov.scot/metadata/saved/schema/fish_mass> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/fish_mass> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/collected/> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/uriorcurie> .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Time> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_collected> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <http://purl.org/dc/terms/description> "Semi-numeric cage identifier, related to station/site" .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/job_type> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/fish_mass> <http://purl.org/dc/terms/description> "Weight of fish expressed (g)" .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/gcp_source> .
+<http://marine.gov.scot/metadata/saved/schema/double> <http://purl.org/dc/terms/description> "A real number that conforms to the xsd:double specification" .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <http://marine.gov.scot/metadata/saved/schema/base> "NCName" .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"nodeidentifier\"." .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/date> .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/cage_id> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/time> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/title> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/provenance> .
+<http://marine.gov.scot/metadata/saved/schema/notes> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_common> <http://purl.org/dc/terms/description> "Common name of species sampled" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/nodeidentifier> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/imports> <http://marine.gov.scot/metadata/saved/schema/descriptive> .
+_:N448882d4d8b44fdbb0fa8a159349ef87 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/AnonymousSlotExpression> .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/tables> .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"datetime\"." .
+<http://marine.gov.scot/metadata/saved/schema/float> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"float\"." .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <https://w3id.org/linkml/any_of> _:Nd8ade822ac684901bb0b9c36f7bd7ab4 .
+<http://marine.gov.scot/metadata/saved/schema/depth> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/depth> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_total> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Nodeidentifier> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/jobs> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_common> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#decimal> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpath\"." .
+<http://marine.gov.scot/metadata/saved/schema/column> <http://purl.org/dc/terms/description> "Column name in table" .
+<http://marine.gov.scot/metadata/saved/schema/variable> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+_:N45a59ed23bb44142a2b4ddc49f2f4746 <http://www.w3.org/ns/shacl#prefix> "rap" .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/imports> <http://marine.gov.scot/metadata/saved/schema/job> .
+<http://marine.gov.scot/metadata/saved/schema/integer> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"integer\"." .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/collected/> .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/column> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/column_modelled> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/national_grid_reference> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/national_grid_reference> .
+<http://marine.gov.scot/metadata/saved/schema/double> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"double\"." .
+<http://marine.gov.scot/metadata/saved/schema/series> <http://purl.org/dc/terms/description> "Data series to which a given observation belongs" .
+<http://marine.gov.scot/metadata/saved/schema/site_name> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <http://www.w3.org/2004/02/skos/core#note> "Used for inheritance and type checking" .
+_:N6ad9a5f90ca64598a3114d13dff93a7b <http://www.w3.org/ns/shacl#prefix> "linkml" .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://schema.org/Number> .
+<http://marine.gov.scot/metadata/saved/schema/easting> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/easting> .
+<http://marine.gov.scot/metadata/saved/schema/type> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/type> .
+<http://marine.gov.scot/metadata/saved/schema/path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/boolean> .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <https://w3id.org/linkml/any_of> _:N5fbc13cf7384443eb764ca4c5ea25b3b .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/imports> <http://marine.gov.scot/metadata/saved/schema/types> .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/string> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Text> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_total> <http://purl.org/dc/terms/description> "Total number of Salmon lice per fish" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/local_version> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/uriorcurie> .
+<http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/fish_mass> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/fish_mass> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/float> <http://marine.gov.scot/metadata/saved/schema/base> "float" .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"ncname\"." .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/DateOrDatetime> .
+<http://marine.gov.scot/metadata/saved/schema/description> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Boolean> .
+<http://marine.gov.scot/metadata/saved/schema/LatLonType> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/types/> .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <http://purl.org/dc/terms/description> "Checksum of resource" .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_common> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/collected/> .
+<http://marine.gov.scot/metadata/saved/schema/northing> <http://purl.org/dc/terms/description> "'X'-positional data relative to point of origin" .
+<http://marine.gov.scot/metadata/saved/schema/description> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/description> .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#anyURI> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://marine.gov.scot/metadata/saved/schema/default_prefix> "saved" .
+<http://marine.gov.scot/metadata/saved/schema/depth> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <http://purl.org/dc/terms/description> "Latitude" .
+<http://marine.gov.scot/metadata/saved/schema/gcp_source> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <https://w3id.org/linkml/class_uri> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://purl.org/dc/terms/description> "a date (year, month and day) in an idealized calendar" .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <http://marine.gov.scot/metadata/saved/schema/base> "str" .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/table> .
+<http://marine.gov.scot/metadata/saved/schema/hash> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/series> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/national_grid_reference> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/northing> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://purl.org/dc/elements/1.1/title> .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/double> <http://marine.gov.scot/metadata/saved/schema/base> "float" .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpointer\"." .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/ncname> .
+<http://marine.gov.scot/metadata/saved/schema/column_descriptive> <http://purl.org/dc/terms/description> "Column describes data about the world" .
+<http://marine.gov.scot/metadata/saved/schema/hash> <http://www.w3.org/2004/02/skos/core#exactMatch> <https://w3id.org/linkml/hash> .
+<http://marine.gov.scot/metadata/saved/schema/integer> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#integer> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <https://w3id.org/linkml/any_of> _:N3efc3b133b454424a24d7daca22e9d31 .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/site_id> <http://purl.org/dc/terms/description> "Fish farm station/site global ID" .
+<http://marine.gov.scot/metadata/saved/schema/easting> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/local_version> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/gcp_source> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/table> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/jsonpath> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_collected> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/lice_density_collected> .
+<http://marine.gov.scot/metadata/saved/schema/title> <http://www.w3.org/2004/02/skos/core#mappingRelation> <http://purl.org/dc/terms/title> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/uri> .
+<http://marine.gov.scot/metadata/saved/schema/type> <http://purl.org/dc/terms/description> "Nature or genre of the element" .
+<http://marine.gov.scot/metadata/saved/schema/column> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <http://purl.org/dc/terms/description> "Job manifest: column scope description and annotations\nThis has three elements:\n  1. The column name\n  2. The table from which the column is or columns are drawn\n  3. The variable underpinning the column, which is specific to the job." .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <http://marine.gov.scot/metadata/saved/schema/pattern> "^:?[a-z]+[[a-z]|_|]*$" .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/atomic_name> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/classes> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://marine.gov.scot/metadata/saved/schema/base> "XSDDate" .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_average> <http://purl.org/dc/terms/description> "Average number of Salmon lice (adult female) per fish" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/site_name> <http://purl.org/dc/terms/description> "Fish farm station/site local name" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/LatLonType> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/variable> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/variable> .
+_:N6ad9a5f90ca64598a3114d13dff93a7b <http://www.w3.org/ns/shacl#namespace> <https://w3id.org/linkml/> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://marine.gov.scot/metadata/saved/schema/count_fish_collected> .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/gcp_source> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <http://purl.org/dc/terms/description> "Specification of mappings between resources and schemas, as well as columns or dimensions to bring into into scope" .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_collected> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/lice_density_collected> .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/float> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Float> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_common> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/path> <http://www.w3.org/2004/02/skos/core#exactMatch> <https://w3id.org/linkml/path> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/slot_usage> _:N08a3f160089b454eb3dae58aa666b4a6 .
+<http://marine.gov.scot/metadata/saved/schema/variable> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/variable> .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/depth> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/type> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/type> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/slot_usage> _:N92fd29f1eb8547e1ab859afb8629505e .
+<http://marine.gov.scot/metadata/saved/schema/table> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/column_modelled> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/column> .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/imports> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/ClassDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <https://w3id.org/linkml/uri> <http://www.w3.org/ns/shex#nonLiteral> .
+<http://marine.gov.scot/metadata/saved/schema/LatLonType> <http://marine.gov.scot/metadata/saved/schema/pattern> "[0-9]+o [0-9]+.[0-9]+[N|W]" .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/atomic_name> .
+<http://marine.gov.scot/metadata/saved/schema/string> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/provenance> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://marine.gov.scot/metadata/saved/schema/notes> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/fish_length> .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <http://purl.org/dc/terms/description> "The combination of a date and time" .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://marine.gov.scot/metadata/saved/schema/base> "XSDTime" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/sparqlpath> .
+<http://marine.gov.scot/metadata/saved/schema/string> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/jobs> .
+<http://marine.gov.scot/metadata/saved/schema/column> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/column> .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/resource_path> .
+<http://marine.gov.scot/metadata/saved/schema/column_modelled> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/column_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/time> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Time> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/variable> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/variable> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/hash> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/description> .
+<http://marine.gov.scot/metadata/saved/schema/date> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Date> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_collected> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/lice_af_average> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://marine.gov.scot/metadata/saved/schema/emit_prefixes> "rap" .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <http://purl.org/dc/terms/description> "A real number with arbitrary precision that conforms to the xsd:decimal specification" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/column_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/local_version> .
+<http://marine.gov.scot/metadata/saved/schema/notes> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <http://marine.gov.scot/metadata/saved/schema/base> "str" .
+<http://marine.gov.scot/metadata/saved/schema/float> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <http://purl.org/dc/terms/description> "Short-form name / atom: lower-case, no special characters excepting underscores" .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_collected> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/count_fish_collected> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/column> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/column> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <http://purl.org/dc/terms/description> "A collection of column descriptions" .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <https://w3id.org/linkml/any_of> _:N448882d4d8b44fdbb0fa8a159349ef87 .
+<http://marine.gov.scot/metadata/saved/schema/column_modelled> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/column_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/time> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#time> .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <https://w3id.org/linkml/slot_usage> _:N48b6c6f4df224d1791a06fa90aae3c20 .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"objectidentifier\"." .
+<http://marine.gov.scot/metadata/saved/schema/path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/ClassDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/float> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <http://purl.org/dc/terms/description> "Either a date or a datetime" .
+<http://marine.gov.scot/metadata/saved/schema/northing> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/fish_length> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_type> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/depth> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/curie> .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <http://marine.gov.scot/metadata/saved/schema/base> "URIorCURIE" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/job_scope> .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <http://purl.org/dc/terms/description> "Longitude" .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/date> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#date> .
+<http://marine.gov.scot/metadata/saved/schema/double> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"sparqlpath\"." .
+<http://marine.gov.scot/metadata/saved/schema/variable> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/column_descriptive> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/table> .
+<http://marine.gov.scot/metadata/saved/schema/provenance> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://purl.org/dc/terms/provenance> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/modelled/> .
+<http://marine.gov.scot/metadata/saved/schema/title> <https://w3id.org/linkml/slot_uri> <http://purl.org/dc/terms/title> .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date_or_datetime\"." .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> .
+_:N02507da849814fbaa80c8b7386c6a8e3 <http://www.w3.org/ns/shacl#namespace> <http://marine.gov.scot/metadata/saved/schema/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <http://purl.org/dc/terms/description> "A string encoding a JSON Pointer. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to a valid object within the current instance document when encoded in tree form." .
+<http://marine.gov.scot/metadata/saved/schema/national_grid_reference> <http://purl.org/dc/terms/description> "National grid reference (NGR) point of origin" .
+<http://marine.gov.scot/metadata/saved/schema/LatLonType> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/fish_length> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/fish_length> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> <http://purl.org/dc/terms/description> "Modelled lice density (lice per m³)" .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Datetime> .
+<http://marine.gov.scot/metadata/saved/schema/float> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/column> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/northing> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/northing> .
+<http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> .
+<http://marine.gov.scot/metadata/saved/schema/float> <http://purl.org/dc/terms/description> "A real number that conforms to the xsd:float specification" .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_common> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <https://w3id.org/linkml/inlined> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/atomic_name> .
+<http://marine.gov.scot/metadata/saved/schema/string> <http://marine.gov.scot/metadata/saved/schema/notes> "In RDF serializations, a slot with range of string is treated as a literal or type xsd:string.   If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"string\"." .
+<http://marine.gov.scot/metadata/saved/schema/table> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/table> .
+<http://marine.gov.scot/metadata/saved/schema/site_id> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/latitude> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <http://marine.gov.scot/metadata/saved/schema/base> "Bool" .
+<http://marine.gov.scot/metadata/saved/schema/fish_length> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/fish_length> .
+<http://marine.gov.scot/metadata/saved/schema/table> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <http://purl.org/dc/terms/description> "Job manifest: complete specification" .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <http://purl.org/dc/terms/description> "Specification of operations to run on resources and schemas provided" .
+<http://marine.gov.scot/metadata/saved/schema/column_descriptive> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/core/> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+_:N02507da849814fbaa80c8b7386c6a8e3 <http://www.w3.org/ns/shacl#prefix> "saved" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/double> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/hash> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <http://marine.gov.scot/metadata/saved/schema/base> "ElementIdentifier" .
+<http://marine.gov.scot/metadata/saved/schema/site_name> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/site_name> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/double> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/atomic_name> .
+<http://marine.gov.scot/metadata/saved/schema/table> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/table> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/notes> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/notes> .
+<http://marine.gov.scot/metadata/saved/schema/boolean> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"boolean\"." .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/jobs> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_collected> <http://purl.org/dc/terms/description> "Sampled number of fish in the farm" .
+<http://marine.gov.scot/metadata/saved/schema/column_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <http://purl.org/dc/terms/description> "A collection of column descriptions which are collected or sampled" .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/ClassDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/title> <http://purl.org/dc/terms/description> "Concise human-readable name for the element" .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> .
+<http://marine.gov.scot/metadata/saved/schema/column_collected> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/tables> .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/depth> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/column> .
+<http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> <http://purl.org/dc/terms/description> "Scientific name of species sampled" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/site_id> .
+<http://marine.gov.scot/metadata/saved/schema/fish_mass> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_scope_collected> .
+_:Nd8ade822ac684901bb0b9c36f7bd7ab4 <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <http://marine.gov.scot/metadata/saved/schema/base> "str" .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/path> .
+<http://marine.gov.scot/metadata/saved/schema/hash> <http://purl.org/dc/terms/description> "Checksum of some file" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/hash> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <https://w3id.org/linkml/inlined_as_list> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/description> <http://purl.org/dc/terms/description> "Human-readable description of the element" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/variable> .
+<http://marine.gov.scot/metadata/saved/schema/title> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/core/> .
+<http://marine.gov.scot/metadata/saved/schema/northing> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/northing> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_common> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/fish_species_common> .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/uriorcurie> .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Curie> .
+<http://marine.gov.scot/metadata/saved/schema/description> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/easting> <http://purl.org/dc/terms/description> "'Y'-positional data relative to point of origin" .
+<http://marine.gov.scot/metadata/saved/schema/national_grid_reference> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+_:N5fbc13cf7384443eb764ca4c5ea25b3b <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/LatLonType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/notes> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/string> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/String> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://marine.gov.scot/metadata/saved/schema/name> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://purl.org/dc/terms/description> "a complete URI" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/generation_date> "2024-04-24T16:48:58"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/variable> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/uriorcurie> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://www.w3.org/ns/shacl#declare> _:N45a59ed23bb44142a2b4ddc49f2f4746 .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <http://purl.org/dc/terms/description> "A string encoding a SPARQL Property Path. The value of the string MUST conform to SPARQL syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded as RDF." .
+<http://marine.gov.scot/metadata/saved/schema/column> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://marine.gov.scot/metadata/saved/schema/source_file> "meta.yaml" .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/date> <http://marine.gov.scot/metadata/saved/schema/notes> "URI is dateTime because OWL reasoners don't work with straight date or time" .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uri\"." .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <http://purl.org/dc/terms/description> "A URI, CURIE or BNODE that represents a node in a model." .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <http://marine.gov.scot/metadata/saved/schema/base> "str" .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/tables> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/classes> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/cage_id> .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/id> <http://marine.gov.scot/metadata/saved/schema/meta/> .
+<http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> .
+<http://marine.gov.scot/metadata/saved/schema/path> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/uriorcurie> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/job_scope> .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <https://w3id.org/linkml/slot_usage> _:Ncd27c0bd6e82402a9578654fcc4b6aff .
+<http://marine.gov.scot/metadata/saved/schema/double> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#double> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_collected> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/count_fish_collected> .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/cage_id> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/ClassDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/path> <http://purl.org/dc/terms/description> "Path or URI" .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://marine.gov.scot/metadata/saved/schema/emit_prefixes> "saved" .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> <http://www.w3.org/2004/02/skos/core#narrowMatch> <http://marine.gov.scot/metadata/saved/schema/lice_density_collected> .
+<http://marine.gov.scot/metadata/saved/schema/string> <http://marine.gov.scot/metadata/saved/schema/base> "str" .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://www.w3.org/2004/02/skos/core#closeMatch> <http://schema.org/URL> .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Decimal> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_modelled> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/lice_density_collected> .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Sparqlpath> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_collected> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <http://purl.org/dc/terms/description> "Job manifest: data source descriptive attributes" .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/resource_path> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_average> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/notes> <http://purl.org/dc/terms/description> "Notes pertinent to observation, a set of observations, or a data-set" .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/decimal> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Jsonpath> .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/table> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/class_uri> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/date_or_datetime> <https://w3id.org/linkml/uri> <https://w3id.org/linkml/DateOrDatetime> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/column_descriptive> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/job_scope_collected> .
+_:N45a59ed23bb44142a2b4ddc49f2f4746 <http://www.w3.org/ns/shacl#namespace> <http://marine.gov.scot/metadata/saved/rap/> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/integer> .
+<http://marine.gov.scot/metadata/saved/schema/gcp_source> <http://purl.org/dc/terms/description> "GCP account of the generator of the manifest" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/hash> .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/double> .
+<http://marine.gov.scot/metadata/saved/schema/site_name> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/time> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <http://purl.org/dc/terms/description> "While this is analogous to Dublin Core's notion of type, it is specific to jobs proper, because there is a well-defined range of the jobs we know about. Undefined job types cannot be processed." .
+<http://marine.gov.scot/metadata/saved/schema/integer> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Integer> .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://purl.org/dc/terms/conformsTo> "https://www.ietf.org/rfc/rfc3987.txt" .
+<http://marine.gov.scot/metadata/saved/schema/fish_length> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/collected/> .
+<http://marine.gov.scot/metadata/saved/schema/LatLonType> <https://w3id.org/linkml/uri> <http://marine.gov.scot/metadata/saved/schema/LatLon> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/job_scope> .
+<http://marine.gov.scot/metadata/saved/schema/fish_length> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+_:N5fbc13cf7384443eb764ca4c5ea25b3b <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/AnonymousSlotExpression> .
+<http://marine.gov.scot/metadata/saved/schema/LatLonType> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/LatLonType> .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+_:N7d068d58d9a04aa5930be74f1eda7aba <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/AnonymousSlotExpression> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <http://purl.org/dc/terms/conformsTo> "https://www.w3.org/TR/sparql11-query/#propertypaths" .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <https://w3id.org/linkml/uri> <http://www.w3.org/ns/shex#iri> .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/site_id> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://marine.gov.scot/metadata/saved/schema/fish_species_common> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://purl.org/dc/terms/license> "https://creativecommons.org/publicdomain/zero/1.0/" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/classes> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/easting> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/integer> .
+<http://marine.gov.scot/metadata/saved/schema/path> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/path> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/fish_length> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://marine.gov.scot/metadata/saved/schema/type> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/northing> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_average> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/lice_af_average> .
+<http://marine.gov.scot/metadata/saved/schema/notes> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/notes> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://purl.org/dc/elements/1.1/identifier> .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+_:Nd8ade822ac684901bb0b9c36f7bd7ab4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/AnonymousSlotExpression> .
+<http://marine.gov.scot/metadata/saved/schema/gcp_source> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/description> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/core/> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/column_modelled> <http://purl.org/dc/terms/description> "Column describes modelled data" .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_total> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/description> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/provenance> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/provenance> .
+<http://marine.gov.scot/metadata/saved/schema/hash> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/hash> .
+<http://marine.gov.scot/metadata/saved/schema/nodeidentifier> <http://marine.gov.scot/metadata/saved/schema/base> "NodeIdentifier" .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/type> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/type> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/atomic_name> .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_total> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/lice_af_total> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/schema_path> .
+<http://marine.gov.scot/metadata/saved/schema/description> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/path> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/path> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <http://purl.org/dc/terms/description> "A collection of column descriptions which describe something about the world" .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/objectidentifier> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/datetime> .
+<http://marine.gov.scot/metadata/saved/schema/national_grid_reference> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/latitude> .
+<http://marine.gov.scot/metadata/saved/schema/uri> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/integer> <http://www.w3.org/2004/02/skos/core#exactMatch> <http://schema.org/Integer> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Jsonpointer> .
+<http://marine.gov.scot/metadata/saved/schema/double> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Double> .
+<http://marine.gov.scot/metadata/saved/schema/provenance> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/provenance> .
+<http://marine.gov.scot/metadata/saved/schema/gcp_source> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/provenance> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/core/> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/resource_hash> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/count_fish_collected> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/job_scope_collected> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/schema_path> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/class_uri> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/type> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/core/> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"curie\"." .
+<http://marine.gov.scot/metadata/saved/schema/series> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <http://marine.gov.scot/metadata/saved/schema/base> "Decimal" .
+<http://marine.gov.scot/metadata/saved/schema/column> <https://w3id.org/linkml/required> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/ColumnDesc> <https://w3id.org/linkml/class_uri> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/provenance> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> .
+<http://marine.gov.scot/metadata/saved/schema/site_id> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/source_file_size> "537"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://marine.gov.scot/metadata/saved/schema/TableDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/schema_path> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/resource_hash> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_collected> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/easting> .
+<http://marine.gov.scot/metadata/saved/schema/datetime> <http://marine.gov.scot/metadata/saved/schema/base> "XSDDateTime" .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_common> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/fish_species_common> .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <http://www.w3.org/2004/02/skos/core#broadMatch> <http://marine.gov.scot/metadata/saved/schema/type> .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <http://purl.org/dc/terms/description> "A collection of column descriptions which are modelled or simulated" .
+<http://marine.gov.scot/metadata/saved/schema/objectidentifier> <http://purl.org/dc/terms/description> "A URI or CURIE that represents an object in the model." .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .
+<http://marine.gov.scot/metadata/saved/schema/column_collected> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/longitude> .
+<http://marine.gov.scot/metadata/saved/schema/title> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/TableDesc> .
+<http://marine.gov.scot/metadata/saved/schema/fish_length> <http://purl.org/dc/terms/description> "Length of fish expressed (mm)" .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <http://purl.org/dc/terms/description> "Path or URI of resource" .
+_:Nbe79f87c6378480881c343ee86b8ae03 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/AnonymousSlotExpression> .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <https://w3id.org/linkml/definition_uri> <https://w3id.org/linkml/Uriorcurie> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/schema_path> .
+<http://marine.gov.scot/metadata/saved/schema/integer> <http://marine.gov.scot/metadata/saved/schema/base> "int" .
+<http://marine.gov.scot/metadata/saved/schema/lice_af_average> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/lice_af_average> .
+<http://marine.gov.scot/metadata/saved/schema/integer> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/title> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> <http://purl.org/dc/terms/description> "Global coordinate system (GCS) reference point of origin" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/fish_species_common> .
+<http://marine.gov.scot/metadata/saved/schema/string> <http://purl.org/dc/terms/description> "A character string" .
+<http://marine.gov.scot/metadata/saved/schema/ManifestDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpointer> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/hash> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/hash> .
+<http://marine.gov.scot/metadata/saved/schema/notes> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/string> .
+<http://marine.gov.scot/metadata/saved/schema/atomic_name> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/schema_path> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/uriorcurie> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/depth> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/job_scope> .
+<http://marine.gov.scot/metadata/saved/schema/count_fish_interpolated> <http://purl.org/dc/terms/description> "Interpolated number of fish in the farm" .
+<http://marine.gov.scot/metadata/saved/schema/job_scope> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/job_scope> .
+<http://marine.gov.scot/metadata/saved/schema/provenance> <http://purl.org/dc/terms/description> "Provenance of an element, or a set of elements. This is distinct from Dublin Core's notion of provenance, which concerns any changes in ownership/custody of the resource since its creation." .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/fish_mass> .
+<http://marine.gov.scot/metadata/saved/schema/job_type> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/job_type> .
+<http://marine.gov.scot/metadata/saved/schema/column_descriptive> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/fish_species_scientific> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_collected> .
+<http://marine.gov.scot/metadata/saved/schema/easting> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/descriptive/> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://www.w3.org/2004/02/skos/core#note> "in non-RDF serializations MAY be serialized as the compact representation" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/lice_af_total> .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <http://purl.org/dc/terms/description> "Job manifest: job specification attributes which specific job sub-classes inherit" .
+<http://marine.gov.scot/metadata/saved/schema/site_id> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/site_id> .
+<http://marine.gov.scot/metadata/saved/schema/jsonpath> <https://w3id.org/linkml/uri> <http://www.w3.org/2001/XMLSchema#string> .
+<http://marine.gov.scot/metadata/saved/schema/title> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/title> .
+<http://marine.gov.scot/metadata/saved/schema/site_name> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/site_name> .
+<http://marine.gov.scot/metadata/saved/schema/tables> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/job/> .
+<http://marine.gov.scot/metadata/saved/schema/decimal> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"decimal\"." .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_collected> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/resource_hash> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/resource_hash> .
+<http://marine.gov.scot/metadata/saved/schema/fish_mass> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/collected/> .
+<http://marine.gov.scot/metadata/saved/schema/local_version> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/ManifestDesc> .
+<http://marine.gov.scot/metadata/saved/schema/integer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/TypeDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://www.w3.org/ns/shacl#declare> _:N02507da849814fbaa80c8b7386c6a8e3 .
+<http://marine.gov.scot/metadata/saved/schema/sparqlpath> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/fish_mass> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/title> <https://w3id.org/linkml/domain_of> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/integer> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/column_descriptive> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <http://marine.gov.scot/metadata/saved/schema/repr> "str" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/site_name> .
+<http://marine.gov.scot/metadata/saved/schema/double> <http://www.w3.org/2004/02/skos/core#closeMatch> <http://schema.org/Float> .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <http://marine.gov.scot/metadata/saved/schema/imported_from> "linkml:types" .
+<http://marine.gov.scot/metadata/saved/schema/jobs> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/jobs> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://purl.org/dc/terms/conformsTo> "https://www.w3.org/TR/curie/" .
+<http://marine.gov.scot/metadata/saved/schema/site_id> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/site_id> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://purl.org/dc/terms/description> "a compact URI" .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_scope> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/JobDesc> .
+<http://marine.gov.scot/metadata/saved/schema/longitude> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/longitude> .
+<http://marine.gov.scot/metadata/saved/schema/northing> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/integer> .
+<http://marine.gov.scot/metadata/saved/schema/table> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/uriorcurie> .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <http://www.w3.org/2004/02/skos/core#inScheme> <https://w3id.org/linkml/types> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <http://www.w3.org/ns/shacl#declare> _:N6ad9a5f90ca64598a3114d13dff93a7b .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <http://marine.gov.scot/metadata/saved/schema/notes> "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uriorcurie\"." .
+<http://marine.gov.scot/metadata/saved/schema/curie> <http://marine.gov.scot/metadata/saved/schema/base> "Curie" .
+<http://marine.gov.scot/metadata/saved/schema/JobDesc> <https://w3id.org/linkml/slots> <http://marine.gov.scot/metadata/saved/schema/job_type> .
+<http://marine.gov.scot/metadata/saved/schema/latitude> <https://w3id.org/linkml/any_of> _:N7d068d58d9a04aa5930be74f1eda7aba .
+<http://marine.gov.scot/metadata/saved/schema/easting> <https://w3id.org/linkml/definition_uri> <http://marine.gov.scot/metadata/saved/schema/easting> .
+<http://marine.gov.scot/metadata/saved/schema/northing> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/global_coordinate_system> <https://w3id.org/linkml/is_a> <http://marine.gov.scot/metadata/saved/schema/column_descriptive> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/imports> <http://marine.gov.scot/metadata/saved/schema/modelled> .
+<http://marine.gov.scot/metadata/saved/schema/resource_path> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_modelled> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://marine.gov.scot/metadata/saved/schema/SlotDefinition> .
+<http://marine.gov.scot/metadata/saved/schema/ncname> <http://purl.org/dc/terms/description> "Prefix part of CURIE" .
+<http://marine.gov.scot/metadata/saved/schema/uriorcurie> <http://purl.org/dc/terms/description> "a URI or a CURIE" .
+<http://marine.gov.scot/metadata/saved/schema/column_modelled> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/core/> .
+<http://marine.gov.scot/metadata/saved/schema/variable> <http://purl.org/dc/terms/description> "Name of variable underpinning column, specific to the job" .
+<http://marine.gov.scot/metadata/saved/schema/LatLonType> <http://marine.gov.scot/metadata/saved/schema/base> "str" .
+<http://marine.gov.scot/metadata/saved/schema/gcp_source> <https://w3id.org/linkml/slot_uri> <http://marine.gov.scot/metadata/saved/schema/gcp_source> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_collected> <http://www.w3.org/2004/02/skos/core#inScheme> <http://marine.gov.scot/metadata/saved/schema/collected/> .
+<http://marine.gov.scot/metadata/saved/schema/meta> <https://w3id.org/linkml/types> <http://marine.gov.scot/metadata/saved/schema/jsonpointer> .
+<http://marine.gov.scot/metadata/saved/schema/job_scope_descriptive> <https://w3id.org/linkml/multivalued> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://marine.gov.scot/metadata/saved/schema/lice_density_collected> <https://w3id.org/linkml/range> <http://marine.gov.scot/metadata/saved/schema/float> .
+<http://marine.gov.scot/metadata/saved/schema/variable> <https://w3id.org/linkml/owner> <http://marine.gov.scot/metadata/saved/schema/ColumnDesc> .

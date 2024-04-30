@@ -1,9 +1,15 @@
 defmodule RAP.Job.Cache do
+
+  alias RAP.Storage.Monitor
   
-  def start_link(%RAP.Job.Runner{results: res}) do
-    Task.start_link(fn ->
-      res |> Enum.map(&IO.puts(&1.result))
-    end)
+  def start_link(%RAP.Job.Runner{} = result) do
+    # Need to get the actual UUID later…
+    fake_uuid = "f7a7e1da-4653-4f77-8896-8b72af4e7233"
+    fake_resource = "/tmp/resource_file"
+    fake_schema   = "/tmp/resource_schema"
+    fake_manifest = "/tmp/manifest"
+    
+    Monitor.prep_rdf_data_set(fake_uuid, fake_resource, fake_schema, fake_manifest, result.results)
   end
 
 end
@@ -23,7 +29,6 @@ defmodule RAP.Job.Cache.Supervisor do
     children = [
       worker(Cache, [], restart: :temporary)
     ]
-
     {
       :ok, children, strategy: :one_for_one,
       subscribe_to: [{ RAP.Job.Runner, min_demand: 0, max_demand: 1 }]

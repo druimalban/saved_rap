@@ -19,10 +19,11 @@ defmodule RAP.Manifest.ColumnDesc do
   import RDF.Sigils
   alias RAP.Vocabulary.SAVED
 
+  # To-do: Make all three of these link to the schema
   schema SAVED.ColumnDesc do
-    property :column,   SAVED.column,   type: :string, required: true
-    property :variable, SAVED.variable, type: :string, required: true
-    property :table,    SAVED.table,    type: :string, required: true
+    property :column,   SAVED.column,   type: :any_uri, required: true
+    property :variable, SAVED.variable, type: :any_uri, required: true
+    property :table,    SAVED.table,    type: :any_uri, required: true
   end
 end
 
@@ -34,9 +35,9 @@ defmodule RAP.Manifest.JobDesc do
   alias RAP.Manifest.ColumnDesc
 
   schema SAVED.JobDesc do
-    property :title,       DCTERMS.title,       type: :string, required: false
-    property :description, DCTERMS.description, type: :string, required: false
-    property :job_type,    SAVED.job_type,      type: :string, required: true
+    property :title,       DCTERMS.title,       type: :string,  required: false
+    property :description, DCTERMS.description, type: :string,  required: false
+    property :job_type,    SAVED.job_type,      type: :any_uri, required: true
     
     link job_scope_descriptive: SAVED.job_scope_descriptive, type: list_of(ColumnDesc), depth: +5
     link job_scope_collected:   SAVED.job_scope_collected,   type: list_of(ColumnDesc), depth: +5
