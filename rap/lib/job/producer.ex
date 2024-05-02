@@ -32,7 +32,7 @@ defmodule RAP.Job.Producer do
 
   alias RAP.Vocabulary.SAVED
   alias RAP.Manifest.{TableDesc, ColumnDesc, JobDesc, ManifestDesc}
-  alias RAP.Storage.GCP
+  alias RAP.Storage.{GCP, Monitor}
   alias RAP.Job.{Producer, Spec, Staging}
   
   use GenStage
@@ -51,7 +51,8 @@ defmodule RAP.Job.Producer do
   def init initial_state do
     Logger.info "Called Job.Producer.init (initial_state = #{inspect initial_state})"
     subscription = [
-      { GCP, min_demand: 0, max_demand: 1 }
+      # Fix this using Storage.Monitor -> Storage.GCP/Storage.Local stages
+      { Monitor, min_demand: 0, max_demand: 1 }
     ]
     { :producer_consumer, initial_state, subscribe_to: subscription }
   end

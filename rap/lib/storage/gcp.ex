@@ -18,6 +18,26 @@ defmodule RAP.Storage.GCP do
 
   alias RAP.Storage.Monitor
   alias RAP.Storage.Transactions
+
+  @doc """
+  Simple helper function to compare MD5 checksums given by the storage
+  objects API to the actual file downloaded.
+
+  Erlang's `:crypto' works on a binary, not a file path, which is very
+  convenient because it avoids writing to disk duff file responses.
+
+  Further note that in `fetch_job_deps/3', sets `:decode' to false, as
+  there may be a risk that the decoding breaks this workflow.
+  """
+  defp dl_success?(obj, body) do
+    purported = obj.md5
+    actual    = :crypto.hash(:md5, body) |> Base.encode64()
+    if purported == actual do
+      { :ok, "correct", purported }
+    else
+      { :error, "incorrect", purported }
+    end  
+  end
   
   @doc """
   Actually fetch the objects in question
@@ -31,7 +51,7 @@ defmodule RAP.Storage.GCP do
     target_dir  = "#{@cache_dir}/#{obj.owner}/#{obj.uuid}"
     target_file = "#{target_dir}/#{obj.file}"
     with {:ok, %Tesla.Env{body: body, status: 200}} <- GCPReqObjs.storage_objects_get(session, bucket_name, obj.name, [alt: "media"], decode: false),
-	 {:ok, "correct", _md5} <- dl_success?(obj, body),
+	 {:ok, "correct", _md5} <- Monitor.dl_success?(obj, body),
          false <- File.exists?(target_file),
          :ok   <- File.mkdir_p(target_dir),
          :ok   <- File.write(target_file, body)
@@ -42,7 +62,7 @@ defmodule RAP.Storage.GCP do
 	{:error, error = %Tesla.Env{status: 401}} ->
 	  Logger.info "Query of GCP bucket #{bucket_name} appeared to time out, seek new session"
 	  # If this bit fails, we know there's really something up!
-	  {:ok, new_session} = new_connection()
+	  {:ok, new_session} = Monitor.new_connection()
 	  fetch_job_deps(new_session, bucket_name, obj)
 	{:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
 	  Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
@@ -98,7 +118,7 @@ defmodule RAP.Storage.GCP do
     
     staging_uuids = remote_uuids
     |> Enum.filter(&Transactions.feasible?/1)
-    |> Enum.filter(&ets_feasible?/1)
+    |> Enum.filter(&Monitor.ets_feasible?/1)
     
     grouped_file_objs = objs
     |> Enum.reject(&is_nil/1)
