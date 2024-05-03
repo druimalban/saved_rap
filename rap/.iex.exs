@@ -29,3 +29,7 @@ alias RAP.Job.{Producer,Runner}
 
 #{:ok, graph} = RDF.Turtle.read_file "manual_test/manifest7.ttl"
 #{:ok, egret} = Grax.load graph, SAVED.RootManifest, ManifestDesc
+
+alias RAP.Storage.{Monitor,TestConsumer}
+
+spew_events = fn -> GenStage.cast(Monitor, {:stage_objects, Enum.into(1..10, [])}) end

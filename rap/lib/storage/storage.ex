@@ -117,11 +117,6 @@ defmodule RAP.Storage.Monitor do
     end
   end
 
-  def handle_cast({:update_session, new_session}, %RAP.Application{} = state) do
-    Logger.info "Received cast :update_session"
-    new_state = state |> Map.put(:gcp_session, new_session)
-    {:noreply, [], new_state}
-  end
   def handle_call(:update_session, _from, %RAP.Application{} = state) do
     Logger.info "Received call :update_session"
     new_session = new_connection()
@@ -129,12 +124,6 @@ defmodule RAP.Storage.Monitor do
     {:reply, new_session, [], new_state}
   end
 
-  # Take arbitrary time-stamp to avoid code repetition and race conditions
-  def handle_cast({:update_last_poll, new_time_stamp}, %RAP.Application{} = state) do
-    Logger.info "Received cast :update_last_poll"
-    new_state = state |> Map.put(:last_poll, new_time_stamp)
-    {:noreply, [], new_state}
-  end
   def handle_call(:update_last_poll, _from, %RAP.Application{} = state) do
     Logger.info "Received call :update_last_poll"
     new_time_stamp = DateTime.utc_now() |> DateTime.to_unix()
@@ -142,11 +131,25 @@ defmodule RAP.Storage.Monitor do
     {:reply, new_time_stamp, [], new_state}
   end
 
+  # This variant of the function just duplicates work - both by immediately
+  # generating events to send upstream and by appending to the queue. This means
+  # that after the next stage has finished consuming the events sent upstream
+  # immediately, it asks for more, but it's already used them. This is really a
+  # race condition.
+  #def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
+  #  Logger.info "Received cast :stage_objects"
+  #  new_state = state |> Map.put(:staging_objects, extant ++ additional)
+  #  {:noreply, extant ++ additional, new_state}
+  #end
+
   def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
     Logger.info "Received cast :stage_objects"
-    new_queue = extant ++ additional
-    new_state = state |> Map.put(:staging_objects, new_queue)
-    {:noreply, new_queue, new_state}
+    with [queue_head | queue_tail] <- extant ++ additional do    
+      new_state = state |> Map.put(:staging_objects, queue_tail)
+      {:noreply, [queue_head], new_state}
+    else
+      [] -> {:noreply, [], state}
+    end
   end
 
   @doc """
@@ -160,13 +163,18 @@ defmodule RAP.Storage.Monitor do
     {:reply, state.gcp_session, [], state}
   end
 
-  @doc "Boilerplate handle_demand/2 for now"
+  @doc """
+  The idea here is that subsequent parts of the pipeline will ask for
+  events in this manner, i.e. there is this notion of back-pressure
+  fundamental to the `GenStage' library.
+  """
   def handle_demand demand, state do
     Logger.info "Storage.Monitor: Received demand for #{inspect demand} event"
     yielded   = state.staging_objects |> Enum.take(demand)
     remaining = state.staging_objects |> Enum.drop(demand)
+    pretty_yielded = yielded |> Enum.map(&pretty_print_object/1)
     new_state = state |> Map.put(:staging_objects, remaining)
-    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state"
+    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state: #{inspect pretty_yielded}"
     {:noreply, yielded, new_state}
   end
 
@@ -189,17 +197,20 @@ defmodule RAP.Storage.Monitor do
       nil -> nil
     end
   end
-  defp pretty_print_object(%Monitor{path: fp}), do: fp
-  defp pretty_print_object(%RAP.Storage{uuid: uuid, resources: res}) do
+
+  def pretty_print_object(%Monitor{path: fp}), do: fp
+  def pretty_print_object(%RAP.Storage{uuid: uuid, resources: res}) do
     pretty_resources = res |> Enum.map(&pretty_print_object/1)
     "%{UUID: #{uuid}, resources: #{inspect pretty_resources}}"
   end
-    
-  @doc """
-  Monitors the GCP objects every five minutes, updating both global
-  state and calling this recursively.
+  def pretty_print_object(n), do: inspect n
 
-  The Google GCP buckets have a fake directory structure: they're by
+  @doc """
+  This function monitors the GCP objects every five minutes (or whatever
+  interval has been set), updating both global state and calling this
+  recursively.
+
+  The GCP storage buckets have a fake directory structure: they're by
   default stored in this flat object-based structure which the web
   interface hides.
 
@@ -207,6 +218,32 @@ defmodule RAP.Storage.Monitor do
   only work on buckets which have a 'hierarchical' namespace, and the
   documentation is so bad that there does not appear to be a way to set
   this on the web interface.
+  
+  As for the UUIDs proper, there are two elements of this. Firstly, we
+  have a notion of UUIDs which have been cached. There is a single row
+  per UUID because the UUID has a notion of a job, or collection of jobs.
+  Secondly, we have a notion of files, and it is expected that there
+  would be many different files associated with an UUID.
+
+  The most efficient way to check which jobs are feasible is to summarise
+  the list of objects into unique UUIDs. This is just a map to extract
+  the UUIDs then run `Enum.uniq/2'. We then filter these unique UUIDs
+  using `Transactions.feasible/1' and `ets_feasible/1', which produce a
+  set of jobs which are neither cached (finished) nor currently running
+  (in Erlang term storage ~ `:ets').
+
+  We further group all objects provided by UUID. For each UUID which made
+  it out of the filtering, use this as the key to lookup the collection
+  of files associated with the UUID.
+
+  There are certain well-founded assumptions which are governed by the
+  functionality of `fisdat' and/or `fisup'. Firstly, there is at most one
+  manifest per UUID, because that's the single file we fed into `fisup'
+  in order to upload the files (and a unique UUID is created per
+  invocation of `fisup'). Secondly, the `fisup' program will have
+  normalised the name of the manifest to `manifest.ttl'. Indeed, this is
+  the only normalisation that need take place, because as it currently
+  stands, the manifest refers to all of the dependent files.
   """
   def monitor_gcp(session, bucket, interval, last_poll) do
     invocation_ts = DateTime.utc_now() |> DateTime.to_unix()

@@ -58,27 +58,13 @@ defmodule RAP.Job.Producer do
   end
   
   def handle_events events, _from, state do
-    ie = inspect events
-    is = inspect state
+    pretty_events = events |> Enum.map(&Monitor.pretty_print_object/1)
     #Logger.info "Called Job.Producer.handle_events (events = #{ie}, _, state = #{is})"
-    Logger.info "Called Job.Producer.handle_events"
+    Logger.info "Called Job.Producer.handle_events on #{inspect pretty_events}"
     # Fix once we've got the GCP stuff nailed down
     gcp_events = []
     #ne = events |> Enum.map(&process_jobs/1)
     { :noreply, gcp_events, state }
-  end
-
-
-  
-  def start_link initial_ts do
-    Logger.info "Called Job.Producer.start_link (initial_ts = #{inspect initial_ts})"
-    GenStage.start_link __MODULE__, initial_ts, name: __MODULE__
-  end
-
-  def init initial_ts do
-    Logger.info "Called Job.Producer.init (initial_ts = #{inspect initial_ts})"
-    :ets.new(:uuid, [:set, :public, :named_table])
-    { :producer_consumer, initial_ts }
   end
   
   def handle_demand demand, ts do
@@ -158,9 +144,9 @@ defmodule RAP.Job.Producer do
     end
   end
 
-  def sort_scope(%Staging{signal: :valid_table}, %Staging{signal: :invalid_table}), do: true
+  def sort_scope(%Staging{signal: :valid_table},   %Staging{signal: :invalid_table}), do: true
   def sort_scope(%Staging{signal: :invalid_table}, %Staging{signal: :valid_table}), do: false
-  def sort_scope(%Staging{variable: var0}, %Staging{variable: var1}), do: var0 < var1
+  def sort_scope(%Staging{variable: var0},         %Staging{variable: var1}), do: var0 < var1
 
   defp job_scope_against_tables(base_iri_text, tables, job) do
     run_scope = fn (src) -> src
