@@ -131,16 +131,20 @@ defmodule RAP.Storage.Monitor do
     {:reply, new_time_stamp, [], new_state}
   end
 
-  # This variant of the function just duplicates work - both by immediately
-  # generating events to send upstream and by appending to the queue. This means
-  # that after the next stage has finished consuming the events sent upstream
-  # immediately, it asks for more, but it's already used them. This is really a
-  # race condition.
-  #def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
-  #  Logger.info "Received cast :stage_objects"
-  #  new_state = state |> Map.put(:staging_objects, extant ++ additional)
-  #  {:noreply, extant ++ additional, new_state}
-  #end
+  # This variant of the function was fatally flawed as it duplicates work
+  # both by immediately generating events to send upstream and by
+  # appending to the queue. This means that after the next stage has
+  # finished consuming the events sent upstream immediately, it asks for
+  # more, but it's already used them. This is really bad because the
+  # events we're interested in have a cost for retrieval, both
+  # computationally and in terms of the subscription to the GCP storage
+  # platform.
+  #
+  #'' def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
+  #''   Logger.info "Received cast :stage_objects"
+  #''   new_state = state |> Map.put(:staging_objects, extant ++ additional)
+  #''   {:noreply, extant ++ additional, new_state}
+  #'' end
 
   def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
     Logger.info "Received cast :stage_objects"
@@ -297,7 +301,10 @@ defmodule RAP.Storage.Monitor do
     Logger.info "Polling GCP storage bucket #{bucket} for flat objects"
     GCPReqObjs.storage_objects_list(session, bucket)
   end
-  
+
+  @doc """
+  Initiate a new connection
+  """
   def new_connection() do
     with {:ok, token} <- Goth.Token.for_scope(@gcp_scope),
          session      <- GCPConn.new(token.token) do

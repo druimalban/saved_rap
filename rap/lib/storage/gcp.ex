@@ -79,38 +79,4 @@ defmodule RAP.Storage.GCP do
 	  {:error, target_dir}
     end
   end
-
-  @doc """
-  There are two elements of this. Firstly, we have a notion of UUIDs
-  which have been cached. There is a single row per UUID because the UUID
-  has a notion of a job, or collection of jobs. Secondly, we have a
-  notion of files, and it is expected that there would be many different
-  files associated with an UUID.
-
-  The most efficient way to check which jobs are feasible is to summarise
-  the list of objects into unique UUIDs. This is just a map to extract
-  the UUIDs then run `Enum.uniq/2'. We then filter these unique UUIDs
-  using `Transactions.feasible/1' and `ets_feasible/1', which produce a
-  set of jobs which are neither cached (finished) nor currently running
-  (in Erlang term storage ~ `:ets').
-
-  We further group all objects provided by UUID. For each UUID which made
-  it out of the filtering, use this as the key to lookup the collection
-  of files associated with the UUID.
-
-  There are certain well-founded assumptions which are governed by the
-  functionality of `fisdat' and/or `fisup'. Firstly, there is at most one
-  manifest per UUID, because that's the single file we fed into `fisup'
-  in order to upload the files (and a unique UUID is created per
-  invocation of `fisup'). Secondly, the `fisup' program will have
-  normalised the name of the manifest to `manifest.ttl'. Indeed, this is
-  the only normalisation that need take place, because as it currently
-  stands, the manifest refers to all of the dependent files.
-  """ #### MOVE ME MOVE ME MOVE ME
-  
-  def handle_cast({:storage_changed, str_invocation}, state) do
-    Logger.info "Received fake :storage_changed signal for #{str_invocation}"
-    { :noreply, [str_invocation], state }
-  end
-
 end
