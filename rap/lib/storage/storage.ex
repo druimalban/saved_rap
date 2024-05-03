@@ -16,7 +16,7 @@ defmodule RAP.Storage do
   defstruct [ :uuid, :manifest, :resources, :results ]
 
   defdatabase DB do
-    deftable Job, [:uuid, :manifest, :resources, :results], type: :bag
+    deftable Job, [ :uuid, :manifest, :resources, :results ], type: :bag
   end 
 end
 
@@ -95,65 +95,109 @@ defmodule RAP.Storage.Monitor do
   def init(%RAP.Application{} = initial_state) do
     Logger.info "Called Storage.Monitor.init (initial_state: #{inspect initial_state})"
     :ets.new(:uuid, [:set, :public, :named_table])
-    with {:ok, initial_session} <- new_connection() do
-      revised_state = initial_state |> Map.put(:gcp_session, initial_session)
-      {:producer, revised_state}
+    with {:ok, initial_session} <- new_connection()
+      do
+      state = initial_state |> Map.put(:gcp_session, initial_session)
+      Task.start(fn() ->
+	monitor_gcp(
+	  state.gcp_session,
+	  state.gcp_bucket,
+	  state.interval_seconds,
+	  state.last_poll
+	)
+      end)
+      {:producer, state}
     else
-      {:error, _msg} -> {:producer, []}
+      {:error, _msg} = error -> error
     end
+  end
+
+  def handle_cast({:update_session, new_session}, %RAP.Application{} = state) do
+    Logger.info "Received cast :update_session"
+    new_state = state |> Map.put(:gcp_session, new_session)
+    {:noreply, [], new_state}
+  end
+  # Take arbitrary time-stamp to avoid code repetition and race conditions
+  def handle_cast({:update_last_poll, new_time_stamp}, %RAP.Application{} = state) do
+    Logger.info "Received cast :update_last_poll"
+    new_state = state |> Map.put(:last_poll, new_time_stamp)
+    {:noreply, [], new_state}
+  end
+  def handle_cast({:stage_uuids, additional}, %RAP.Application{staging_uuids: extant} = state) do
+    Logger.info "Received cast :stage_uuids"
+    new_uuid_queue = extant ++ additional
+    new_state = state |> Map.put(:staging_uuids, new_uuid_queue)
+    {:noreply, [], new_state}
+  end
+
+  @doc "Boilerplate handle_demand/2 for now"
+  def handle_demand demand, state do
+    Logger.info "Storage.Monitor: Received demand for #{inspect demand} event"
+    yielded_uuids   = state.staging_uuids |> Enum.take(demand)
+    remaining_uuids = state.staging_uuids |> Enum.drop(demand)
+    new_state       = state |> Map.put(:staging_uuids, remaining_uuids)
+    Logger.info "Yielded #{inspect(length yielded_uuids)} UUIDs, with #{inspect(length remaining_uuids)} held in state"
+    {:noreply, yielded_uuids, new_state}
   end
   
   @doc """
-  This is the best place to put the polling for new UUIDs, i.e. make a
-  GenStage call which will poll for UUIDs, providing that there the
-  interval in question has elapsed.
+  Monitors the GCP objects every five minutes, updating both global
+  state and calling this recursively.
 
-  This avoids the need at all for the watch_bucket/1 function calling
-  the recursive monitor_session function.
+  The Google GCP buckets have a fake directory structure: they're by
+  default stored in this flat object-based structure which the web
+  interface hides.
+
+  The API has several 'Folder' and 'ManagedFolder' functions but these
+  only work on buckets which have a 'hierarchical' namespace, and the
+  documentation is so bad that there does not appear to be a way to set
+  this on the web interface.
   """
-  def handle_demand(demand, %RAP.Application{interval_seconds: interval, time_stamp: ts} = state) do
-    Logger.info "Called `Storage.Monitor.handle_demand (demand = #{inspect demand}, ts = #{inspect ts})'"
+  def monitor_gcp(session, bucket, interval, last_poll) do
+    invocation_ts = DateTime.utc_now() |> DateTime.to_unix()
+    elapsed = invocation_ts - last_poll
 
-    current_ts = DateTime.utc_now() |> DateTime.to_unix()
-    elapsed = current_ts - ts
-    
-    with true <- elapsed >= interval,
-	 {:ok, uuids, new_state} <- monitor_proper(state) do
-      # {:noreply, uuids, new_state}
-      {:noreply, [], new_state}
+    with true <- elapsed > interval,
+	 {:ok, %GCPObjs{items: objects}} <- wrap_gcp_request(session, bucket)
+	do
+          Logger.info "Time elapsed (#{inspect elapsed}s) is greater than interval (#{inspect interval}s)"
 
-    else
-      false ->
-	Logger.info "Received demand for new events!"
-	{:noreply, [], state}
-      {:error, _, _, _} -> {:noreply, [], state}
+	  uuids = objects
+	  |> Enum.map(&features_helper/1)
+	  |> Enum.map(&uuid_helper/1)
+	  
+	  Logger.info "Found UUIDs: #{inspect uuids}"
+	  GenStage.cast(__MODULE__, {:stage_uuids, uuids})
+	  
+	  # Do check this again because it's possible (if unlikely) that 
+	  new_ts    = DateTime.utc_now() |> DateTime.to_unix()
+	  Logger.info "Update last poll UNIX time stamp to #{inspect new_ts}"
+	  GenStage.cast(__MODULE__, {:update_last_poll, new_ts})
+	  
+	  monitor_gcp(session, bucket, interval, new_ts)
+	else
+	  false ->
+	    # Don't log here as this isn't an error
+	    monitor_gcp(session, bucket, interval, last_poll)
+	  {:error, error = %Tesla.Env{status: 401}} ->
+	    Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
+            new_session = new_connection()
+	    GenStage.cast(__MODULE__, {:update_last_poll, new_session})
+	    monitor_gcp(new_session, bucket, interval, last_poll)
+	  {:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
+	    Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
+            {:error, uri, code, msg}
     end
   end
+  
 
-  def monitor_proper(%RAP.Application{} = state) do
-    session = state.gcp_session
-    bucket  = state.gcp_bucket
-    with {:ok, %GCPObjs{items: objects}} <- GCPReqObjs.storage_objects_list(session, bucket)
-      do
-        uuids = objects
-	|> Enum.map(&features_helper/1)
-	|> Enum.map(&uuid_helper/1)
-      
-        current_ts = DateTime.utc_now() |> DateTime.to_unix()
-	new_state  = state |> Map.put(:time_stamp, current_ts)
-	{:ok, uuids, new_state}
-      else
-	{:error, error = %Tesla.Env{status: 401}} ->
-	  Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
-	  # If this bit fails, we know there's really something up!
-	  {:ok, new_session} = new_connection()
-	  new_state = state
-	  |> Map.put(:gcp_session, new_session)
-	  monitor_proper(new_state)
-        {:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
-	  Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
-	  {:error, uri, code, msg}
-      end
+  @doc """
+  Added this for testing with statements, but it was still productive to
+  keep it around as informative messages in the log are good.
+  """
+  defp wrap_gcp_request(session, bucket) do
+    Logger.info "Polling GCP storage bucket #{bucket} for flat objects"
+    GCPReqObjs.storage_objects_list(session, bucket)
   end
   
   def new_connection() do
@@ -168,7 +212,7 @@ defmodule RAP.Storage.Monitor do
 
 
   def features_helper(%GCPObj{} = obj) do
-    Logger.info "Called `Storage.Monitor.features_helper' on object #{obj.name}"
+    #Logger.info "Called `Storage.Monitor.features_helper' on object #{obj.name}"
      %{id:         obj.id,
        bucket:     obj.bucket,
        md5:        obj.md5Hash,
@@ -192,7 +236,7 @@ defmodule RAP.Storage.Monitor do
   files.
   """
   def uuid_helper(gcp_object) do
-    Logger.info "Called `Storage.Monitor.uuid_helper' on object #{gcp_object.name}"
+    #Logger.info "Called `Storage.Monitor.uuid_helper' on object #{gcp_object.name}"
     with [owner, _date, uuid, res | k] <- String.split(gcp_object.name, "/"),
 	 is_directory <- length(k) > 0
     do
@@ -217,23 +261,4 @@ defmodule RAP.Storage.Monitor do
     end
   end
 
-  @doc """
-  Monitors the GCP objects every five minutes.
-
-  The Google GCP buckets have a fake directory structure: they're by
-  default stored in this flat object-based structure which the web
-  interface hides.
-
-  The API has several 'Folder' and 'ManagedFolder' functions but these
-  only work on buckets which have a 'hierarchical' namespace, and the
-  documentation is so bad that there does not appear to be a way to set
-  this on the web interface.
-
-  If the request is successful, cast to the check_then_run function
-  which will check the UUIDs against 1. completed jobs (an mnesia
-  database) and 2. jobs, if any, currently running.
-  """
-  def handle_cast({:spew_uuids, :source_gcp, session, bucket_name, uuids}, state) do
-      {:noreply, {:source_gcp, session, bucket_name, uuids}, state}
-  end
 end
