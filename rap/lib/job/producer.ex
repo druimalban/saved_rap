@@ -60,8 +60,8 @@ defmodule RAP.Job.Producer do
   def handle_events events, _from, state do
     ie = inspect events
     is = inspect state
-    Logger.info "Called Job.Producer.handle_events (events = #{ie}, _, state = #{is})"
-
+    #Logger.info "Called Job.Producer.handle_events (events = #{ie}, _, state = #{is})"
+    Logger.info "Called Job.Producer.handle_events"
     # Fix once we've got the GCP stuff nailed down
     gcp_events = []
     #ne = events |> Enum.map(&process_jobs/1)

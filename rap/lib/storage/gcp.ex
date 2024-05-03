@@ -106,42 +106,8 @@ defmodule RAP.Storage.GCP do
   normalised the name of the manifest to `manifest.ttl'. Indeed, this is
   the only normalisation that need take place, because as it currently
   stands, the manifest refers to all of the dependent files.
-  """
-  def handle_cast({:check_then_run, session, bucket_name, objs}, state) do
-    Logger.info "`Storage.GCP' received `:check_then_run' cast"
-    
-    remote_uuids = objs
-    |> Enum.reject(&is_nil/1)
-    |> Enum.map(& &1.uuid)
-    |> Enum.uniq()
-    Logger.info("Found unique UUIDs on GCP: #{inspect remote_uuids}")
-    
-    staging_uuids = remote_uuids
-    |> Enum.filter(&Transactions.feasible?/1)
-    |> Enum.filter(&Monitor.ets_feasible?/1)
-    
-    grouped_file_objs = objs
-    |> Enum.reject(&is_nil/1)
-    |> Enum.filter(&  !&1.dir)
-    |> Enum.group_by(& &1.uuid)
-
-    prep_job = fn (uuid) ->
-      fps = grouped_file_objs |> Map.get(uuid) 
-      Logger.info "#{uuid} => #{inspect fps}"
-      :ets.insert(:uuid, {uuid})
-      Logger.info("Inserted #{uuid} into Erlang term storage (:ets)")
-      fps |> Enum.each(&fetch_job_deps(session, bucket_name, &1))
-    end
-
-    # Insert the running UUIDs into ETS
-    staging_uuids
-    |> Enum.each(prep_job)
-
-    staging_uuids
-    
-    {:noreply, [], state} # Don't yet produce events
-  end
-
+  """ #### MOVE ME MOVE ME MOVE ME
+  
   def handle_cast({:storage_changed, str_invocation}, state) do
     Logger.info "Received fake :storage_changed signal for #{str_invocation}"
     { :noreply, [str_invocation], state }

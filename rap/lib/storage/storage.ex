@@ -17,7 +17,7 @@ defmodule RAP.Storage do
 
   defdatabase DB do
     deftable Job, [ :uuid, :manifest, :resources, :results ], type: :bag
-  end 
+  end
 end
 
 defmodule RAP.Storage.Transactions do
@@ -77,6 +77,9 @@ defmodule RAP.Storage.Monitor do
   alias RAP.Storage.Monitor
   alias RAP.Storage.Transactions
 
+  defstruct [:owner, :uuid, :path, :directory?,
+	     :gcp_name, :gcp_id, :gcp_bucket, :gcp_md5]
+
   # No circumstances in which this is configurable: it's so tied to API usage
   @gcp_scope "https://www.googleapis.com/auth/cloud-platform"
   
@@ -117,29 +120,66 @@ defmodule RAP.Storage.Monitor do
     new_state = state |> Map.put(:gcp_session, new_session)
     {:noreply, [], new_state}
   end
+  def handle_call(:update_session, _from, %RAP.Application{} = state) do
+    Logger.info "Received call :update_session"
+    new_session = new_connection()
+    new_state   = state |> Map.put(:gcp_session, new_session)
+    {:reply, new_session, [], new_state}
+  end
+
   # Take arbitrary time-stamp to avoid code repetition and race conditions
   def handle_cast({:update_last_poll, new_time_stamp}, %RAP.Application{} = state) do
     Logger.info "Received cast :update_last_poll"
     new_state = state |> Map.put(:last_poll, new_time_stamp)
     {:noreply, [], new_state}
   end
-  def handle_cast({:stage_uuids, additional}, %RAP.Application{staging_uuids: extant} = state) do
-    Logger.info "Received cast :stage_uuids"
-    new_uuid_queue = extant ++ additional
-    new_state = state |> Map.put(:staging_uuids, new_uuid_queue)
-    {:noreply, [], new_state}
+  def handle_call(:update_last_poll, _from, %RAP.Application{} = state) do
+    Logger.info "Received call :update_last_poll"
+    new_time_stamp = DateTime.utc_now() |> DateTime.to_unix()
+    new_state      = state |> Map.put(:last_poll, new_time_stamp)
+    {:reply, new_time_stamp, [], new_state}
+  end
+
+  def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
+    Logger.info "Received cast :stage_objects"
+    new_queue = extant ++ additional
+    new_state = state |> Map.put(:staging_objects, new_queue)
+    {:noreply, new_queue, new_state}
+  end
+
+  @doc """
+  Allows us to retrieve the current session from the producer.
+
+  This is necessary since including the session in each event is annoying
+  and does not feel ideal.
+  """
+  def handle_call(:yield_session, subscriber, %RAP.Application{} = state) do
+    Logger.info "Received call to produce return current session, from subscriber #{subscriber}"
+    {:reply, state.gcp_session, [], state}
   end
 
   @doc "Boilerplate handle_demand/2 for now"
   def handle_demand demand, state do
     Logger.info "Storage.Monitor: Received demand for #{inspect demand} event"
-    yielded_uuids   = state.staging_uuids |> Enum.take(demand)
-    remaining_uuids = state.staging_uuids |> Enum.drop(demand)
-    new_state       = state |> Map.put(:staging_uuids, remaining_uuids)
-    Logger.info "Yielded #{inspect(length yielded_uuids)} UUIDs, with #{inspect(length remaining_uuids)} held in state"
-    {:noreply, yielded_uuids, new_state}
+    yielded   = state.staging_objects |> Enum.take(demand)
+    remaining = state.staging_objects |> Enum.drop(demand)
+    new_state = state |> Map.put(:staging_objects, remaining)
+    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state"
+    {:noreply, yielded, new_state}
   end
-  
+
+  @doc """
+  Effectual retrieval of object associated with UUID, storing the assumed
+  valid UUID in Erlang term storage.
+  """
+  defp prep_job(uuid, grouped_objects) do
+    object = grouped_objects |> Map.get(uuid)
+    Logger.info "#{uuid} => #{inspect object}"
+    :ets.insert(:uuid, {uuid})
+    Logger.info("Inserted #{uuid} into Erlang term storage (:ets)")
+    object
+  end
+    
   @doc """
   Monitors the GCP objects every five minutes, updating both global
   state and calling this recursively.
@@ -159,34 +199,49 @@ defmodule RAP.Storage.Monitor do
 
     with true <- elapsed > interval,
 	 {:ok, %GCPObjs{items: objects}} <- wrap_gcp_request(session, bucket)
-	do
-          Logger.info "Time elapsed (#{inspect elapsed}s) is greater than interval (#{inspect interval}s)"
+    do
+        Logger.info "Time elapsed (#{inspect elapsed}s) is greater than interval (#{inspect interval}s)"
+	normalised_objects = objects
+	|> Enum.map(&uuid_helper/1)
+	|> Enum.reject(&is_nil/1)
 
-	  uuids = objects
-	  |> Enum.map(&features_helper/1)
-	  |> Enum.map(&uuid_helper/1)
+	remote_uuids = normalised_objects
+	|> Enum.map(& &1.uuid)
+	|> Enum.uniq
+	Logger.info "Found UUIDs on GCP: #{inspect remote_uuids}"
+
+	staging_uuids = remote_uuids
+	|> Enum.filter(&Transactions.feasible?/1)
+	|> Enum.filter(&ets_feasible?/1)
+
+	grouped_objects = normalised_objects
+	|> Enum.filter(&  !&1.directory?)
+	|> Enum.group_by(& &1.uuid)
 	  
-	  Logger.info "Found UUIDs: #{inspect uuids}"
-	  GenStage.cast(__MODULE__, {:stage_uuids, uuids})
-	  
-	  # Do check this again because it's possible (if unlikely) that 
-	  new_ts    = DateTime.utc_now() |> DateTime.to_unix()
-	  Logger.info "Update last poll UNIX time stamp to #{inspect new_ts}"
-	  GenStage.cast(__MODULE__, {:update_last_poll, new_ts})
-	  
-	  monitor_gcp(session, bucket, interval, new_ts)
-	else
-	  false ->
-	    # Don't log here as this isn't an error
-	    monitor_gcp(session, bucket, interval, last_poll)
-	  {:error, error = %Tesla.Env{status: 401}} ->
-	    Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
-            new_session = new_connection()
-	    GenStage.cast(__MODULE__, {:update_last_poll, new_session})
-	    monitor_gcp(new_session, bucket, interval, last_poll)
-	  {:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
-	    Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
-            {:error, uri, code, msg}
+	# Insert into ETS while printing useful log messages
+	staging_objects = staging_uuids
+	|> Enum.map(&prep_job(&1, grouped_objects))
+
+	pretty_objects = staging_objects |> Enum.map(fn (objs) ->
+	  objs |> Enum.map(&pretty_print_object/1)
+	end)
+	Logger.info "Found objects: #{inspect pretty_objects}"
+	
+	GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
+	
+	new_time_stamp = GenStage.call(__MODULE__, :update_last_poll)
+	monitor_gcp(session, bucket, interval, new_time_stamp)
+    else
+      false ->
+	# Don't log here as this isn't an error
+	monitor_gcp(session, bucket, interval, last_poll)
+      {:error, error = %Tesla.Env{status: 401}} ->
+	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
+        new_session = GenStage.call(__MODULE__, :update_session)
+	monitor_gcp(new_session, bucket, interval, last_poll)
+      {:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
+	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
+        {:error, uri, code, msg}
     end
   end
   
@@ -210,20 +265,6 @@ defmodule RAP.Storage.Monitor do
     end
   end
 
-
-  def features_helper(%GCPObj{} = obj) do
-    #Logger.info "Called `Storage.Monitor.features_helper' on object #{obj.name}"
-     %{id:         obj.id,
-       bucket:     obj.bucket,
-       md5:        obj.md5Hash,
-       uri_media:  obj.mediaLink,
-       uri_self:   obj.selfLink,
-       ts_created: obj.timeCreated,
-       ts_updated: obj.updated,
-       mime_type:  obj.contentType,
-       name:       obj.name       }
-  end
-
   @doc """
   Given an object returned by GCP, the files of which are uploaded in the
   following format, extract the useful parts from this well-known
@@ -235,20 +276,31 @@ defmodule RAP.Storage.Monitor do
   have `text/plain' for directories, `application/octet_stream' for empty
   files.
   """
-  def uuid_helper(gcp_object) do
-    #Logger.info "Called `Storage.Monitor.uuid_helper' on object #{gcp_object.name}"
-    with [owner, _date, uuid, res | k] <- String.split(gcp_object.name, "/"),
-	 is_directory <- length(k) > 0
+  def uuid_helper(%GCPObj{name: nom} = gcp_object) do
+    atom_pattern = "[^\\/]+"
+    date_pattern = "[0-9]{8}"
+    uuid_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    with {:ok, re} <- Regex.compile("^#{atom_pattern}/#{date_pattern}/#{uuid_pattern}/#{atom_pattern}$"),
+	 true      <- Regex.match?(string_regex, nom),
+         [owner, _date, uuid, fp] <- String.split(nom, "/")
     do
-      gcp_object
-      |> Map.merge(
-	%{owner: owner, uuid: uuid, file: res, dir: is_directory}
-      )
+      %Monitor{
+	owner:      owner,
+	uuid:       uuid,
+	path:       fp,
+	gcp_name:   gcp_object.name,
+	gcp_id:     gcp_object.id,
+	gcp_bucket: gcp_object.bucket, 
+	gcp_md5:    gcp_object.md5Hash }
     else
-      [_|_] -> nil
+      _ -> nil
     end
   end
 
+  def pretty_print_object(%Monitor{uuid: uuid, path: path}) do
+    "%{ uuid: #{uuid}, path: #{path}}"
+  end
+    
   @doc """
   Simple wrapper around Erlang term storage table of UUIDs
   """
