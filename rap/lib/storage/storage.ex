@@ -77,7 +77,9 @@ defmodule RAP.Storage.Monitor do
   alias RAP.Storage.Monitor
   alias RAP.Storage.Transactions
 
-  defstruct [:owner, :uuid, :path, :directory?,
+  import :timer, only: [ sleep: 1 ]
+
+  defstruct [:owner, :uuid, :path,
 	     :gcp_name, :gcp_id, :gcp_bucket, :gcp_md5]
 
   # No circumstances in which this is configurable: it's so tied to API usage
@@ -173,11 +175,24 @@ defmodule RAP.Storage.Monitor do
   valid UUID in Erlang term storage.
   """
   defp prep_job(uuid, grouped_objects) do
-    object = grouped_objects |> Map.get(uuid)
-    Logger.info "#{uuid} => #{inspect object}"
-    :ets.insert(:uuid, {uuid})
-    Logger.info("Inserted #{uuid} into Erlang term storage (:ets)")
-    object
+    yielded_files = grouped_objects |> Map.get(uuid)
+    find_manifest = fn(k) -> k.path == "manifest.ttl" end
+
+    with %Monitor{} = manifest <- Enum.find(yielded_files, find_manifest),
+         resources <- List.delete(yielded_files, manifest) do
+      :ets.insert(:uuid, {uuid})
+      ds = %RAP.Storage{uuid: uuid, manifest: manifest, resources: resources}
+      Logger.info("Inserted #{uuid} into Erlang term storage (:ets)")
+      Logger.info("UUID/content map: #{pretty_print_object ds}")
+      ds
+    else
+      nil -> nil
+    end
+  end
+  defp pretty_print_object(%Monitor{path: fp}), do: fp
+  defp pretty_print_object(%RAP.Storage{uuid: uuid, resources: res}) do
+    pretty_resources = res |> Enum.map(&pretty_print_object/1)
+    "%{UUID: #{uuid}, resources: #{inspect pretty_resources}}"
   end
     
   @doc """
@@ -198,42 +213,33 @@ defmodule RAP.Storage.Monitor do
     elapsed = invocation_ts - last_poll
 
     with true <- elapsed > interval,
-	 {:ok, %GCPObjs{items: objects}} <- wrap_gcp_request(session, bucket)
-    do
-        Logger.info "Time elapsed (#{inspect elapsed}s) is greater than interval (#{inspect interval}s)"
-	normalised_objects = objects
-	|> Enum.map(&uuid_helper/1)
-	|> Enum.reject(&is_nil/1)
+	 {:ok, %GCPObjs{items: objects}} <- wrap_gcp_request(session, bucket) do
+      Logger.info "Time elapsed (#{inspect elapsed}s) is greater than interval (#{inspect interval}s)"
+      normalised_objects = objects
+      |> Enum.map(&uuid_helper/1)
+      |> Enum.reject(&is_nil/1)
 
-	remote_uuids = normalised_objects
-	|> Enum.map(& &1.uuid)
-	|> Enum.uniq
-	Logger.info "Found UUIDs on GCP: #{inspect remote_uuids}"
+      remote_uuids = normalised_objects
+      |> Enum.map(& &1.uuid)
+      |> Enum.uniq
+      Logger.info "Found UUIDs on GCP: #{inspect remote_uuids}"
 
-	staging_uuids = remote_uuids
-	|> Enum.filter(&Transactions.feasible?/1)
-	|> Enum.filter(&ets_feasible?/1)
+      staging_uuids = remote_uuids
+      |> Enum.filter(&Transactions.feasible?/1)
+      |> Enum.filter(&ets_feasible?/1)
 
-	grouped_objects = normalised_objects
-	|> Enum.filter(&  !&1.directory?)
-	|> Enum.group_by(& &1.uuid)
-	  
-	# Insert into ETS while printing useful log messages
-	staging_objects = staging_uuids
-	|> Enum.map(&prep_job(&1, grouped_objects))
-
-	pretty_objects = staging_objects |> Enum.map(fn (objs) ->
-	  objs |> Enum.map(&pretty_print_object/1)
-	end)
-	Logger.info "Found objects: #{inspect pretty_objects}"
+      grouped_objects = normalised_objects
+      |> Enum.group_by(& &1.uuid)
 	
-	GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
+      staging_objects = staging_uuids
+      |> Enum.map(&prep_job(&1, grouped_objects))
+      |> Enum.reject(&is_nil/1)
 	
-	new_time_stamp = GenStage.call(__MODULE__, :update_last_poll)
-	monitor_gcp(session, bucket, interval, new_time_stamp)
+      GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
+      new_time_stamp = GenStage.call(__MODULE__, :update_last_poll)
+      monitor_gcp(session, bucket, interval, new_time_stamp)
     else
       false ->
-	# Don't log here as this isn't an error
 	monitor_gcp(session, bucket, interval, last_poll)
       {:error, error = %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
@@ -281,9 +287,8 @@ defmodule RAP.Storage.Monitor do
     date_pattern = "[0-9]{8}"
     uuid_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
     with {:ok, re} <- Regex.compile("^#{atom_pattern}/#{date_pattern}/#{uuid_pattern}/#{atom_pattern}$"),
-	 true      <- Regex.match?(string_regex, nom),
-         [owner, _date, uuid, fp] <- String.split(nom, "/")
-    do
+	 true      <- Regex.match?(re, nom),
+         [owner, _date, uuid, fp] <- String.split(nom, "/") do
       %Monitor{
 	owner:      owner,
 	uuid:       uuid,
@@ -295,10 +300,6 @@ defmodule RAP.Storage.Monitor do
     else
       _ -> nil
     end
-  end
-
-  def pretty_print_object(%Monitor{uuid: uuid, path: path}) do
-    "%{ uuid: #{uuid}, path: #{path}}"
   end
     
   @doc """
