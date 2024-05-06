@@ -20,31 +20,33 @@ defmodule RAP.Storage do
   end
 end
 
-defmodule RAP.Storage.Transactions do
+defmodule RAP.Storage.Staging do
 
   require Amnesia
   require Amnesia.Helper
-  require RAP.Storage.DB.Job
-  
-  def prep_data_set(uuid, manifest, resources, results) do
-    Amnesia.transaction do
-      %RAP.Storage.DB.Job{
-	uuid:      uuid,
-	manifest:  manifest,
-	resources: resources,
-	results:   results  }
-      |> RAP.Storage.DB.Job.write()
-    end
-  end
-  
+  require RAP.Storage.DB.Job, as: DB
+
+  defstruct [ :uuid, :index, :resources ]
+
   def feasible?(uuid) do
     Amnesia.transaction do
-      case RAP.Storage.DB.Job.read(uuid) do
+      case DB.read(uuid) do
 	nil -> true
 	_   ->
 	  Logger.info("Found job UUID #{uuid} in job cache!")
 	  false
       end
+    end
+  end
+  
+  def prep_data_set(uuid, manifest, resources, results) do
+    Amnesia.transaction do
+      %DB{
+	uuid:      uuid,
+	manifest:  manifest,
+	resources: resources,
+	results:   results  }
+      |> DB.write()
     end
   end
   
@@ -54,7 +56,6 @@ defmodule RAP.Storage.Monitor do
   @moduledoc """
   The idea is that this producer only finds UUIDs, and then produces
   events which are used to fetch the data.
-
   This locates separates the recursive checks from the actual disk usage,
   since the concurrency matters more for fetching data, as there may be
   race conditions and there's quite an extensive set of checks necessary
@@ -74,8 +75,7 @@ defmodule RAP.Storage.Monitor do
   alias GoogleApi.Storage.V1.Api.Objects,   as: GCPReqObjs
 
   alias RAP.Application
-  alias RAP.Storage.Monitor
-  alias RAP.Storage.Transactions
+  alias RAP.Storage.{Monitor, Staging}
 
   import :timer, only: [ sleep: 1 ]
 
@@ -107,6 +107,7 @@ defmodule RAP.Storage.Monitor do
 	monitor_gcp(
 	  state.gcp_session,
 	  state.gcp_bucket,
+	  state.index_file,
 	  state.interval_seconds,
 	  state.last_poll
 	)
@@ -147,8 +148,8 @@ defmodule RAP.Storage.Monitor do
   #'' end
 
   def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
-    Logger.info "Received cast :stage_objects"
-    with [queue_head | queue_tail] <- extant ++ additional do    
+    Logger.info "Received cast :stage_objects for objects #{inspect additional}"
+    with [queue_head | queue_tail] <- extant ++ additional do
       new_state = state |> Map.put(:staging_objects, queue_tail)
       {:noreply, [queue_head], new_state}
     else
@@ -163,7 +164,7 @@ defmodule RAP.Storage.Monitor do
   and does not feel ideal.
   """
   def handle_call(:yield_session, subscriber, %RAP.Application{} = state) do
-    Logger.info "Received call to produce return current session, from subscriber #{subscriber}"
+    Logger.info "Received call to produce return current session, from subscriber #{inspect subscriber}"
     {:reply, state.gcp_session, [], state}
   end
 
@@ -176,9 +177,9 @@ defmodule RAP.Storage.Monitor do
     Logger.info "Storage.Monitor: Received demand for #{inspect demand} event"
     yielded   = state.staging_objects |> Enum.take(demand)
     remaining = state.staging_objects |> Enum.drop(demand)
-    pretty_yielded = yielded |> Enum.map(&pretty_print_object/1)
+    pretty    = yielded |> Enum.map(&pretty_print_object/1)
     new_state = state |> Map.put(:staging_objects, remaining)
-    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state: #{inspect pretty_yielded}"
+    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state: #{inspect pretty}"
     {:noreply, yielded, new_state}
   end
 
@@ -186,24 +187,26 @@ defmodule RAP.Storage.Monitor do
   Effectual retrieval of object associated with UUID, storing the assumed
   valid UUID in Erlang term storage.
   """
-  defp prep_job(uuid, grouped_objects) do
-    yielded_files = grouped_objects |> Map.get(uuid)
-    find_manifest = fn(k) -> k.path == "manifest.ttl" end
+  defp prep_job(uuid, grouped_objects, index_file) do
+    target_files = grouped_objects |> Map.get(uuid)
+    find_index   = fn(k) -> k.path == index_file end
 
-    with %Monitor{} = manifest <- Enum.find(yielded_files, find_manifest),
-         resources <- List.delete(yielded_files, manifest) do
+    with %Monitor{} = index <- Enum.find(target_files, find_index),
+         resources <- List.delete(target_files, index) do
       :ets.insert(:uuid, {uuid})
-      ds = %RAP.Storage{uuid: uuid, manifest: manifest, resources: resources}
+      ds = %Staging{uuid: uuid, index: index, resources: resources}
       Logger.info("Inserted #{uuid} into Erlang term storage (:ets)")
       Logger.info("UUID/content map: #{pretty_print_object ds}")
       ds
     else
-      nil -> nil
+      nil ->
+	Logger.info "Job (UUID #{uuid}) not associated with index (file `#{index_file}')"
+	nil
     end
   end
 
   def pretty_print_object(%Monitor{path: fp}), do: fp
-  def pretty_print_object(%RAP.Storage{uuid: uuid, resources: res}) do
+  def pretty_print_object(%Staging{uuid: uuid, resources: res}) do
     pretty_resources = res |> Enum.map(&pretty_print_object/1)
     "%{UUID: #{uuid}, resources: #{inspect pretty_resources}}"
   end
@@ -211,7 +214,7 @@ defmodule RAP.Storage.Monitor do
 
   @doc """
   This function monitors the GCP objects every five minutes (or whatever
-  interval has been set), updating both global state and calling this
+  interval has been set), updating both global te and calling this
   recursively.
 
   The GCP storage buckets have a fake directory structure: they're by
@@ -232,7 +235,7 @@ defmodule RAP.Storage.Monitor do
   The most efficient way to check which jobs are feasible is to summarise
   the list of objects into unique UUIDs. This is just a map to extract
   the UUIDs then run `Enum.uniq/2'. We then filter these unique UUIDs
-  using `Transactions.feasible/1' and `ets_feasible/1', which produce a
+  using `Staging.feasible/1' and `ets_feasible/1', which produce a
   set of jobs which are neither cached (finished) nor currently running
   (in Erlang term storage ~ `:ets').
 
@@ -244,12 +247,15 @@ defmodule RAP.Storage.Monitor do
   functionality of `fisdat' and/or `fisup'. Firstly, there is at most one
   manifest per UUID, because that's the single file we fed into `fisup'
   in order to upload the files (and a unique UUID is created per
-  invocation of `fisup'). Secondly, the `fisup' program will have
-  normalised the name of the manifest to `manifest.ttl'. Indeed, this is
-  the only normalisation that need take place, because as it currently
-  stands, the manifest refers to all of the dependent files.
+  invocation of `fisup'). The original idea was to have the manifest file
+  hard-coded, and for `fisup' program to normalise prior to upload, which
+  is something which it does for YAML LinkML schema vs equivalent turtle.
+  This is not necessary if there is a hard-coded index file called
+  `.index' which simply has the file-name of the manifest file. Adding
+  other files into this index file is unneccesary because the manifest
+  describes these.
   """
-  def monitor_gcp(session, bucket, interval, last_poll) do
+  def monitor_gcp(session, bucket, index_file, interval, last_poll) do
     invocation_ts = DateTime.utc_now() |> DateTime.to_unix()
     elapsed = invocation_ts - last_poll
 
@@ -266,26 +272,26 @@ defmodule RAP.Storage.Monitor do
       Logger.info "Found UUIDs on GCP: #{inspect remote_uuids}"
 
       staging_uuids = remote_uuids
-      |> Enum.filter(&Transactions.feasible?/1)
+      |> Enum.filter(&Staging.feasible?/1)
       |> Enum.filter(&ets_feasible?/1)
 
       grouped_objects = normalised_objects
       |> Enum.group_by(& &1.uuid)
 	
       staging_objects = staging_uuids
-      |> Enum.map(&prep_job(&1, grouped_objects))
+      |> Enum.map(&prep_job(&1, grouped_objects, index_file))
       |> Enum.reject(&is_nil/1)
 	
       GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
       new_time_stamp = GenStage.call(__MODULE__, :update_last_poll)
-      monitor_gcp(session, bucket, interval, new_time_stamp)
+      monitor_gcp(session, bucket, index_file, interval, new_time_stamp)
     else
       false ->
-	monitor_gcp(session, bucket, interval, last_poll)
+	monitor_gcp(session, bucket, index_file, interval, last_poll)
       {:error, error = %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
         new_session = GenStage.call(__MODULE__, :update_session)
-	monitor_gcp(new_session, bucket, interval, last_poll)
+	monitor_gcp(new_session, bucket, index_file, interval, last_poll)
       {:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}
@@ -318,10 +324,12 @@ defmodule RAP.Storage.Monitor do
   @doc """
   Given an object returned by GCP, the files of which are uploaded in the
   following format, extract the useful parts from this well-known
-  object name.
+  object name. Separate the regex into constituent patterns so that they
+  are easier to change separately, and actually compile the thing so that
+  any breaking changes break the function.
 
   The flat objects' names should be a string in the form
-  `<owner>/<yyyymmdd>/<uuid>/<file>', with or without a trailing slash.
+  `<owner>/<yyyymmdd>/<uuid>/<file>', with or without the trailing slash.
   The trailing slash conveniently tells us that it's a directory; objects
   have `text/plain' for directories, `application/octet_stream' for empty
   files.
@@ -330,7 +338,8 @@ defmodule RAP.Storage.Monitor do
     atom_pattern = "[^\\/]+"
     date_pattern = "[0-9]{8}"
     uuid_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-    with {:ok, re} <- Regex.compile("^#{atom_pattern}/#{date_pattern}/#{uuid_pattern}/#{atom_pattern}$"),
+    full_pattern = "^#{atom_pattern}/#{date_pattern}/#{uuid_pattern}/#{atom_pattern}$"
+    with {:ok, re} <- Regex.compile(full_pattern),
 	 true      <- Regex.match?(re, nom),
          [owner, _date, uuid, fp] <- String.split(nom, "/") do
       %Monitor{

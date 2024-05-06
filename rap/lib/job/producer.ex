@@ -52,15 +52,15 @@ defmodule RAP.Job.Producer do
     Logger.info "Called Job.Producer.init (initial_state = #{inspect initial_state})"
     subscription = [
       # Fix this using Storage.Monitor -> Storage.GCP/Storage.Local stages
-      { Monitor, min_demand: 0, max_demand: 1 }
+      { GCP, min_demand: 0, max_demand: 1 }
     ]
     { :producer_consumer, initial_state, subscribe_to: subscription }
   end
   
   def handle_events events, _from, state do
-    pretty_events = events |> Enum.map(&Monitor.pretty_print_object/1)
+    #pretty_events = events |> Enum.map(&Monitor.pretty_print_object/1)
     #Logger.info "Called Job.Producer.handle_events (events = #{ie}, _, state = #{is})"
-    Logger.info "Called Job.Producer.handle_events on #{inspect pretty_events}"
+    Logger.info "Called Job.Producer.handle_events on #{inspect events}"
     # Fix once we've got the GCP stuff nailed down
     gcp_events = []
     #ne = events |> Enum.map(&process_jobs/1)
