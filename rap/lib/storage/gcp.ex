@@ -118,7 +118,7 @@ defmodule RAP.Storage.GCP do
 	{:error, job.uuid, errors}	
       else
 	Logger.info "Job #{job.uuid}: No errors to report"
-	file_paths = signals |> Enum.map(&elem(&1, 0))
+	file_paths = signals |> Enum.map(&elem(&1, 1))
 	{:ok, job.uuid, file_paths}
       end
     end
@@ -129,11 +129,15 @@ defmodule RAP.Storage.GCP do
     index_path = "#{target_dir}/#{index}"
     with {:ok, uuid, file_paths} <- fetch_job_deps(cache_directory, job),
          {:ok, manifest}         <- File.read(index_path) do
+      Logger.info "Index file is #{index_path}"
+
+      manifest_path = target_dir <> String.trim(manifest)
+      Logger.info "Manifest file is #{manifest_path}"
       
-      manifest_path = "#{target_dir}/#{manifest}"
-      Logger.info "Job #{uuid}: manifest file is #{manifest_path}"      
-      non_manifests = file_paths |> List.delete(index_path)
-      Logger.info "Job #{uuid}: remaining files are #{inspect non_manifests}"      
+      non_manifests = file_paths
+      |> List.delete(manifest_path)
+      |> List.delete(index_path)      
+      Logger.info "Non-manifest files are #{inspect non_manifests}"      
 
       %RAP.Storage.GCP{uuid: uuid, manifest: manifest_path, resources: non_manifests}
     else
