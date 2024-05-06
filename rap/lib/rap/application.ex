@@ -49,22 +49,24 @@ defmodule RAP.Application do
   def start(_type, _args) do
     current_ts = DateTime.utc_now() |> DateTime.to_unix()
     initial_ts = current_ts - @interval_seconds
+
+    hardcoded_state =
+      %RAP.Application{
+	interval_seconds: @interval_seconds,
+	cache_directory:  @cache_directory,
+	index_file:       @index_file,
+	gcp_bucket:       @gcp_bucket,
+	local_directory:  @local_source_directory,
+	gcp_session:      nil,
+	last_poll:        initial_ts,
+	staging_objects:  [],
+	poll_signal:      :continue
+      }
     
     children = [
-      {RAP.Storage.Monitor,
-       %RAP.Application{
-	 interval_seconds: @interval_seconds,
-	 cache_directory:  @cache_dir,
-	 index_file:       @index_file,
-	 gcp_bucket:       @gcp_bucket,
-	 local_directory:  @local_source_directory,
-	 gcp_session:      nil,
-	 last_poll:        initial_ts,
-	 staging_objects:  [],
-	 poll_signal:      :continue
-       }},      
+      {RAP.Storage.Monitor, hardcoded_state},      
+      {RAP.Storage.GCP,     hardcoded_state},
       #RAP.Storage.TestConsumer
-      RAP.Storage.GCP,
       RAP.Job.Producer,
       RAP.Job.Runner,
       RAP.Job.Cache.Supervisor
