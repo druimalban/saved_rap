@@ -80,29 +80,29 @@ defmodule RAP.Storage.GCP do
   purported structure but we have the benefit of the mnesia database to
   cache results.
   """
-  defp fetch_object(target_dir, %RAP.Storage.Monitor{} = obj) do
+  defp fetch_object(target_dir, obj) do
     target_file = "#{target_dir}/#{obj.path}"
     Logger.info "Polling GCP storage bucket for flat object #{obj.gcp_name}"
-    if (File.exists?(target_file) && dl_success?(obj.gcp_md5, File.read!(target_file))) do
-      Logger.info "File #{target_file} already exists and MD5 checksum matches API's"
+    with false <- File.exists?(target_file) && dl_success?(obj.gcp_md5, File.read!(target_file)),
+         session <- GenStage.call(RAP.Storage.Monitor, :yield_session),
+	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
+	 :ok <- File.write(target_file, body) do
+      Logger.info "Successfully wrote #{target_file}"
       {:ok, target_file}
     else
-      Logger.info "Corrupted/incomplete #{target_file}. Prompt redownload of file #{obj.gcp_name}"
-      with session <- GenStage.call(RAP.Storage.Monitor, :yield_session),
-	   {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
-	   :ok <- File.write(target_file, body) do
-	     Logger.info "Successfully wrote #{target_file}"
-	     {:ok, target_file}
-      else
-	{:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
-	  Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
-          {:error, uri, code, msg}
-        {:error, reason} ->
-	  Logger.info "Error writing file due to #{inspect reason}"
-          {:error, reason}
-      end
+      true ->
+	Logger.info "File #{target_file} already exists and MD5 checksum matches API's"
+        {:ok, target_file}
+      {:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
+	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
+        {:error, uri, code, msg}
+      {:error, reason} ->
+	Logger.info "Error writing file due to #{inspect reason}"
+        {:error, reason}
     end
   end
+
+  
   defp reject_error({:ok, fp}), do: true
   defp reject_error({:error, _uri, _code, _msg}), do: false
   defp reject_error({:error, "incorrect", _md5}), do: false
@@ -151,7 +151,5 @@ defmodule RAP.Storage.GCP do
 	{:error, reason}
     end
   end
-
-
 
 end
