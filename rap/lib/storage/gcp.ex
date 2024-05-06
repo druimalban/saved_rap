@@ -55,6 +55,10 @@ defmodule RAP.Storage.GCP do
     purported_md5 == actual_md5
   end
 
+  defp wrap_gcp_fetch(session, obj) do
+    GCPReqObjs.storage_objects_get(session, obj.gcp_bucket, obj.gcp_name, [alt: "media"], decode: false)
+  end
+
   @doc """
   Given an MD5 checksum by the API listing (in the %Monitor{} struct):
   1. Check that the file exists.
@@ -80,12 +84,12 @@ defmodule RAP.Storage.GCP do
     target_file = "#{target_dir}/#{obj.path}"
     Logger.info "Polling GCP storage bucket for flat object #{obj.gcp_name}"
     if (File.exists?(target_file) && dl_success?(obj.gcp_md5, File.read!(target_file))) do
-      Logger.info "File #{target_file} already exists and MD5 checksum matches"
+      Logger.info "File #{target_file} already exists and MD5 checksum matches API's"
       {:ok, target_file}
     else
       Logger.info "Corrupted/incomplete #{target_file}. Prompt redownload of file #{obj.gcp_name}"
       with session <- GenStage.call(RAP.Storage.Monitor, :yield_session),
-	   {:ok, %Tesla.Env{body: body, status: 200}} <- GCPReqObjs.storage_objects_get(session, obj.gcp_bucket, obj.gcp_name, [alt: "media"], decode: false),
+	   {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
 	   :ok <- File.write(target_file, body) do
 	     Logger.info "Successfully wrote #{target_file}"
 	     {:ok, target_file}
@@ -104,7 +108,7 @@ defmodule RAP.Storage.GCP do
   defp reject_error({:error, "incorrect", _md5}), do: false
   defp reject_error({:error, _reason}), do: false
       
-  def fetch_job_deps(cache_directory, %RAP.Storage.Staging{} = job) do
+  defp fetch_job_deps(cache_directory, %RAP.Storage.Staging{} = job) do
     Logger.info "Called `Storage.GCP.fetch_job_deps' for job with UUID #{job.uuid}"
     all_resources = [job.index | job.resources]
     target_dir    = "#{cache_directory}/#{job.uuid}"
@@ -124,15 +128,15 @@ defmodule RAP.Storage.GCP do
     end
   end
 
-  def coalesce_job(cache_directory, index, %RAP.Storage.Staging{} = job) do
+  defp coalesce_job(cache_directory, index, %RAP.Storage.Staging{} = job) do
     target_dir = "#{cache_directory}/#{job.uuid}"
     index_path = "#{target_dir}/#{index}"
     with {:ok, uuid, file_paths} <- fetch_job_deps(cache_directory, job),
          {:ok, manifest}         <- File.read(index_path) do
-      Logger.info "Index file is #{index_path}"
+      Logger.info "Index file is #{inspect index_path}"
 
-      manifest_path = target_dir <> String.trim(manifest)
-      Logger.info "Manifest file is #{manifest_path}"
+      manifest_path = target_dir <> "/" <> String.trim(manifest)
+      Logger.info "Manifest file is #{inspect manifest_path}"
       
       non_manifests = file_paths
       |> List.delete(manifest_path)

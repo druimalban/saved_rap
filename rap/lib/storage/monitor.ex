@@ -201,7 +201,7 @@ defmodule RAP.Storage.Monitor do
   other files into this index file is unneccesary because the manifest
   describes these.
   """
-  def monitor_gcp(session, bucket, index_file, interval, last_poll) do
+  defp monitor_gcp(session, bucket, index_file, interval, last_poll) do
     invocation_ts = DateTime.utc_now() |> DateTime.to_unix()
     elapsed = invocation_ts - last_poll
 
@@ -257,7 +257,7 @@ defmodule RAP.Storage.Monitor do
   @doc """
   Initiate a new connection
   """
-  def new_connection() do
+  defp new_connection() do
     with {:ok, token} <- Goth.Token.for_scope(@gcp_scope),
          session      <- GCPConn.new(token.token) do
       Logger.info "Called Storage.Monitor.new_connection/0"
@@ -280,7 +280,7 @@ defmodule RAP.Storage.Monitor do
   have `text/plain' for directories, `application/octet_stream' for empty
   files.
   """
-  def uuid_helper(%GCPObj{name: nom} = gcp_object) do
+  defp uuid_helper(%GCPObj{name: nom} = gcp_object) do
     atom_pattern = "[^\\/]+"
     date_pattern = "[0-9]{8}"
     uuid_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
