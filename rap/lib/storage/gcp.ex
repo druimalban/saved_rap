@@ -62,15 +62,15 @@ defmodule RAP.Storage.GCP do
   @doc """
   Given an MD5 checksum by the API listing (in the %Monitor{} struct):
   1. Check that the file exists.
-  2. If so, check checksum.
-  3. If not, download and check checksum.
+  2. If so, verify checksum.
+  3. If not, download and verify checksum.
   (Make sure this isn't recursive.)
   
   Events are a `%Staging{}' struct: UUID, index object, and all other
   objects. Objects are a `%Monitor{}' struct, which includes all the
   information needed to fetch.
   
-  GCP OAuth tokens seem to have an expiry of one hour. Sessions are
+  GCP OAuth tokens apparently have an expiry of one hour. Sessions are
   retrieved from the monitor process (which handles renewing these) with
   the GenStage call `:yield_session'. There is relatively low risk of
   race conditions here, because the stage runs immediately after the
@@ -101,12 +101,6 @@ defmodule RAP.Storage.GCP do
         {:error, reason}
     end
   end
-
-  
-  defp reject_error({:ok, fp}), do: true
-  defp reject_error({:error, _uri, _code, _msg}), do: false
-  defp reject_error({:error, "incorrect", _md5}), do: false
-  defp reject_error({:error, _reason}), do: false
       
   defp fetch_job_deps(cache_directory, %RAP.Storage.Staging{} = job) do
     Logger.info "Called `Storage.GCP.fetch_job_deps' for job with UUID #{job.uuid}"
@@ -116,7 +110,10 @@ defmodule RAP.Storage.GCP do
     with :ok     <- File.mkdir_p(target_dir),
 	 signals <- Enum.map(all_resources, &fetch_object(target_dir, &1)) do
 
-      errors = signals |> Enum.reject(&reject_error/1)
+      errors = signals
+      |> Enum.reject(fn {:ok, _fp} -> true
+	                 _         -> false
+                     end)
       if (length errors) > 0 do
 	Logger.info "Job #{job.uuid}: Found errors #{inspect errors}"
 	{:error, job.uuid, errors}	
@@ -143,7 +140,7 @@ defmodule RAP.Storage.GCP do
       |> List.delete(index_path)      
       Logger.info "Non-manifest files are #{inspect non_manifests}"      
 
-      %RAP.Storage.GCP{uuid: uuid, manifest: manifest_path, resources: non_manifests}
+      %GCP{uuid: uuid, manifest: manifest_path, resources: non_manifests}
     else
       {:error, uuid, errors} -> {:error, job.uuid, errors}
       {:error, reason}       ->

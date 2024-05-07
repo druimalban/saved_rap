@@ -5,7 +5,7 @@ defmodule RAP.Application do
 
   # Hard-code these for brevity, should be configurable at program init.
   # Same cache dir for both the 'local' store and GCP
-  @interval_seconds 10
+  @interval_seconds 300
   @cache_directory  "./data_cache"
   @index_file       ".index"
   @index_fall_back  "manifest.ttl"
@@ -67,7 +67,7 @@ defmodule RAP.Application do
       {RAP.Storage.Monitor, hardcoded_state},      
       {RAP.Storage.GCP,     hardcoded_state},
       #RAP.Storage.TestConsumer
-      RAP.Job.Producer,
+      {RAP.Job.Producer,    hardcoded_state},
       RAP.Job.Runner,
       RAP.Job.Cache.Supervisor
     ]

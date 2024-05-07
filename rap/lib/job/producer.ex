@@ -30,7 +30,6 @@ defmodule RAP.Job.Producer do
   the manifest is ill-formed.
   """
 
-  alias RAP.Vocabulary.SAVED
   alias RAP.Manifest.{TableDesc, ColumnDesc, JobDesc, ManifestDesc}
   alias RAP.Storage.{GCP, Monitor}
   alias RAP.Job.{Producer, Spec, Staging}
@@ -42,9 +41,8 @@ defmodule RAP.Job.Producer do
 
   defstruct [ :title, :description, :staging_jobs ]
 
-  def start_link _args do
+  def start_link initial_state do
     Logger.info "Called Job.Producer.start_link (_)"
-    initial_state = []
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
   end
 
@@ -58,53 +56,84 @@ defmodule RAP.Job.Producer do
   end
   
   def handle_events events, _from, state do
-    #pretty_events = events |> Enum.map(&Monitor.pretty_print_object/1)
-    #Logger.info "Called Job.Producer.handle_events (events = #{ie}, _, state = #{is})"
-    Logger.info "Called Job.Producer.handle_events on #{inspect events}"
+    pretty_events = events |> Enum.map(& &1.uuid) |> inspect()
+    Logger.info "Called Job.Producer.handle_events on #{pretty_events}"
+
     # Fix once we've got the GCP stuff nailed down
-    gcp_events = []
-    #ne = events |> Enum.map(&process_jobs/1)
-    { :noreply, gcp_events, state }
+    processed = events
+    |> Enum.map(&invoke_manifest(&1, state.cache_directory))
+    
+    { :noreply, processed, state }
   end
   
-  def handle_demand demand, ts do
-    insd = inspect demand
-    inss = inspect ts
-    events = []
-    Logger.info "Called Job.Producer.handle_demand (demand = #{insd}, state = #{inss})"
-    { :noreply, events, ts }
-  end
+  #def handle_demand demand, ts do
+  #  insd = inspect demand
+  #  inss = inspect ts
+  #  events = []
+  #  Logger.info "Called Job.Producer.handle_demand (demand = #{insd}, state = #{inss})"
+  #  { :noreply, events, ts }
+  #end
   
-  @doc """
-  Generic helper function which sends the :try_jobs signal. This is
-  a place-holder which lets us manually trigger a job, since the aim is
-  to monitor GCP / other storage backend for new manifests to run. This
-  will probably be performed by an earlier stage.
-  """
-  def trigger manifest_path do
-    Logger.info "Called Job.Producer.trigger ()"
-    #({ #{inspect job_code} ,#{inspect col0} ,#{inspect col1} })"
-    GenStage.cast __MODULE__, {:try_jobs, manifest_path}
+  #  @doc """
+  #   Generic helper function which sends the :try_jobs signal. This is
+  #   a place-holder which lets us manually trigger a job, since the aim is
+  #   to monitor GCP / other storage backend for new manifests to run. This
+  #   will probably be performed by an earlier stage.
+  #   """
+  #   def trigger manifest_path do
+  #     Logger.info "Called Job.Producer.trigger ()"
+  #     #({ #{inspect job_code} ,#{inspect col0} ,#{inspect col1} })"
+  #     GenStage.cast __MODULE__, {:try_jobs, manifest_path}
+  #   end
+  defp pretty_print_table(%TableDesc{resource_path: file, schema_path: schema}), do: "#{file} (#{schema})"
+  defp paths_extant?(%TableDesc{resource_path: file, schema_path: schema}, target_dir, resources) do
+    "#{target_dir}/#{file}" in resources and "#{target_dir}/#{schema}" in resources
+  end
+  defp check_resources(%ManifestDesc{tables: ts} = manifest, target_dir, resources) do
+    with [_ | _] = proc <- Enum.filter(ts, &paths_extant?(&1, target_dir, resources)),
+	 {true, proc}   <- {length(proc) == length(ts), proc} do
+      #Logger.info "Of referenced files #{inspect resources}, all were valid"
+      Logger.info "All files in #{target_dir} were valid"
+      {:ok, manifest, proc}
+    else
+      [] ->
+	Logger.info "No files in #{target_dir} were valid"
+	{:error, :none, manifest}
+      {false, proc} ->
+	pretty_valid = proc |> Enum.map(&pretty_print_table/1) |> inspect()
+	Logger.info "Some files in #{target_dir} were valid: #{pretty_valid}"
+        {:error, :some, manifest, proc}
+    end
   end
 
   @doc """
   Given the :try_jobs signal, attempt to devise a set of jobs which are
   to be run.
   """
-  def handle_cast {:try_jobs, manifest_path}, state do
-    Logger.info "Received :try_jobs signal"
-    Logger.info "Building RDF graph from turtle manifest #{manifest_path}"
-    {:ok, graph}  = RDF.Turtle.read_file manifest_path
-
-    Logger.info "Loading RDF graph into Elixir/Grax structs"
-     {:ok, struct} = Grax.load graph, SAVED.RootManifest, ManifestDesc
-
-    Logger.info "Detecting feasible jobs"
-    base_iri  = RDF.IRI.to_string graph.base_iri
-    feasible_jobs = generate_jobs base_iri, struct
-    {:noreply, [feasible_jobs], state}
+  def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_path, resources: resources_paths}, cache_dir) do
+    target_dir = "#{cache_dir}/#{uuid}"
+    Logger.info "Building RDF graph from turtle manifest using data in #{target_dir}"
+    with {:ok, rdf_graph} <- RDF.Turtle.read_file(manifest_path),
+         {:ok, ex_struct} <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
+         {:ok, _struct}        <- check_skeleton(ex_struct),
+         {:ok, _extant, proc} <- check_resources(ex_struct, target_dir, resources_paths) do
+      Logger.info "Detecting feasible jobs"
+      base_iri = RDF.IRI.to_string(rdf_graph.base_iri)
+    else
+      {:error, err} ->
+	Logger.info "Could not read RDF graph #{manifest_path}"
+	Logger.info "Error was #{inspect err}"
+      {:error, "manifest empty", _manifest} ->
+	Logger.info "Generated manifest was empty!"
+      error -> error
+    end
   end
-
+  defp check_skeleton(%ManifestDesc{description: nil, title:         nil,
+				     tables:      [],  jobs:          [],
+				     gcp_source:  nil, local_version: nil
+				    } = manifest), do: {:error, "manifest_empty", manifest}
+  defp check_skeleton(%ManifestDesc{}, manifest), do: {:ok, manifest}
+  
   @doc """
   Given a manifest, check the following:
 
@@ -163,7 +192,7 @@ defmodule RAP.Job.Producer do
     }
   end
 
-  def generate_jobs(base_iri_text, %ManifestDesc{} = manifest) do
+  def generate_jobs(%ManifestDesc{} = manifest, base_iri_text) do
     processed_jobs = manifest.jobs
     |> Enum.map(&job_scope_against_tables(base_iri_text, manifest.tables, &1))
     %Producer{

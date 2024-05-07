@@ -58,8 +58,8 @@ defmodule RAP.Manifest.ManifestDesc do
     property :gcp_source,    SAVED.gcp_source,    type: :string, required: false, required: false
     property :local_version, SAVED.local_version, type: :string, required: false, required: true
 
-    link tables: SAVED.tables, type: list_of(TableDesc), depth: +5
-    link jobs:   SAVED.jobs,   type: list_of(JobDesc),   depth: +5
+    link tables: SAVED.tables, type: list_of(TableDesc), depth: +5, required: true
+    link jobs:   SAVED.jobs,   type: list_of(JobDesc),   depth: +5, required: true
   end
 end
 
