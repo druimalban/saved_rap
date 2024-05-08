@@ -1,5 +1,5 @@
 defmodule RAP.Job.Result do
-  @defmodule """
+  @moduledoc """
   Same as for the `.Spec' module, this is a simple module declaration
   which is on the level of an individual job.
   """

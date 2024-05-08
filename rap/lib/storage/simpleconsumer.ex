@@ -20,9 +20,7 @@ defmodule RAP.Storage.TestConsumer do
 
   def handle_events(events, _from, state) do
     Logger.info "Testing storage consumer received #{inspect events}"
-
-    pretty_events = events |> Enum.map(&Monitor.pretty_print_object/1)
-
+    #pretty_events = events |> Enum.map(&Monitor.pretty_print_object/1)
     {:noreply, [], state}
   end
 end

@@ -11,12 +11,6 @@ defmodule RAP.Application do
   @index_fall_back  "manifest.ttl"
   @gcp_bucket       "saved-rap-test"
   @local_directory  "/var/db/saved"
-
-  # This is the one file name which must be hard-coded, because there's
-  # no way to know which file is which. The manifest describes all other
-  # files of interest, and further describes the shape of the job and
-  # the results to be run.
-  
   
   use Application
 
@@ -38,6 +32,7 @@ defmodule RAP.Application do
   defstruct [ :interval_seconds,
 	      :cache_directory,
 	      :index_file,
+	      :index_fall_back,
 	      :gcp_bucket,
 	      :local_directory,
 	      :gcp_session,
@@ -55,8 +50,9 @@ defmodule RAP.Application do
 	interval_seconds: @interval_seconds,
 	cache_directory:  @cache_directory,
 	index_file:       @index_file,
+	index_fall_back:  @index_fall_back,
 	gcp_bucket:       @gcp_bucket,
-	local_directory:  @local_source_directory,
+	local_directory:  @local_directory,
 	gcp_session:      nil,
 	last_poll:        initial_ts,
 	staging_objects:  [],

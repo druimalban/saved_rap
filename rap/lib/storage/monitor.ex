@@ -20,15 +20,14 @@ defmodule RAP.Storage.Monitor do
   alias GoogleApi.Storage.V1.Model.Objects, as: GCPObjs
   alias GoogleApi.Storage.V1.Api.Objects,   as: GCPReqObjs
 
-  alias RAP.Application
   alias RAP.Storage.{Monitor, Staging}
-
-  import :timer, only: [ sleep: 1 ]
-
+  
   defstruct [:owner, :uuid, :path,
 	     :gcp_name, :gcp_id, :gcp_bucket, :gcp_md5]
 
-  # No circumstances in which this is configurable: it's so tied to API usage
+  # There are no circumstances in which this ought to be configurable.
+  # It's very much tied to API usage, and it's only necessary for
+  # acquiring an OAuth token.
   @gcp_scope "https://www.googleapis.com/auth/cloud-platform"
   
   def start_link initial_state do
@@ -64,6 +63,9 @@ defmodule RAP.Storage.Monitor do
     end
   end
 
+  @doc """
+  Update session state from our recursive `monitor_gcp/4' function
+  """
   def handle_call(:update_session, _from, %RAP.Application{} = state) do
     Logger.info "Received call :update_session"
     new_session = new_connection()
@@ -71,38 +73,16 @@ defmodule RAP.Storage.Monitor do
     {:reply, new_session, [], new_state}
   end
 
+  @doc """
+  Update last poll state from our recursive `monitor_gcp/4' function
+  """
   def handle_call(:update_last_poll, _from, %RAP.Application{} = state) do
     Logger.info "Received call :update_last_poll"
     new_time_stamp = DateTime.utc_now() |> DateTime.to_unix()
     new_state      = state |> Map.put(:last_poll, new_time_stamp)
     {:reply, new_time_stamp, [], new_state}
   end
-
-  # This variant of the function was fatally flawed as it duplicates work
-  # both by immediately generating events to send upstream and by
-  # appending to the queue. This means that after the next stage has
-  # finished consuming the events sent upstream immediately, it asks for
-  # more, but it's already used them. This is really bad because the
-  # events we're interested in have a cost for retrieval, both
-  # computationally and in terms of the subscription to the GCP storage
-  # platform.
-  #
-  #'' def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
-  #''   Logger.info "Received cast :stage_objects"
-  #''   new_state = state |> Map.put(:staging_objects, extant ++ additional)
-  #''   {:noreply, extant ++ additional, new_state}
-  #'' end
-
-  def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
-    Logger.info "Received cast :stage_objects for objects #{inspect additional}"
-    with [queue_head | queue_tail] <- extant ++ additional do
-      new_state = state |> Map.put(:staging_objects, queue_tail)
-      {:noreply, [queue_head], new_state}
-    else
-      [] -> {:noreply, [], state}
-    end
-  end
-
+  
   @doc """
   Allows us to retrieve the current session from the producer.
 
@@ -112,6 +92,26 @@ defmodule RAP.Storage.Monitor do
   def handle_call(:yield_session, subscriber, %RAP.Application{} = state) do
     Logger.info "Received call to produce return current session, from subscriber #{inspect subscriber}"
     {:reply, state.gcp_session, [], state}
+  end
+
+  @doc """
+  A previous variant of the function was fatally flawed as it duplicated
+  work both by immediately generating events to send upstream and by
+  appending to the queue. This means that after the next stage has
+  finished consuming the events sent upstream immediately, it asks for
+  more, but it's already used them. This is really bad because the
+  events we're interested in have a cost for retrieval, both
+  computationally and in terms of the subscription to the GCP storage
+  platform.
+  """
+  def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
+    Logger.info "Received cast :stage_objects for objects #{inspect additional}"
+    with [queue_head | queue_tail] <- extant ++ additional do
+      new_state = state |> Map.put(:staging_objects, queue_tail)
+      {:noreply, [queue_head], new_state}
+    else
+      [] -> {:noreply, [], state}
+    end
   end
 
   @doc """
@@ -234,11 +234,11 @@ defmodule RAP.Storage.Monitor do
     else
       false ->
 	monitor_gcp(session, bucket, index_file, interval, last_poll)
-      {:error, error = %Tesla.Env{status: 401}} ->
+      {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
         new_session = GenStage.call(__MODULE__, :update_session)
 	monitor_gcp(new_session, bucket, index_file, interval, last_poll)
-      {:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
+      {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}
     end

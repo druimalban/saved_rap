@@ -11,10 +11,7 @@ defmodule RAP.Storage.GCP do
   use GenStage
   require Logger
 
-  alias GoogleApi.Storage.V1.Connection,    as: GCPConn
-  alias GoogleApi.Storage.V1.Model.Object,  as: GCPObj
-  alias GoogleApi.Storage.V1.Model.Objects, as: GCPObjs
-  alias GoogleApi.Storage.V1.Api.Objects,   as: GCPReqObjs
+  alias GoogleApi.Storage.V1.Api.Objects, as: GCPReqObjs
 
   alias RAP.Application
   alias RAP.Storage.{GCP, Monitor, Staging}
@@ -93,7 +90,7 @@ defmodule RAP.Storage.GCP do
       true ->
 	Logger.info "File #{target_file} already exists and MD5 checksum matches API's"
         {:ok, target_file}
-      {:error, error = %Tesla.Env{status: code, url: uri, body: msg}} ->
+      {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}
       {:error, reason} ->

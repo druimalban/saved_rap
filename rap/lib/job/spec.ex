@@ -20,17 +20,10 @@ defmodule RAP.Job.Spec do
     In the generated manifests, column descriptions are blank nodes.
     """
     defstruct [ :variable, :column, :table ]
-
-    #alias RAP.Manifest.ColumnDesc
-    #alias RAP.Job.Spec.Column
-    #
-    #def to_column_desc(%Column{variable: var, label: col, table: table_uri}) do
-    #  %ColumnDesc{column: col, variable: var, table: table_uri}
-    #end
   end
 
   defmodule Resource do
-    @defmodule """
+    @moduledoc """
     Slightly different to the above in that the validity should be defined
     on the file level. There's only one resource and schema per table,
     unlike columns where there's a bunch of columns per job from many
@@ -43,6 +36,7 @@ defmodule RAP.Job.Spec do
     """
     defstruct [ :path, :extant ]
   end
+  
   defmodule Table do
     @defmodule """
     The `resource' and `schema' attributes are named resource structs as
@@ -69,20 +63,6 @@ defmodule RAP.Job.Spec do
     defstruct [ :name, :title, :description,:type,
 		:scope_descriptive,   :scope_collected,  :scope_modelled,
 		:errors_descriptive,  :errors_collected, :errors_modelled ]
-
-    #alias RAP.Manifest.{ColumnDesc, JobDesc}
-    #alias RAP.Job.Spec.{Column,     Job}
-    #
-    #def to_job_desc(%Job{} = job) do
-    #  %JobDesc{
-    #    title:                 job.title,
-    #    description:           job.description,
-    #    job_type:              job.type
-    #    job_scope_descriptive: job.scope_descriptive,
-    #    job_scope_collected:   job.scope_collected,
-    #    job_scope_modelled:    job.scope_modelled
-    #  }
-    #end
   end
 
   defmodule Manifest do
@@ -92,7 +72,7 @@ defmodule RAP.Job.Spec do
     job from the structure of the producer, which holds its own state.
 
     While the manifest is associated with a name (it's not a blank node),
-    this is hard-coded as RootManifest.
+    this is always hard-coded as `RootManifest'.
     """
 
     defstruct [ :title,

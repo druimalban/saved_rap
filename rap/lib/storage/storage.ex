@@ -11,8 +11,6 @@ defmodule RAP.Storage do
   """
   use Amnesia
 
-  alias RAP.Job.Runner
-
   defstruct [ :uuid, :manifest, :resources, :results ]
 
   defdatabase DB do
@@ -25,6 +23,8 @@ defmodule RAP.Storage.Staging do
   require Amnesia
   require Amnesia.Helper
   require RAP.Storage.DB.Job, as: DB
+
+  require Logger
 
   defstruct [ :uuid, :index, :resources ]
 

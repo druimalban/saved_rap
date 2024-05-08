@@ -33,8 +33,7 @@ defmodule RAP.Job.Producer do
   """
 
   alias RAP.Manifest.{TableDesc, ColumnDesc, JobDesc, ManifestDesc}
-  alias RAP.Storage.{GCP, Monitor}
-  alias RAP.Job.{Producer, Staging}
+  alias RAP.Storage.GCP
   alias RAP.Job.Spec.{Column, Resource, Table, Job, Manifest}
     
   use GenStage
@@ -69,20 +68,7 @@ defmodule RAP.Job.Producer do
     { :noreply, processed, state }
   end
   
-  defp pretty_print_table(%TableDesc{resource_path: file, schema_path: schema}), do: "#{file.path} (#{schema.path})"
-  defp check_table(%TableDesc{} = table, target_dir, resources) do
-    table_name    = extract_id(table.__id__)
-    target_file   = "#{target_dir}/#{extract_uri table.resource_path}"
-    target_schema = "#{target_dir}/#{extract_uri table.schema_path}"
-    
-    inject = fn (fp, res) ->
-      %Resource{path: fp, extant: fp in res}
-    end
-    resource_validity = target_file   |> inject.(resources)
-    schema_validity   = target_schema |> inject.(resources)
-    
-    %Table{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
-  end
+  #defp pretty_print_table(%TableDesc{resource_path: file, schema_path: schema}), do: "#{file.path} (#{schema.path})"
 
   @doc """
   This is somewhat problematic semantically.
@@ -120,12 +106,30 @@ defmodule RAP.Job.Producer do
     |> String.split("/")
     |> Enum.at(-1)
   end
+
+  defp check_table(%TableDesc{} = table, target_dir, resources) do
+    table_name    = extract_id(table.__id__)
+    Logger.info "Checking table #{inspect table_name}"
+    target_file   = "#{target_dir}/#{extract_uri table.resource_path}"
+    target_schema = "#{target_dir}/#{extract_uri table.schema_path}"
+    
+    inject = fn (fp, res) ->
+      %Resource{path: fp, extant: fp in res}
+    end
+    resource_validity = target_file   |> inject.(resources)
+    schema_validity   = target_schema |> inject.(resources)
+    
+    %Table{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
+  end
   
   defp check_column(%ColumnDesc{table: tab, column: col, variable: var}, table_names) do
     target_table = extract_uri(tab)
     underlying   = extract_uri(var)
     column       = extract_uri(col)
+    Logger.info "Checking column #{column} is included in table #{target_table}"
+    
     staging      = %Column{column: column, variable: underlying, table: target_table}
+
     if target_table in table_names do
       { :valid,  staging }
     else
@@ -134,21 +138,18 @@ defmodule RAP.Job.Producer do
     end
   end
 
-  #def sort_scope(%Staging{signal: :valid_table},   %Staging{signal: :invalid_table}), do: true
-  #def sort_scope(%Staging{signal: :invalid_table}, %Staging{signal: :valid_table}), do: false
-  #def sort_scope(%Staging{variable: var0},         %Staging{variable: var1}), do: var0 < var1
-
   defp sort_scope(%{valid: columns, invalid: errors}) do
-    sort_mini = fn(%Column{variable: var0}, %Column{variable: var1}) ->
+    sub = fn(%Column{variable: var0}, %Column{variable: var1}) ->
       var0 < var1
     end
-    sorted_columns = columns |> Enum.sort(sort_mini)
-    sorted_errors  = errors  |> Enum.sort(sort_mini)
-    %{valid: sorted_columns, invalid: sorted_errors}
+    %{
+      valid:   Enum.sort(columns, sub),
+      invalid: Enum.sort(errors,  sub)
+    }
   end
     
   defp group_columns(annotated_labels, table_names) do
-    grouped = annotated_labels
+    annotated_labels
     |> Enum.map(&check_column(&1, table_names))
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Map.put_new(:valid, [])
@@ -163,7 +164,8 @@ defmodule RAP.Job.Producer do
   any errors *which are applicable*.
   """
   defp check_job(%JobDesc{} = job, table_names) do
-    Logger.info "Checking job"
+    job_name = extract_id(job.__id__)
+    Logger.info "Checking job #{inspect job_name} (#{inspect job.title})"
     res_descriptive = job.job_scope_descriptive |> group_columns(table_names)
     res_collected   = job.job_scope_collected   |> group_columns(table_names)
     res_modelled    = job.job_scope_modelled    |> group_columns(table_names)
@@ -176,6 +178,7 @@ defmodule RAP.Job.Producer do
     %{valid: scope_collected,   invalid: errors_collected}   = res_collected
     %{valid: scope_modelled,    invalid: errors_modelled}    = res_modelled
     generated_job = %Job{
+      name:              job_name,
       title:             job.title,
       description:       job.description,
       type:              job.job_type,
@@ -188,7 +191,7 @@ defmodule RAP.Job.Producer do
   end
 
   defp check_manifest(%ManifestDesc{} = desc, target_dir, manifest_path, resources) do
-    Logger.info "Check manifest #{desc.title}"
+    Logger.info "Check manifest `RootManifest' (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
     
@@ -216,9 +219,12 @@ defmodule RAP.Job.Producer do
          manifest <- check_manifest(non_empty, target_dir, manifest_path, resources)
       do
       Logger.info "Detecting feasible jobs"
+      Logger.info "Found RDF graph:"
       Logger.info "#{inspect rdf_graph}"
-      #Logger.info "I found a manifest: #{inspect processed}"
-      #Logger.info "I found job errors: #{inspect job_errors}"
+      Logger.info "Original Grax named struct:"
+      Logger.info "#{inspect ex_struct}"
+      Logger.info "Processed/annotated manifest:"
+      Logger.info "#{inspect manifest}"
       manifest
     else
       {:error, err} ->
@@ -237,6 +243,4 @@ defmodule RAP.Job.Producer do
 				    } = manifest), do: {:error, :empty, manifest}
   defp check_skeleton(%ManifestDesc{} = manifest), do: {:ok, manifest}
   
-  
-
 end

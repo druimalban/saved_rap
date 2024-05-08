@@ -21,7 +21,7 @@ defmodule RAP.Job.Cache.Supervisor do
 
   alias RAP.Job.Cache
 
-  def start_link(initial_signal) do
+  def start_link(_args) do
     ConsumerSupervisor.start_link(__MODULE__, :ok)
   end
   
