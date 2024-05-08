@@ -19,15 +19,36 @@ end
 
 defmodule RAP.Job.Producer do
   @moduledoc """
-  This is the producer stage of the RAP, which, given a turtle manifest
-  path, attempts to read this into an RDF graph, and then load it into a
-  struct.
+  This is the job producer stage of the RAP. Strictly speaking, the
+  producer stage of the RAP proper is the monitoring of the storage
+  backend. Given a turtle manifest path, attempt to read this into an RDF
+  graph, and then load it into a struct.
 
-  The producer further generates a list of jobs which are to be run,
-  based on the manifest contents.
+  There are a few checks that we need to do before we can decide to run a
+  job. These are as follows:
 
-  It is possible that there will be no jobs possible, probably because
-  the manifest is ill-formed.
+  1. Read the manifest, inject it into the ManifestDesc struct and check
+     it's non-empty. There are circumstances in which Grax.load generates
+     an empty struct, e.g. when the name is valid in the vocabulary and
+     certain fields are not required.     
+
+  2. Check that the tables section references real tables, or at least
+     what we've been able to find in the cache directory under the
+     manifest UUID.
+
+  3. Check that the tables referenced in the columns section are real
+     tables. The columns also have a notion of an underlying variable
+     which we may want to check later, but it's better to let this be
+     overridden for now because we only care about pattern matching and
+     don't peer into the structure, although warning that these don't
+     exist may be productive later.
+
+  4. Good error messages and return behaviour help us to correct issues
+     with our job manifests so it is important to have a way to compare
+     good and bad table / column scope at the end. This isn't especially
+     elegant as the errors need to be included in the function return
+     values, so that it's clear at the end of the stage what, if anything
+     went wrong.
   """
 
   alias RAP.Manifest.{TableDesc, ColumnDesc, JobDesc, ManifestDesc}
@@ -66,139 +87,179 @@ defmodule RAP.Job.Producer do
     { :noreply, processed, state }
   end
   
-  #def handle_demand demand, ts do
-  #  insd = inspect demand
-  #  inss = inspect ts
-  #  events = []
-  #  Logger.info "Called Job.Producer.handle_demand (demand = #{insd}, state = #{inss})"
-  #  { :noreply, events, ts }
-  #end
-  
-  #  @doc """
-  #   Generic helper function which sends the :try_jobs signal. This is
-  #   a place-holder which lets us manually trigger a job, since the aim is
-  #   to monitor GCP / other storage backend for new manifests to run. This
-  #   will probably be performed by an earlier stage.
-  #   """
-  #   def trigger manifest_path do
-  #     Logger.info "Called Job.Producer.trigger ()"
-  #     #({ #{inspect job_code} ,#{inspect col0} ,#{inspect col1} })"
-  #     GenStage.cast __MODULE__, {:try_jobs, manifest_path}
-  #   end
-  defp pretty_print_table(%TableDesc{resource_path: file, schema_path: schema}), do: "#{file} (#{schema})"
+  defp pretty_print_table(%TableDesc{resource_path: file, schema_path: schema}), do: "#{file.path} (#{schema.path})"
   defp paths_extant?(%TableDesc{resource_path: file, schema_path: schema}, target_dir, resources) do
-    "#{target_dir}/#{file}" in resources and "#{target_dir}/#{schema}" in resources
+    target_file   = "#{target_dir}/#{extract_uri file}"
+    target_schema = "#{target_dir}/#{extract_uri schema}"
+    
+    test = target_file in resources and target_schema in resources
+    if test do
+      Logger.info "I am looking for #{inspect target_file} and its schema #{inspect target_schema}"
+      Logger.info "I am looking in #{inspect resources}"
+    end
+    test
   end
-  defp check_resources(%ManifestDesc{tables: ts} = manifest, target_dir, resources) do
+  @doc """
+  Check each table references a real file, and return the processed manifest and
+  """
+  defp check_resources(%ManifestDesc{tables: ts} = manifest, target_dir, resources) do     
     with [_ | _] = proc <- Enum.filter(ts, &paths_extant?(&1, target_dir, resources)),
-	 {true, proc}   <- {length(proc) == length(ts), proc} do
-      #Logger.info "Of referenced files #{inspect resources}, all were valid"
+ 	 {proc, true}   <- {proc, length(proc) == length(ts)} do
       Logger.info "All files in #{target_dir} were valid"
-      {:ok, manifest, proc}
+      {:ok, :valid_tables, manifest}
     else
       [] ->
-	Logger.info "No files in #{target_dir} were valid"
-	{:error, :none, manifest}
-      {false, proc} ->
-	pretty_valid = proc |> Enum.map(&pretty_print_table/1) |> inspect()
-	Logger.info "Some files in #{target_dir} were valid: #{pretty_valid}"
-        {:error, :some, manifest, proc}
+ 	Logger.info "No files in #{target_dir} were valid"
+        {:error, :invalid_tables}
+      {proc, false} ->
+ 	pretty_valid = proc |> Enum.map(&pretty_print_table/1) |> inspect()
+        Logger.info "Some files in #{target_dir} were valid: #{pretty_valid}"
+ 	processed_manifest = manifest |> Map.put(:tables, proc)
+	{:error, :invalid_tables, processed_manifest}
+    end
+   end
+
+  @doc """
+  This is somewhat problematic semantically.
+
+  The assumption is that we trying to match local, cached, files, but
+  the field is actually a URI and it's feasible that these will point to
+  network resources.
+
+  So, we just want the table name, here!
+
+  There are basically two forms. The first one is just a path, this
+  points to a local file and will likely be the correct usage. The second
+  form has the `scheme', `host' and `path' fields filled out, with `http'
+  or `https as scheme, the host being something like `marine.gov.scot',
+  and the path being the actual URI on their webroot like
+  `/metadata/saved/rap/job_table_sampling'.
+
+  If we were doing this properly, what we would do instead of this is to
+  check that the reassembled URI portion matches the prefix before the
+  file name in question. If not, error or warn because this does not
+  actually match the local declaration, and there's (very likely) no such
+  resource available, given it's highly specific to the given manifest
+  file.
+  """
+  defp extract_uri(%URI{path: path, scheme: nil, userinfo: nil,
+			host: nil,  port:   nil, query:    nil,
+			fragment: nil}), do: path
+  defp extract_uri(%URI{path: path}) do
+    path |> String.split("/") |> Enum.at(-1)
+  end
+  defp extract_id(id) do
+    id
+    |> RDF.IRI.to_string()
+    |> String.trim("/")
+    |> String.split("/")
+    |> Enum.at(-1)
+  end
+  
+  defp check_column(%ColumnDesc{table: tab}, tables) do
+    table_idents = tables
+    |> Enum.map(&extract_id(&1.__id__))
+
+    column_table = tab
+    |> extract_uri()
+
+    if column_table in table_idents do
+      {:ok, :col_present, column_table}
+    else
+      Logger.info "Column table #{column_table} does not exist in tables (#{inspect table_idents})"
+      {:error, :col_absent, column_table}
     end
   end
 
   @doc """
-  Given the :try_jobs signal, attempt to devise a set of jobs which are
-  to be run.
+  This is largely the same as the column-level errors. The main thing
+  which we want to do is to preserve both the error columns and the non-
+  error columns, and to be able to warn, or issue errors which highlight
+  any errors *which are applicable*.
   """
+  defp check_job(%JobDesc{} = job, tables) do
+    Logger.info "Check job #{inspect job.title} (type #{extract_uri job.job_type})"
+    sort_col = fn
+      {:ok,    :col_present, _col} -> true
+      {:error, :col_absent,  _col} -> false
+    end
+    get_col = fn
+      k, :ok    -> k |> elem(0) |> Enum.map(&elem(&1, 2))
+      k, :error -> k |> elem(1) |> Enum.map(&elem(&1, 2))
+    end
+
+    pairs_desc = job.job_scope_descriptive
+    |> Enum.map(&check_column(&1, tables)) |> Enum.split_with(sort_col)
+    Logger.info "Descriptive pairs: #{inspect pairs_desc}"
+    pairs_coll = job.job_scope_collected
+    |> Enum.map(&check_column(&1, tables)) |> Enum.split_with(sort_col)
+    Logger.info "Collected pairs: #{inspect pairs_coll}"
+    pairs_mod  = job.job_scope_modelled
+    |> Enum.map(&check_column(&1, tables)) |> Enum.split_with(sort_col)
+    Logger.info "Modelled pairs: #{inspect pairs_mod}"
+
+    revised_job = job
+    |> Map.put(:job_scope_descriptive, get_col.(pairs_desc, :ok))
+    |> Map.put(:job_scope_collected,   get_col.(pairs_coll, :ok))
+    |> Map.put(:job_scope_modelled,    get_col.(pairs_mod,  :ok))
+    
+    %{job: revised_job,
+      errors_descriptive: get_col.(pairs_desc, :error),
+      errors_collected:   get_col.(pairs_coll, :error),
+      errors_modelled:    get_col.(pairs_mod,  :error)}
+  end
+
+  defp check_manifest(%ManifestDesc{tables: tables, jobs: jobs} = manifest) do
+    Logger.info "Check manifest #{manifest.title}"
+    processed_jobs = jobs
+    |> Enum.map(&check_job(&1, tables))
+
+    revised_jobs = processed_jobs
+    |> Enum.map(& &1.job)
+
+    is_error = fn (k) ->
+      length(k.errors_descriptive) > 0 or
+      length(k.errors_collected)   > 0 or
+      length(k.errors_modelled)    > 0 end
+
+    job_errors = processed_jobs
+    |> Enum.filter(is_error)
+    
+    revised_manifest = manifest |> Map.put(:jobs, revised_jobs)
+
+    %{manifest: revised_manifest, job_errors: job_errors}
+  end
+
   def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_path, resources: resources_paths}, cache_dir) do
     target_dir = "#{cache_dir}/#{uuid}"
     Logger.info "Building RDF graph from turtle manifest using data in #{target_dir}"
     with {:ok, rdf_graph} <- RDF.Turtle.read_file(manifest_path),
          {:ok, ex_struct} <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
-         {:ok, _struct}        <- check_skeleton(ex_struct),
-         {:ok, _extant, proc} <- check_resources(ex_struct, target_dir, resources_paths) do
+         {:ok, non_empty} <- check_skeleton(ex_struct),
+         {:ok, _extant, incl_res} <- check_resources(non_empty, target_dir, resources_paths),
+         %{manifest: processed, job_errors: job_errors} <- check_manifest(incl_res)
+      do
       Logger.info "Detecting feasible jobs"
-      base_iri = RDF.IRI.to_string(rdf_graph.base_iri)
+      Logger.info "I found a manifest: #{inspect processed}"
+      Logger.info "I found job errors: #{inspect job_errors}"
+      processed
     else
       {:error, err} ->
 	Logger.info "Could not read RDF graph #{manifest_path}"
-	Logger.info "Error was #{inspect err}"
-      {:error, "manifest empty", _manifest} ->
+        Logger.info "Error was #{inspect err}"
+	{:error, :input_graph}
+      {:error, :empty, _manifest} ->
 	Logger.info "Generated manifest was empty!"
+	{:error, :output_struct}
       error -> error
     end
   end
   defp check_skeleton(%ManifestDesc{description: nil, title:         nil,
 				     tables:      [],  jobs:          [],
 				     gcp_source:  nil, local_version: nil
-				    } = manifest), do: {:error, "manifest_empty", manifest}
-  defp check_skeleton(%ManifestDesc{}, manifest), do: {:ok, manifest}
+				    } = manifest), do: {:error, :empty, manifest}
+  defp check_skeleton(%ManifestDesc{} = manifest), do: {:ok, manifest}
   
-  @doc """
-  Given a manifest, check the following:
+  
 
-  1. Each job has an ID (`atomic_name'), a title (not important for a job),
-     a flag to say whether it is auto-generated (important), and a list of
-     sources.
-     
-  2. For the list of sources, while there is an ID (the `atomic_name') field,
-     for each element, there is an additional field which defines which table the
-     source is derived from. This is distinct because it is not possible to have
-     duplicate fields in the RDF, so this field cannot be an identifier.
-
-     When auto-generating these sources, all I do is prepend 'source_example_'
-     to the table field. This is probably reasonably self-explanatory, so it is
-     good style to suggest.
-
-  In terms of naming:
-
-  These are a bunch of nested maps which preserve the structure of the job
-  manifest. I.e., for a given job, and some number of tables against which to
-  check there exist the table and/or columns, return the same job source
-  structure annotated with 1. the table and 2. valid/extrenuous columns.
-
-  The mapping functions over the *job* should be called something like
-  <operation>_over_job and the mapping functions over the *source* component of
-  the job should be called something like <operation>_over_job_source.
-  """
-  defp compare_table_call(base_iri_text, tables, %ColumnDesc{table: table, column: label, variable: var}) do
-    target_iri = RDF.iri(base_iri_text <> table)
-    target_table = tables
-    |> Enum.find(fn (tab) ->
-      target_iri == tab.__id__
-    end)
-    case target_table do
-      nil -> %Staging{ signal: :invalid_table, variable: var, label: label, target: target_iri   }
-      tab -> %Staging{ signal: :valid_table,   variable: var, label: label, target: target_table }
-    end
-  end
-
-  def sort_scope(%Staging{signal: :valid_table},   %Staging{signal: :invalid_table}), do: true
-  def sort_scope(%Staging{signal: :invalid_table}, %Staging{signal: :valid_table}), do: false
-  def sort_scope(%Staging{variable: var0},         %Staging{variable: var1}), do: var0 < var1
-
-  defp job_scope_against_tables(base_iri_text, tables, job) do
-    run_scope = fn (src) -> src
-      |> Enum.map(&compare_table_call(base_iri_text, tables, &1))
-      |> Enum.sort(&sort_scope/2)
-    end   
-    %Spec{
-      title:             job.title,
-      description:       job.description,
-      type:              job.job_type,
-      pairs_descriptive: run_scope.(job.job_scope_descriptive),
-      pairs_collected:   run_scope.(job.job_scope_collected),
-      pairs_modelled:    run_scope.(job.job_scope_modelled)
-    }
-  end
-
-  def generate_jobs(%ManifestDesc{} = manifest, base_iri_text) do
-    processed_jobs = manifest.jobs
-    |> Enum.map(&job_scope_against_tables(base_iri_text, manifest.tables, &1))
-    %Producer{
-      title:        manifest.title,
-      description:  manifest.description,
-      staging_jobs: processed_jobs
-    }    
-  end
 end
