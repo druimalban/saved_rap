@@ -83,23 +83,6 @@ defmodule RAP.Job.Producer do
     
     %Table{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
   end
-      
-#  defp check_resources(%ManifestDesc{tables: ts} = manifest, target_dir, resources) do     
-#     with [_ | _] = proc <- Enum.filter(ts, &paths_extant?(&1, target_dir, resources)),
-#  	 {proc, true}   <- {proc, length(proc) == length(ts)} do
-#       Logger.info "All files in #{target_dir} were valid"
-#       {:ok, :valid_tables, manifest}
-#     else
-#       [] ->
-#  	Logger.info "No files in #{target_dir} were valid"
-#         {:error, :invalid_tables}
-#       {proc, false} ->
-#  	pretty_valid = proc |> Enum.map(&pretty_print_table/1) |> inspect()
-#         Logger.info "Some files in #{target_dir} were valid: #{pretty_valid}"
-#  	processed_manifest = manifest |> Map.put(:tables, proc)
-# 	{:error, :invalid_tables, processed_manifest}
-#     end
-#    end
 
   @doc """
   This is somewhat problematic semantically.
@@ -151,12 +134,26 @@ defmodule RAP.Job.Producer do
     end
   end
 
+  #def sort_scope(%Staging{signal: :valid_table},   %Staging{signal: :invalid_table}), do: true
+  #def sort_scope(%Staging{signal: :invalid_table}, %Staging{signal: :valid_table}), do: false
+  #def sort_scope(%Staging{variable: var0},         %Staging{variable: var1}), do: var0 < var1
+
+  defp sort_scope(%{valid: columns, invalid: errors}) do
+    sort_mini = fn(%Column{variable: var0}, %Column{variable: var1}) ->
+      var0 < var1
+    end
+    sorted_columns = columns |> Enum.sort(sort_mini)
+    sorted_errors  = errors  |> Enum.sort(sort_mini)
+    %{valid: sorted_columns, invalid: sorted_errors}
+  end
+    
   defp group_columns(annotated_labels, table_names) do
     grouped = annotated_labels
     |> Enum.map(&check_column(&1, table_names))
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Map.put_new(:valid, [])
     |> Map.put_new(:invalid, [])
+    |> sort_scope()
   end
 
   @doc """
@@ -189,46 +186,9 @@ defmodule RAP.Job.Producer do
     Logger.info "Generated job: #{inspect generated_job}"
     generated_job
   end
-  
-#   defp check_job(%JobDesc{} = job, tables) do
-#     Logger.info "Check job #{inspect job.title} (type #{extract_uri job.job_type})"
-#     good_col? = fn
-#       {:valid,   _col} -> true
-#       {:invalid, _col} -> false
-#     end
-#     get_col = fn
-#       k, :valid   -> k |> elem(0) |> Enum.map(&elem(&1, 1))
-#       k, :invalid -> k |> elem(1) |> Enum.map(&elem(&1, 1))
-#     end
-#     
-#     process_columns = fn (cols) ->
-#       cols
-#       |> Enum.map(&check_column(&1, tables))
-#       |> Enum.split_with(good_col?)
-#     end
-#     
-#     pairs_desc = process_columns.(job.job_scope_descriptive)
-#     pairs_coll = process_columns.(job.job_scope_collected)
-#     pairs_mod  = process_columns.(job.job_scope_modelled)
-#     Logger.info "Descriptive pairs: #{inspect pairs_desc}"
-#     Logger.info "Collected pairs: #{inspect pairs_coll}"
-#     Logger.info "Modelled pairs: #{inspect pairs_mod}"
-#     
-#     #revised_job = job
-#     #|> Map.put(:job_scope_descriptive, get_col.(pairs_desc, :ok))
-#     #|> Map.put(:job_scope_collected,   get_col.(pairs_coll, :ok))
-#     #|> Map.put(:job_scope_modelled,    get_col.(pairs_mod,  :ok))
-#     
-#     #%{job: revised_job,
-#     #  errors_descriptive: get_col.(pairs_desc, :error),
-#     #  errors_collected:   get_col.(pairs_coll, :error),
-#     #  errors_modelled:    get_col.(pairs_mod,  :error)}
-  #   end
-
 
   defp check_manifest(%ManifestDesc{} = desc, target_dir, manifest_path, resources) do
     Logger.info "Check manifest #{desc.title}"
-
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
     
@@ -246,28 +206,6 @@ defmodule RAP.Job.Producer do
       staging_jobs:   processed_jobs
     }
   end
-  
-
-#   defp check_manifest(%ManifestDesc{tables: tables, jobs: jobs} = manifest) do
-#     Logger.info "Check manifest #{manifest.title}"
-#     processed_jobs = jobs
-#     |> Enum.map(&check_job(&1, tables))
-# 
-#     revised_jobs = processed_jobs
-#     |> Enum.map(& &1.job)
-# 
-#     is_error = fn (k) ->
-#       length(k.errors_descriptive) > 0 or
-#       length(k.errors_collected)   > 0 or
-#       length(k.errors_modelled)    > 0 end
-# 
-#     job_errors = processed_jobs
-#     |> Enum.filter(is_error)
-#     
-#     revised_manifest = manifest |> Map.put(:jobs, revised_jobs)
-# 
-#     %{manifest: revised_manifest, job_errors: job_errors}
-#   end
 
   def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_path, resources: resources}, cache_dir) do
     target_dir = "#{cache_dir}/#{uuid}"
@@ -277,7 +215,8 @@ defmodule RAP.Job.Producer do
          {:ok, non_empty} <- check_skeleton(ex_struct),
          manifest <- check_manifest(non_empty, target_dir, manifest_path, resources)
       do
-      #Logger.info "Detecting feasible jobs"
+      Logger.info "Detecting feasible jobs"
+      Logger.info "#{inspect rdf_graph}"
       #Logger.info "I found a manifest: #{inspect processed}"
       #Logger.info "I found job errors: #{inspect job_errors}"
       manifest
