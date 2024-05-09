@@ -1,24 +1,44 @@
 defmodule RAP.Job.Result do
   @moduledoc """
   Same as for the `.Spec' module, this is a simple module declaration
-  which is on the level of an individual job.
+  which is on the level of an individual job. Therefore, there is a name
+  associated with the job, as well as a signal and/or result.
   """
   require Logger
 
   alias RAP.Manifest.TableDesc
-  alias RAP.Job.{Result, Spec}
+  alias RAP.Job.Result
+  alias RAP.Job.{ColumnSpec, JobSpec, TableSpec, ManifestSpec}
   
-  defstruct [ :title, :description, :type, :signal, :result ]
+  defstruct [ :name, :title, :description, :type, :signal, :result ]
 
-  defp cmd_wrapper(shell, command, args) do
-    System.cmd shell, [ command | args ]
+  def run_job(%JobSpec{type: "ignore"} = spec) do
+    %Result{
+      name:        spec.name,
+      title:       spec.title,
+      description: spec.description,
+      type:        "ignore",
+      signal:      :ok,
+      result:      "Dummy/ignored job"
+    }
   end
 
-#  def run_job(%Spec{title: title, description: desc, type: "ignore"}) do
-#     %Result{title:  title, description: desc, type: "ignore",
-# 	    signal: :ok,   result:      "Dummy/ignored job"}
-#   end
-#   
+  def run_job(%JobSpec{
+	type: "density",
+	scope_collected: [
+	  %ColumnSpec{variable: "lice_count_total",
+		      table:    table_total}
+	  | _ ],
+	scope_modelled: [
+	  %ColumnSpec{variable: "density",
+		      table:     table_density},
+	  %ColumnSpec{variable: "time",
+		      table:     table_time}
+	  | _ ]
+	} = spec) do
+
+  end
+
 #   def run_job(%Spec{title: title, description: desc, type: "density",
 # 		    pairs_descriptive: [],
 # 		    pairs_collected: [
@@ -49,11 +69,7 @@ defmodule RAP.Job.Result do
 # 	%Result{ title: title, description: desc, type: "density", signal: :error, result: res }
 #       end
 #     end
-#   end
-
-  # Placeholder
-  def run_job(spec), do: spec
-  
+#   end  
 
 ##### OLD OLD OLD OLD OLD #####
   #  def run_job(%Spec{
@@ -128,9 +144,13 @@ defmodule RAP.Job.Runner do
   end
   
   def process_jobs(%Producer{title: title, description: desc, staging_jobs: staging}) do
-    results = staging |> Enum.map(&Result.run_job/1)
+    results = staging |> Enum.map(Result.run_job/1)
     %Runner{ title: title, description: desc, results: results }
-  end  
+  end
+
+  defp cmd_wrapper(shell, command, args) do
+    System.cmd shell, [ command | args ]
+  end
   
   #def run_job(%RAP.Job.Producer{title: title, type: "rmsd",
   #				pairs_collected: [collected],

@@ -111,28 +111,36 @@ defmodule RAP.Job.Producer do
     target_file   = "#{target_dir}/#{extract_uri table.resource_path}"
     target_schema = "#{target_dir}/#{extract_uri table.schema_path}"
     
-    inject = fn (fp, res) ->
-      %ResourceSpec{path: fp, extant: fp in res}
-    end
+    inject = fn (fp, res) -> %ResourceSpec{path: fp, extant: fp in res} end
     resource_validity = target_file   |> inject.(resources)
     schema_validity   = target_schema |> inject.(resources)
     
     %TableSpec{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
   end
   
-  defp check_column(%ColumnDesc{table: tab, column: col, variable: var}, table_names) do
-    target_table = extract_uri(tab)
+  defp check_column(%ColumnDesc{table: tab, column: col, variable: var}, tables) do
+    target_table = extract_uri(tab)    
     underlying   = extract_uri(var)
     column       = extract_uri(col)
     Logger.info "Checking column #{column} is included in table #{target_table}"
     
-    staging      = %ColumnSpec{column: column, variable: underlying, table: target_table}
+    staging = %ColumnSpec{column: column, variable: underlying, table: target_table}
 
-    if target_table in table_names do
-      { :valid,  staging }
+    test = fn k ->
+      if k.name == target_table do
+	res = k.resource
+	{:ok, {k.name, res.path}}
+      end
+    end
+
+    with {:ok, {_name, resource_path}} <- Enum.find_value(tables, :error, test)
+      do  
+        extant = staging |> Map.put(:table_resource, resource_path)
+        {:valid, extant}
     else
-      Logger.info "Column description referenced table #{target_table} does not exist in tables (#{inspect table_names})"
-      { :invalid, staging }
+      :error ->
+	Logger.info "Column description referenced table #{target_table} does not exist in tables"
+	{:invalid, staging}
     end
   end
 
@@ -163,7 +171,9 @@ defmodule RAP.Job.Producer do
   """
   defp check_job(%JobDesc{} = job, table_names) do
     job_name = extract_id(job.__id__)
-    Logger.info "Checking job #{inspect job_name} (#{inspect job.title})"
+    job_type = extract_uri(job.job_type)
+    
+    Logger.info "Checking job #{inspect job_name} (#{inspect job.title}) of type #{inspect job_type}"
     res_descriptive = job.job_scope_descriptive |> group_columns(table_names)
     res_collected   = job.job_scope_collected   |> group_columns(table_names)
     res_modelled    = job.job_scope_modelled    |> group_columns(table_names)
@@ -175,11 +185,12 @@ defmodule RAP.Job.Producer do
     %{valid: scope_descriptive, invalid: errors_descriptive} = res_descriptive
     %{valid: scope_collected,   invalid: errors_collected}   = res_collected
     %{valid: scope_modelled,    invalid: errors_modelled}    = res_modelled
+    
     generated_job = %JobSpec{
       name:              job_name,
+      type:              job_type,
       title:             job.title,
       description:       job.description,
-      type:              job.job_type,
       scope_descriptive: scope_descriptive, errors_descriptive: errors_descriptive,
       scope_collected:   scope_collected,   errors_collected:   errors_collected,
       scope_modelled:    scope_modelled,    errors_modelled:    errors_modelled,
@@ -201,16 +212,24 @@ defmodule RAP.Job.Producer do
     target_dir = "#{cache_dir}/#{uuid}"
     
     processed_tables = desc.tables |> Enum.map(&check_table(&1, target_dir, resources))
-    table_names = processed_tables |> Enum.map(& &1.name)
-    processed_jobs   = desc.jobs   |> Enum.map(&check_job(&1, table_names))
-    
+    extant_tables = processed_tables
+    |> Enum.filter(fn tab ->
+      resource = tab.resource
+      schema   = tab.schema
+      resource.extant and schema.extant # May not be desirable depending how folks upload
+    end)
+    processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
+
+    # Include both invalid and valid tables, not just those extant above
+    # Job validation requires pattern-matching later, we're only validating
+    # presence/absence of referenced tables.
     target_manifest = %ManifestSpec{title:          desc.title,
 				    description:    desc.description,
 				    local_version:  desc.local_version,
-				    uuid:           uuid
+				    uuid:           uuid,
 				    manifest_path:  manifest_path,
 				    resources:      resources,
-				    staging_tables: processed_tables,
+				    staging_tables: processed_tables,   
 				    staging_jobs:   processed_jobs    }
     {:ok, target_manifest}
   end
@@ -219,7 +238,7 @@ defmodule RAP.Job.Producer do
     Logger.info "Building RDF graph from turtle manifest using data in #{cache_dir}/#{uuid}"
     with {:ok, rdf_graph} <- RDF.Turtle.read_file(manifest_path),
          {:ok, ex_struct} <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
-         {:ok, manifest}  <- check_manifest(ex_struct, uuuid, cache_dir, manifest_path, resources)
+         {:ok, manifest}  <- check_manifest(ex_struct, uuid, cache_dir, manifest_path, resources)
       do
         Logger.info "Detecting feasible jobs"
 	Logger.info "Found RDF graph:"

@@ -17,7 +17,7 @@ defmodule RAP.Job.ColumnSpec do
 
   In the generated manifests, column descriptions are blank nodes.
   """
-  defstruct [ :variable, :column, :table ]
+  defstruct [ :variable, :column, :table, :table_resource ]
 end
 
 defmodule RAP.Job.ResourceSpec do
@@ -71,7 +71,6 @@ defmodule RAP.Job.ManifestSpec do
   This module reincoprorates the UUID, path of the manifest proper, and
   paths of the various resources associated with the job.
   """
-
   defstruct [ :title,
 	      :description,    :local_version,
 	      :uuid,
