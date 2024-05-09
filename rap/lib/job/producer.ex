@@ -135,7 +135,7 @@ defmodule RAP.Job.Producer do
 
     with {:ok, {_name, resource_path}} <- Enum.find_value(tables, :error, test)
       do  
-        extant = staging |> Map.put(:table_resource, resource_path)
+        extant = staging |> Map.put(:resource, resource_path)
         {:valid, extant}
     else
       :error ->

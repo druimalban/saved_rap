@@ -17,7 +17,7 @@ defmodule RAP.Job.ColumnSpec do
 
   In the generated manifests, column descriptions are blank nodes.
   """
-  defstruct [ :variable, :column, :table, :table_resource ]
+  defstruct [ :variable, :column, :table, :resource ]
 end
 
 defmodule RAP.Job.ResourceSpec do

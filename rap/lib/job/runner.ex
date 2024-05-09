@@ -12,6 +12,10 @@ defmodule RAP.Job.Result do
   
   defstruct [ :name, :title, :description, :type, :signal, :result ]
 
+  defp cmd_wrapper(shell, command, args) do
+    System.cmd shell, [ command | args ]
+  end
+  
   def run_job(%JobSpec{type: "ignore"} = spec) do
     %Result{
       name:        spec.name,
@@ -27,72 +31,45 @@ defmodule RAP.Job.Result do
 	type: "density",
 	scope_collected: [
 	  %ColumnSpec{variable: "lice_count_total",
-		      table:    table_total}
+		      column:   label_count,
+		      table:    table_count,
+		      resource: resource_count}
 	  | _ ],
 	scope_modelled: [
 	  %ColumnSpec{variable: "density",
-		      table:     table_density},
+		      column:   label_density,
+		      table:    table_density,
+		      resource: resource_density},
 	  %ColumnSpec{variable: "time",
-		      table:     table_time}
+		      column:   label_time,
+		      table:    table_time,
+		      resource: resource_time}
 	  | _ ]
 	} = spec) do
-
+    if resource_density != resource_time do
+      res = "Density and time not derived from same data file"
+      %Result{ title:  spec.title, description: spec.description,
+	       type:   "density",  signal:      :failure_prereq,
+	       result: res }
+    else
+      { res, sig } =
+ 	cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
+ 	            resource_count,   label_count,
+ 	            resource_density, label_time,  label_density])
+      if (sig == 0) do
+ 	Logger.info "Call to external command/executable density_count_ode succeeded"
+ 	%Result{ title:  spec.title, description: spec.description,
+		 type:   "density",  signal:      :ok,
+		 result: res }
+      else
+ 	Logger.info "Call to external command/executable density_count_ode failed"
+ 	%Result{ title:  spec.title, description: spec.description,
+		 type:   "density",  signal:      :error,
+		 result: res }
+       end
+     end
+    
   end
-
-#   def run_job(%Spec{title: title, description: desc, type: "density",
-# 		    pairs_descriptive: [],
-# 		    pairs_collected: [
-# 		      { :valid_table, "saved:lice_count_total", lice_count_label, table_total }
-# 		    ],
-# 		    pairs_modelled: [
-# 		      { :valid_table, "saved:density", density_label, table_dens },
-# 		      { :valid_table, "saved:time",    time_label,    table_time }
-# 		    ]}) do
-#     
-#     fp_counts = table_total.resource_path.path
-#     fp_dens = table_dens.resource_path.path # Will need to restructure data so that it gathers these
-#     fp_time = table_time.resource_path.path
-#     
-#     if (fp_dens != fp_time) do
-#       res = "Density and time not derived from same data file"
-#       %Result{ title: title, description: desc, type: "density", signal: :error, result: res}
-#     else
-#       { res, sig } =
-# 	cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
-# 	      "data_cache/#{fp_counts}", lice_count_label,
-# 	      "data_cache/#{fp_dens}", time_label, density_label])
-#       if (sig == 0) do
-# 	Logger.info "Call to external command/executable density_count_ode succeeded"
-# 	%Result{ title: title, description: desc, type: "density", signal: :ok, result: res }
-#       else
-# 	Logger.info "Call to external command/executable density_count_ode failed"
-# 	%Result{ title: title, description: desc, type: "density", signal: :error, result: res }
-#       end
-#     end
-#   end  
-
-##### OLD OLD OLD OLD OLD #####
-  #  def run_job(%Spec{
-#	title: title,
-#	type: "ext_density_count" = type,
-#	state: [%{table: %RAP.Manifest.TableDesc{resource_path: fp_dens_t}, valid_columns: [density, time]},
-#	        %{table: %RAP.Manifest.TableDesc{resource_path: fp_counts}, valid_columns: [total]}]}
-#  ) do
-#    Logger.info "Call to external command/executable #{type} requested"
-#    
-#    { res, sig } =
-#      cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
-#	    "data_cache/#{fp_counts}", total,
-#	    "data_cache/#{fp_dens_t}", time,  density        ])
-#    if (sig == 0) do
-#      Logger.info "Call to external command/executable #{type} succeeded"
-#      %RAP.Job.Spec{ title: title, type: type, signal: :ok,    result: res }
-#    else
-#      Logger.info "Call to external command/executable #{type} failed"
-#      %RAP.Job.Spec{ title: title, type: type, signal: :error, result: res }
-#    end
-#  end
-  
 
   defp mae col0, col1 do
     Logger.info "Called Job.Spec.mae (col0 = #{inspect col0} ,col1 = #{inspect col1})"
@@ -116,9 +93,13 @@ defmodule RAP.Job.Runner do
   use GenStage
   require Logger
 
-  alias RAP.Job.{Producer, Result, Runner, Spec}
+  alias RAP.Job.{Producer, Result, Runner}
+  alias RAP.Job.ManifestSpec
 
-  defstruct [ :title, :description, :type, :results ]
+  defstruct [ :uuid,  :local_version,
+	      :title, :description,
+	      :manifest_path,  :resources,
+	      :staging_tables, :staging_jobs,	      :results ]
   
   def start_link _args do
     Logger.info "Called Job.Runner.start_link (_)"
@@ -139,26 +120,22 @@ defmodule RAP.Job.Runner do
     is = inspect state
     Logger.info "Called Job.Runner.handle_events (events = #{ie}, _, state = #{is})"
     
-    ne = events |> Enum.map(&process_jobs/1)
-    { :noreply, ne, state }
+    target_events = events |> Enum.map(&process_jobs/1)
+    { :noreply, target_events, state }
   end
   
-  def process_jobs(%Producer{title: title, description: desc, staging_jobs: staging}) do
-    results = staging |> Enum.map(Result.run_job/1)
-    %Runner{ title: title, description: desc, results: results }
+  def process_jobs(%ManifestSpec{} = spec) do
+    results = spec.staging_jobs |> Enum.map(&Result.run_job/1)
+    %Runner{ uuid:           spec.uuid,
+	     local_version:  spec.local_version,
+	     title:          spec.title,
+	     description:    spec.description,
+	     manifest_path:  spec.manifest_path,
+	     resources:      spec.resources,
+	     staging_tables: spec.staging_tables,
+	     staging_jobs:   spec.staging_jobs,
+	     results:        results            }
   end
-
-  defp cmd_wrapper(shell, command, args) do
-    System.cmd shell, [ command | args ]
-  end
-  
-  #def run_job(%RAP.Job.Producer{title: title, type: "rmsd",
-  #				pairs_collected: [collected],
-  #				pairs_modelled:  [modelled]}) do
-  #  Logger.info "Mean absolute error job requested"
-  #  res = nil # rmsd(collected, modelled)
-  #  %Runner{ title: title, type: "mae", signal: :ok, result: res }
-  #end
   
 end
     
