@@ -2,6 +2,7 @@ defmodule RAP.Storage.Monitor do
   @moduledoc """
   The idea is that this producer only finds UUIDs, and then produces
   events which are used to fetch the data.
+  
   This locates separates the recursive checks from the actual disk usage,
   since the concurrency matters more for fetching data, as there may be
   race conditions and there's quite an extensive set of checks necessary
@@ -9,8 +10,9 @@ defmodule RAP.Storage.Monitor do
   the network.
 
   Additionally, there is a distinctive issue of having to renew GCP
-  authentication tokens / cookies. Locating this here with a bunch of
-  callbacks / IPC is more robust than really recursive functions.
+  authentication tokens / cookies. This is handled primarily by this
+  producer module and communicating with it is via GenServer
+  callbacks.
   """
   use GenStage
   require Logger

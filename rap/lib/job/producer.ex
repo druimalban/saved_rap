@@ -34,12 +34,10 @@ defmodule RAP.Job.Producer do
 
   alias RAP.Manifest.{TableDesc, ColumnDesc, JobDesc, ManifestDesc}
   alias RAP.Storage.GCP
-  alias RAP.Job.Spec.{Column, Resource, Table, Job, Manifest}
+  alias RAP.Job.{ColumnSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
     
   use GenStage
   require Logger
-
-  import :timer, only: [ sleep: 1 ]
 
   defstruct [ :title, :description, :staging_jobs ]
 
@@ -114,12 +112,12 @@ defmodule RAP.Job.Producer do
     target_schema = "#{target_dir}/#{extract_uri table.schema_path}"
     
     inject = fn (fp, res) ->
-      %Resource{path: fp, extant: fp in res}
+      %ResourceSpec{path: fp, extant: fp in res}
     end
     resource_validity = target_file   |> inject.(resources)
     schema_validity   = target_schema |> inject.(resources)
     
-    %Table{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
+    %TableSpec{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
   end
   
   defp check_column(%ColumnDesc{table: tab, column: col, variable: var}, table_names) do
@@ -128,7 +126,7 @@ defmodule RAP.Job.Producer do
     column       = extract_uri(col)
     Logger.info "Checking column #{column} is included in table #{target_table}"
     
-    staging      = %Column{column: column, variable: underlying, table: target_table}
+    staging      = %ColumnSpec{column: column, variable: underlying, table: target_table}
 
     if target_table in table_names do
       { :valid,  staging }
@@ -139,7 +137,7 @@ defmodule RAP.Job.Producer do
   end
 
   defp sort_scope(%{valid: columns, invalid: errors}) do
-    sub = fn(%Column{variable: var0}, %Column{variable: var1}) ->
+    sub = fn(%ColumnSpec{variable: var0}, %ColumnSpec{variable: var1}) ->
       var0 < var1
     end
     %{
@@ -152,7 +150,7 @@ defmodule RAP.Job.Producer do
     annotated_labels
     |> Enum.map(&check_column(&1, table_names))
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
-    |> Map.put_new(:valid, [])
+    |> Map.put_new(:valid,   [])
     |> Map.put_new(:invalid, [])
     |> sort_scope()
   end
@@ -177,7 +175,7 @@ defmodule RAP.Job.Producer do
     %{valid: scope_descriptive, invalid: errors_descriptive} = res_descriptive
     %{valid: scope_collected,   invalid: errors_collected}   = res_collected
     %{valid: scope_modelled,    invalid: errors_modelled}    = res_modelled
-    generated_job = %Job{
+    generated_job = %JobSpec{
       name:              job_name,
       title:             job.title,
       description:       job.description,
@@ -190,57 +188,58 @@ defmodule RAP.Job.Producer do
     generated_job
   end
 
-  defp check_manifest(%ManifestDesc{} = desc, target_dir, manifest_path, resources) do
+  defp check_manifest(%ManifestDesc{description: nil, title: nil,
+				    tables:      [],  jobs:  [],
+				    gcp_source:  nil, local_version: nil} = desc,
+                      _uuid, _cache, _path, _resources) do
+    {:error, :empty}
+  end
+  defp check_manifest(%ManifestDesc{} = desc, uuid, cache_dir, manifest_path, resources) do    
     Logger.info "Check manifest `RootManifest' (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
+    target_dir = "#{cache_dir}/#{uuid}"
     
     processed_tables = desc.tables |> Enum.map(&check_table(&1, target_dir, resources))
     table_names = processed_tables |> Enum.map(& &1.name)
     processed_jobs   = desc.jobs   |> Enum.map(&check_job(&1, table_names))
     
-    %Manifest{
-      title:          desc.title,
-      description:    desc.description,
-      local_version:  desc.local_version,
-      manifest_path:  manifest_path,
-      resources:      resources,
-      staging_tables: processed_tables,
-      staging_jobs:   processed_jobs
-    }
+    target_manifest = %ManifestSpec{title:          desc.title,
+				    description:    desc.description,
+				    local_version:  desc.local_version,
+				    uuid:           uuid
+				    manifest_path:  manifest_path,
+				    resources:      resources,
+				    staging_tables: processed_tables,
+				    staging_jobs:   processed_jobs    }
+    {:ok, target_manifest}
   end
 
   def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_path, resources: resources}, cache_dir) do
-    target_dir = "#{cache_dir}/#{uuid}"
-    Logger.info "Building RDF graph from turtle manifest using data in #{target_dir}"
+    Logger.info "Building RDF graph from turtle manifest using data in #{cache_dir}/#{uuid}"
     with {:ok, rdf_graph} <- RDF.Turtle.read_file(manifest_path),
          {:ok, ex_struct} <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
-         {:ok, non_empty} <- check_skeleton(ex_struct),
-         manifest <- check_manifest(non_empty, target_dir, manifest_path, resources)
+         {:ok, manifest}  <- check_manifest(ex_struct, uuuid, cache_dir, manifest_path, resources)
       do
-      Logger.info "Detecting feasible jobs"
-      Logger.info "Found RDF graph:"
-      Logger.info "#{inspect rdf_graph}"
-      Logger.info "Original Grax named struct:"
-      Logger.info "#{inspect ex_struct}"
-      Logger.info "Processed/annotated manifest:"
-      Logger.info "#{inspect manifest}"
-      manifest
+        Logger.info "Detecting feasible jobs"
+	Logger.info "Found RDF graph:"
+	Logger.info "#{inspect rdf_graph}"
+	Logger.info "Corresponding struct to RDF graph:"
+	Logger.info "#{inspect ex_struct}"
+	Logger.info "Processed/annotated manifest:"
+	Logger.info "#{inspect manifest}"
+	manifest
     else
-      {:error, err} ->
+      {:error,   err} ->
 	Logger.info "Could not read RDF graph #{manifest_path}"
         Logger.info "Error was #{inspect err}"
 	{:error, :input_graph}
-      {:error, :empty, _manifest} ->
-	Logger.info "Generated manifest was empty!"
+      {:error,   :empty} ->
+	Logger.info "Corresponding struct to RDF graph was empty!"
 	{:error, :output_struct}
-      error -> error
+      message ->
+	message
     end
-  end
-  defp check_skeleton(%ManifestDesc{description: nil, title:         nil,
-				     tables:      [],  jobs:          [],
-				     gcp_source:  nil, local_version: nil
-				    } = manifest), do: {:error, :empty, manifest}
-  defp check_skeleton(%ManifestDesc{} = manifest), do: {:ok, manifest}
+  end 
   
 end
