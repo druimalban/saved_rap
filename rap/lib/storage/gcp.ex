@@ -78,18 +78,20 @@ defmodule RAP.Storage.GCP do
   cache results.
   """
   defp fetch_object(target_dir, obj) do
-    output_file = "#{target_dir}/#{obj.path}"
+    target_base = obj.path
+    # output_file => target_full
+    target_full = "#{target_dir}/#{target_base}"
     Logger.info "Polling GCP storage bucket for flat object #{obj.gcp_name}"
-    with false <- File.exists?(output_file) && dl_success?(obj.gcp_md5, File.read!(output_file)),
+    with false <- File.exists?(target_full) && dl_success?(obj.gcp_md5, File.read!(target_full)),
          session <- GenStage.call(RAP.Storage.Monitor, :yield_session),
 	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
-	 :ok <- File.write(output_file, body) do
-      Logger.info "Successfully wrote #{output_file}, file proper is #{obj.path}"
-      {:ok, obj.path}
+	 :ok <- File.write(target_full, body) do
+      Logger.info "Successfully wrote #{target_full}, file base name is #{target_base}"
+      {:ok, target_base}
     else
       true ->
-	Logger.info "File #{output_file} already exists and MD5 checksum matches API's"
-        {:ok, obj.path}
+	Logger.info "File #{target_base} already exists and MD5 checksum matches API's"
+        {:ok, target_base}
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}
@@ -99,10 +101,10 @@ defmodule RAP.Storage.GCP do
     end
   end
       
-  defp fetch_job_deps(cache_directory, %RAP.Storage.Staging{} = job) do
+  defp fetch_job_deps(cache_dir, %RAP.Storage.Staging{} = job) do
     Logger.info "Called `Storage.GCP.fetch_job_deps' for job with UUID #{job.uuid}"
     all_resources = [job.index | job.resources]
-    target_dir    = "#{cache_directory}/#{job.uuid}"
+    target_dir = "#{cache_dir}/#{job.uuid}"
     
     with :ok     <- File.mkdir_p(target_dir),
 	 signals <- Enum.map(all_resources, &fetch_object(target_dir, &1)) do
@@ -116,32 +118,34 @@ defmodule RAP.Storage.GCP do
 	{:error, job.uuid, errors}	
       else
 	Logger.info "Job #{job.uuid}: No errors to report"
-	file_paths = signals |> Enum.map(&elem(&1, 1))
-	{:ok, job.uuid, file_paths}
+	file_bases = signals |> Enum.map(&elem(&1, 1))
+	{:ok, job.uuid, file_bases}
       end
+    else
+      error -> error
     end
   end
 
-  defp coalesce_job(cache_directory, index, %RAP.Storage.Staging{} = job) do
-    target_dir = "#{cache_directory}/#{job.uuid}"
-    index_path = "#{target_dir}/#{index}"
-    with {:ok, uuid, file_paths} <- fetch_job_deps(cache_directory, job),
-         {:ok, manifest}         <- File.read(index_path) do
-      Logger.info "Index file is #{inspect index}"
-      manifest_proper = String.trim(manifest)
-      manifest_path = target_dir <> "/" <> manifest_proper
+  defp coalesce_job(cache_dir, index_base, %RAP.Storage.Staging{} = job) do
+    target_dir = "#{cache_dir}/#{job.uuid}"
+    index_full = "#{target_dir}/#{index_base}"
+    with {:ok, uuid, file_bases} <- fetch_job_deps(cache_dir, job),
+         {:ok, manifest_base}    <- File.read(index_full) do
+      Logger.info "Index file is #{inspect index_base}"
+      manifest_proper = String.trim(manifest_base)
+      manifest_full   = target_dir <> "/" <> manifest_proper
       Logger.info "Manifest file is #{inspect manifest_proper}"
       
-      non_manifests = file_paths
+      non_manifest_bases = file_bases
       |> List.delete(manifest_proper)
-      |> List.delete(index)
-      Logger.info "Non-manifest files are #{inspect non_manifests}"      
+      |> List.delete(index_base)
+      Logger.info "Non-manifest files are #{inspect non_manifest_bases}"      
 
-      %GCP{uuid: uuid, manifest: manifest_proper, resources: non_manifests}
+      %GCP{uuid: uuid, manifest: manifest_proper, resources: non_manifest_bases}
     else
       {:error, uuid, errors} -> {:error, job.uuid, errors}
       {:error, reason}       ->
-	Logger.info "Could not read index file #{index_path}"
+	Logger.info "Could not read index file #{index_full}"
 	{:error, reason}
     end
   end

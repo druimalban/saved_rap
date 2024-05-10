@@ -29,27 +29,29 @@ defmodule RAP.Job.Result do
 
   def run_job(
     uuid, cache_directory,
-
+    
     %JobSpec{
-      type: "density",
+      name:            job_name,
+      type:            "density",
       scope_collected: [ %ColumnSpec{
-			   variable: "lice_count_total",
-			   column:   label_count,
-			   table:    table_count,
-			   resource: resource_count}
+			   variable:      "lice_count_total",
+			   column:        label_count,
+			   table:         table_count,
+			   resource_base: resource_count}
 			 | _ ],
       scope_modelled:  [ %ColumnSpec{
-			   variable: "density",
-			   column:   label_density,
-			   table:    table_density,
-			   resource: resource_density},
+			   variable:      "density",
+			   column:        label_density,
+			   table:         table_density,
+			   resource_base: resource_density},
 			 %ColumnSpec{
-			   variable: "time",
-			   column:   label_time,
-			   table:    table_time,
-			   resource: resource_time}
+			   variable:      "time",
+			   column:        label_time,
+			   table:         table_time,
+			   resource_base: resource_time}
 			 | _ ]
     } = spec) do
+    Logger.info "Running job #{job_name} (associated with UUID #{uuid})"
 
     if resource_density != resource_time do
       res = "Density and time not derived from same data file"
@@ -60,6 +62,9 @@ defmodule RAP.Job.Result do
       file_path_count   = "#{cache_directory}/#{uuid}/#{resource_count}"
       file_path_density = "#{cache_directory}/#{uuid}/#{resource_density}"
       _file_path_time   = "#{cache_directory}/#{uuid}/#{resource_time}"
+
+      Logger.info "Fully-qualified path for count data is #{file_path_count}"
+      Logger.info "Fully-qualified path for density/time data is #{file_path_density}"
       
       { res, sig } =
  	cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
@@ -108,8 +113,9 @@ defmodule RAP.Job.Runner do
 
   defstruct [ :uuid,  :local_version,
 	      :title, :description,
-	      :manifest_path,  :resources,
-	      :staging_tables, :staging_jobs,	      :results ]
+	      :manifest_base,  :resource_bases,
+	      :staging_tables, :staging_jobs,
+	      :results                        ]
   
   def start_link initial_state do
     Logger.info "Called Job.Runner.start_link (_)"
@@ -133,17 +139,19 @@ defmodule RAP.Job.Runner do
     { :noreply, target_events, state }
   end
   
-  def process_jobs(%ManifestSpec{} = spec, cache_directory) do
+  def process_jobs(%ManifestSpec{staging_jobs: staging} = spec, cache_directory) do
     
-    results = spec.staging_jobs
+    Logger.info "Staging jobs: #{inspect staging}"
+    
+    results = staging
     |> Enum.map(&Result.run_job(spec.uuid, cache_directory, &1))
     
     %Runner{ uuid:           spec.uuid,
 	     local_version:  spec.local_version,
 	     title:          spec.title,
 	     description:    spec.description,
-	     manifest_path:  spec.manifest_path,
-	     resources:      spec.resources,
+	     manifest_base:  spec.manifest_base,
+	     resource_bases: spec.resource_bases,
 	     staging_tables: spec.staging_tables,
 	     staging_jobs:   spec.staging_jobs,
 	     results:        results            }

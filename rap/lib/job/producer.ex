@@ -66,8 +66,6 @@ defmodule RAP.Job.Producer do
     { :noreply, processed, state }
   end
   
-  #defp pretty_print_table(%TableDesc{resource_path: file, schema_path: schema}), do: "#{file.path} (#{schema.path})"
-
   @doc """
   This is somewhat problematic semantically.
 
@@ -80,7 +78,7 @@ defmodule RAP.Job.Producer do
   There are basically two forms. The first one is just a path, this
   points to a local file and will likely be the correct usage. The second
   form has the `scheme', `host' and `path' fields filled out, with `http'
-  or `https as scheme, the host being something like `marine.gov.scot',
+  or `https' as scheme, the host being something like `marine.gov.scot',
   and the path being the actual URI on their webroot like
   `/metadata/saved/rap/job_table_sampling'.
 
@@ -105,51 +103,40 @@ defmodule RAP.Job.Producer do
     |> Enum.at(-1)
   end
 
-  defp check_table(%TableDesc{} = table, target_dir, resources) do
-    table_name = extract_id(table.__id__)
+  defp check_table(%TableDesc{} = desc, _target_dir, resources) do
+
+    table_name  = extract_id(desc.__id__)
+    table_title = desc.title
     Logger.info "Checking table #{inspect table_name}"
-
-    target_file   = extract_uri(table.resource_path)
-    target_schema = extract_uri(table.schema_path)
-
-    inject = fn (fp) -> %ResourceSpec{ path: fp, extant: fp in resources } end
     
-    %TableSpec{ name:     table_name,           title: table.title,
-		resource: inject.(target_file), schema: inject.(target_schema) }
+    inject = fn fp -> 
+      %ResourceSpec{ base: fp, extant: fp in resources }
+    end
+    data_validity   = desc.resource_path |> extract_uri() |> then(inject)
+    schema_validity = desc.schema_path   |> extract_uri() |> then(inject)
+    
+    %TableSpec{ name:     table_name,    title:  table_title,
+		resource: data_validity, schema: schema_validity }
   end
   
-#
-#  defp check_table(%TableDesc{} = table, target_dir, resources) do
-#    table_name    = extract_id(table.__id__)
-#    Logger.info "Checking table #{inspect table_name}"
-#    target_file   = "#{target_dir}/#{extract_uri table.resource_path}"
-#    target_schema = "#{target_dir}/#{extract_uri table.schema_path}"
-#    
-#    inject = fn (fp, res) -> %ResourceSpec{path: fp, extant: fp in res} end
-#    resource_validity = target_file   |> inject.(resources)
-#    schema_validity   = target_schema |> inject.(resources)
-#    
-#    %TableSpec{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
-#  end
-#  
   defp check_column(%ColumnDesc{table: tab, column: col, variable: var}, tables) do
     target_table = extract_uri(tab)    
     underlying   = extract_uri(var)
     column       = extract_uri(col)
-    Logger.info "Checking column #{column} is included in table #{target_table}"
+    Logger.info "Checking column #{inspect column} is included in table #{inspect target_table}"
     
     staging = %ColumnSpec{column: column, variable: underlying, table: target_table}
 
     test = fn k ->
       if k.name == target_table do
 	res = k.resource
-	{:ok, {k.name, res.path}}
+	{:ok, {k.name, res.base}}
       end
     end
 
-    with {:ok, {_name, resource_path}} <- Enum.find_value(tables, :error, test)
+    with {:ok, {_name, resource_base}} <- Enum.find_value(tables, :error, test)
       do  
-        extant = staging |> Map.put(:resource, resource_path)
+        extant = staging |> Map.put(:resource_base, resource_base)
         {:valid, extant}
     else
       :error ->
@@ -168,9 +155,9 @@ defmodule RAP.Job.Producer do
     }
   end
     
-  defp group_columns(annotated_labels, table_names) do
+  defp group_columns(annotated_labels, table_bases) do
     annotated_labels
-    |> Enum.map(&check_column(&1, table_names))
+    |> Enum.map(&check_column(&1, table_bases))
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Map.put_new(:valid,   [])
     |> Map.put_new(:invalid, [])
@@ -183,14 +170,16 @@ defmodule RAP.Job.Producer do
   error columns, and to be able to warn, or issue errors which highlight
   any errors *which are applicable*.
   """
-  defp check_job(%JobDesc{} = job, table_names) do
-    job_name = extract_id(job.__id__)
-    job_type = extract_uri(job.job_type)
+  defp check_job(%JobDesc{} = desc, table_bases) do
+    job_name  = extract_id(desc.__id__)
+    job_type  = extract_uri(desc.job_type)
+    job_title = desc.title
+    job_description = desc.description
     
-    Logger.info "Checking job #{inspect job_name} (#{inspect job.title}) of type #{inspect job_type}"
-    res_descriptive = job.job_scope_descriptive |> group_columns(table_names)
-    res_collected   = job.job_scope_collected   |> group_columns(table_names)
-    res_modelled    = job.job_scope_modelled    |> group_columns(table_names)
+    Logger.info "Checking job #{inspect job_name} (#{inspect job_title}) of type #{inspect job_type}"
+    res_descriptive = desc.job_scope_descriptive |> group_columns(table_bases)
+    res_collected   = desc.job_scope_collected   |> group_columns(table_bases)
+    res_modelled    = desc.job_scope_modelled    |> group_columns(table_bases)
 
     Logger.info "Found descriptive results: #{inspect res_descriptive}"
     Logger.info "Found collected results: #{inspect res_collected}"
@@ -203,8 +192,8 @@ defmodule RAP.Job.Producer do
     generated_job = %JobSpec{
       name:              job_name,
       type:              job_type,
-      title:             job.title,
-      description:       job.description,
+      title:             job_title,
+      description:       job_description,
       scope_descriptive: scope_descriptive, errors_descriptive: errors_descriptive,
       scope_collected:   scope_collected,   errors_collected:   errors_collected,
       scope_modelled:    scope_modelled,    errors_modelled:    errors_modelled,
@@ -219,13 +208,15 @@ defmodule RAP.Job.Producer do
                       _uuid, _cache, _path, _resources) do
     {:error, :empty}
   end
-  defp check_manifest(%ManifestDesc{} = desc, uuid, cache_dir, manifest, resources) do    
+  defp check_manifest(%ManifestDesc{} = desc, uuid, cache_dir, manifest_base, resources) do    
     Logger.info "Check manifest `RootManifest' (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
     target_dir = "#{cache_dir}/#{uuid}"
     
-    processed_tables = desc.tables |> Enum.map(&check_table(&1, target_dir, resources))
+    processed_tables = desc.tables
+    |> Enum.map(&check_table(&1, target_dir, resources))
+    
     extant_tables = processed_tables
     |> Enum.filter(fn tab ->
       resource = tab.resource
@@ -237,15 +228,15 @@ defmodule RAP.Job.Producer do
     # Include both invalid and valid tables, not just those extant above
     # Job validation requires pattern-matching later, we're only validating
     # presence/absence of referenced tables.
-    target_manifest = %ManifestSpec{title:          desc.title,
-				    description:    desc.description,
-				    local_version:  desc.local_version,
-				    uuid:           uuid,
-				    manifest_path:  manifest,
-				    resources:      resources,
-				    staging_tables: processed_tables,   
-				    staging_jobs:   processed_jobs    }
-    {:ok, target_manifest}
+    manifest_obj = %ManifestSpec{title:          desc.title,
+				 description:    desc.description,
+				 local_version:  desc.local_version,
+				 uuid:           uuid,
+				 manifest_base:  manifest_base,
+				 resource_bases: resources,
+				 staging_tables: processed_tables,   
+				 staging_jobs:   processed_jobs    }
+    {:ok, manifest_obj}
   end
 
   def invoke_manifest(%GCP{uuid: uuid, manifest: manifest, resources: resources}, cache_dir) do

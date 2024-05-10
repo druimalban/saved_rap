@@ -16,8 +16,12 @@ defmodule RAP.Job.ColumnSpec do
   (&c.) attribute, so don't duplicate this.
 
   In the generated manifests, column descriptions are blank nodes.
+
+  This struct does duplicate the purported path (base name, to be exact)
+  of the referenced table. This is necessary for pattern matching over
+  processed job descriptions, and does not occur in our RDF manifests.
   """
-  defstruct [ :variable, :column, :table, :resource ]
+  defstruct [ :variable, :column, :table, :resource_base ]
 end
 
 defmodule RAP.Job.ResourceSpec do
@@ -32,7 +36,7 @@ defmodule RAP.Job.ResourceSpec do
   actually validate these. These are just named pairs of the resource
   path and whether the resource exists.
   """
-  defstruct [ :path, :extant ]
+  defstruct [ :base, :extant ]
 end
 
 defmodule RAP.Job.TableSpec do
@@ -48,6 +52,10 @@ defmodule RAP.Job.TableSpec do
 
   Unlike the columns, which are blank nodes, tables are named and so can
   be associated with a name (the struct's generated `__id__' attribute).
+
+  The `resource' and `schema' attributes are not fully qualified file
+  names or base file names, but instances of the above `%ResourceSpec{}'
+  struct.
   """
   defstruct [ :name, :title, :resource, :schema ]
 end
@@ -58,7 +66,7 @@ defmodule RAP.Job.JobSpec do
   These are not blank nodes and so are associated with a name like a
   table description.
   """
-  defstruct [ :name, :title, :description,:type,
+  defstruct [ :name, :title, :description, :type,
 	      :scope_descriptive,   :scope_collected,  :scope_modelled,
 	      :errors_descriptive,  :errors_collected, :errors_modelled ]
 end
@@ -74,7 +82,7 @@ defmodule RAP.Job.ManifestSpec do
   defstruct [ :title,
 	      :description,    :local_version,
 	      :uuid,
-	      :manifest_path,  :resources,
+	      :manifest_base,  :resource_bases,
 	      :staging_tables, :staging_jobs ]
 end
 
