@@ -2,15 +2,20 @@ defmodule RAP.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
-
+  #
   # Hard-code these for brevity, should be configurable at program init.
-  # Same cache dir for both the 'local' store and GCP
+  # Same cache directory for both the 'local' store and objects fetched
+  # from GCP. Additional 'local' directory, i.e. a directory on the local
+  # filesystem which we monitor for changes, rather than a place to *put*
+  # things monitored locally.
+  #
   @interval_seconds 300
-  @cache_directory  "./data_cache"
   @index_file       ".index"
   @index_fall_back  "manifest.ttl"
   @gcp_bucket       "saved-rap-test"
-  @local_directory  "/var/db/saved"
+  @local_directory  "/var/db/saved"  # Monitor this like GCP
+  @cache_directory  "./data_cache"
+  @bakery_directory "./bakery"       # The place to output results
   
   use Application
 
@@ -29,43 +34,38 @@ defmodule RAP.Application do
   presumed that the reason behind using multiple buckets is to treat the
   data contained within differently.
   """
-  defstruct [ :interval_seconds,
-	      :cache_directory,
-	      :index_file,
-	      :index_fall_back,
-	      :gcp_bucket,
-	      :local_directory,
-	      :gcp_session,
+  defstruct [ :gcp_session,
 	      :last_poll,
-	      :staging_objects,
-	      :poll_signal ]
+	      
+	      interval_seconds: @interval_seconds,
+	      index_file:       @index_file,
+	      index_fall_back:  @index_fall_back,
+	      gcp_bucket:       @gcp_bucket,
+	      local_directory:  @local_directory,
+	      cache_directory:  @cache_directory,
+	      bakery_directory: @bakery_directory,
+	      staging_objects:  []               ]
   
   @impl true
   def start(_type, _args) do
+    # Fudge: set initial time stamp to five minutes (or given interval)
+    # in the past so that the monitoring triggers immediately.
     current_ts = DateTime.utc_now() |> DateTime.to_unix()
     initial_ts = current_ts - @interval_seconds
 
-    hardcoded_state =
-      %RAP.Application{
-	interval_seconds: @interval_seconds,
-	cache_directory:  @cache_directory,
-	index_file:       @index_file,
-	index_fall_back:  @index_fall_back,
-	gcp_bucket:       @gcp_bucket,
-	local_directory:  @local_directory,
-	gcp_session:      nil,
-	last_poll:        initial_ts,
-	staging_objects:  [],
-	poll_signal:      :continue
-      }
+    hardcoded_state = %RAP.Application{
+      last_poll: initial_ts
+    }
     
     children = [
       {RAP.Storage.Monitor, hardcoded_state},      
       {RAP.Storage.GCP,     hardcoded_state},
-      #RAP.Storage.TestConsumer
       {RAP.Job.Producer,    hardcoded_state},
-      RAP.Job.Runner,
-      RAP.Job.Cache.Supervisor
+      {RAP.Job.Runner,      hardcoded_state},
+      {RAP.Bakery,          hardcoded_state}
+      
+      #RAP.Job.Cache.Supervisor,
+      #RAP.Storage.TestConsumer
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

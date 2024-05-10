@@ -106,18 +106,32 @@ defmodule RAP.Job.Producer do
   end
 
   defp check_table(%TableDesc{} = table, target_dir, resources) do
-    table_name    = extract_id(table.__id__)
+    table_name = extract_id(table.__id__)
     Logger.info "Checking table #{inspect table_name}"
-    target_file   = "#{target_dir}/#{extract_uri table.resource_path}"
-    target_schema = "#{target_dir}/#{extract_uri table.schema_path}"
+
+    target_file   = extract_uri(table.resource_path)
+    target_schema = extract_uri(table.schema_path)
+
+    inject = fn (fp) -> %ResourceSpec{ path: fp, extant: fp in resources } end
     
-    inject = fn (fp, res) -> %ResourceSpec{path: fp, extant: fp in res} end
-    resource_validity = target_file   |> inject.(resources)
-    schema_validity   = target_schema |> inject.(resources)
-    
-    %TableSpec{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
+    %TableSpec{ name:     table_name,           title: table.title,
+		resource: inject.(target_file), schema: inject.(target_schema) }
   end
   
+#
+#  defp check_table(%TableDesc{} = table, target_dir, resources) do
+#    table_name    = extract_id(table.__id__)
+#    Logger.info "Checking table #{inspect table_name}"
+#    target_file   = "#{target_dir}/#{extract_uri table.resource_path}"
+#    target_schema = "#{target_dir}/#{extract_uri table.schema_path}"
+#    
+#    inject = fn (fp, res) -> %ResourceSpec{path: fp, extant: fp in res} end
+#    resource_validity = target_file   |> inject.(resources)
+#    schema_validity   = target_schema |> inject.(resources)
+#    
+#    %TableSpec{name: table_name, title: table.title, resource: resource_validity, schema: schema_validity}
+#  end
+#  
   defp check_column(%ColumnDesc{table: tab, column: col, variable: var}, tables) do
     target_table = extract_uri(tab)    
     underlying   = extract_uri(var)
@@ -205,7 +219,7 @@ defmodule RAP.Job.Producer do
                       _uuid, _cache, _path, _resources) do
     {:error, :empty}
   end
-  defp check_manifest(%ManifestDesc{} = desc, uuid, cache_dir, manifest_path, resources) do    
+  defp check_manifest(%ManifestDesc{} = desc, uuid, cache_dir, manifest, resources) do    
     Logger.info "Check manifest `RootManifest' (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
@@ -227,18 +241,19 @@ defmodule RAP.Job.Producer do
 				    description:    desc.description,
 				    local_version:  desc.local_version,
 				    uuid:           uuid,
-				    manifest_path:  manifest_path,
+				    manifest_path:  manifest,
 				    resources:      resources,
 				    staging_tables: processed_tables,   
 				    staging_jobs:   processed_jobs    }
     {:ok, target_manifest}
   end
 
-  def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_path, resources: resources}, cache_dir) do
+  def invoke_manifest(%GCP{uuid: uuid, manifest: manifest, resources: resources}, cache_dir) do
     Logger.info "Building RDF graph from turtle manifest using data in #{cache_dir}/#{uuid}"
-    with {:ok, rdf_graph} <- RDF.Turtle.read_file(manifest_path),
-         {:ok, ex_struct} <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
-         {:ok, manifest}  <- check_manifest(ex_struct, uuid, cache_dir, manifest_path, resources)
+    manifest_full_path = "#{cache_dir}/#{uuid}/#{manifest}"
+    with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
+         {:ok, ex_struct}    <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
+         {:ok, manifest_obj} <- check_manifest(ex_struct, uuid, cache_dir, manifest, resources)
       do
         Logger.info "Detecting feasible jobs"
 	Logger.info "Found RDF graph:"
@@ -246,11 +261,11 @@ defmodule RAP.Job.Producer do
 	Logger.info "Corresponding struct to RDF graph:"
 	Logger.info "#{inspect ex_struct}"
 	Logger.info "Processed/annotated manifest:"
-	Logger.info "#{inspect manifest}"
-	manifest
+	Logger.info "#{inspect manifest_obj}"
+	manifest_obj
     else
       {:error,   err} ->
-	Logger.info "Could not read RDF graph #{manifest_path}"
+	Logger.info "Could not read RDF graph #{manifest_full_path}"
         Logger.info "Error was #{inspect err}"
 	{:error, :input_graph}
       {:error,   :empty} ->

@@ -78,18 +78,18 @@ defmodule RAP.Storage.GCP do
   cache results.
   """
   defp fetch_object(target_dir, obj) do
-    target_file = "#{target_dir}/#{obj.path}"
+    output_file = "#{target_dir}/#{obj.path}"
     Logger.info "Polling GCP storage bucket for flat object #{obj.gcp_name}"
-    with false <- File.exists?(target_file) && dl_success?(obj.gcp_md5, File.read!(target_file)),
+    with false <- File.exists?(output_file) && dl_success?(obj.gcp_md5, File.read!(output_file)),
          session <- GenStage.call(RAP.Storage.Monitor, :yield_session),
 	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
-	 :ok <- File.write(target_file, body) do
-      Logger.info "Successfully wrote #{target_file}"
-      {:ok, target_file}
+	 :ok <- File.write(output_file, body) do
+      Logger.info "Successfully wrote #{output_file}, file proper is #{obj.path}"
+      {:ok, obj.path}
     else
       true ->
-	Logger.info "File #{target_file} already exists and MD5 checksum matches API's"
-        {:ok, target_file}
+	Logger.info "File #{output_file} already exists and MD5 checksum matches API's"
+        {:ok, obj.path}
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}
@@ -127,17 +127,17 @@ defmodule RAP.Storage.GCP do
     index_path = "#{target_dir}/#{index}"
     with {:ok, uuid, file_paths} <- fetch_job_deps(cache_directory, job),
          {:ok, manifest}         <- File.read(index_path) do
-      Logger.info "Index file is #{inspect index_path}"
-
-      manifest_path = target_dir <> "/" <> String.trim(manifest)
-      Logger.info "Manifest file is #{inspect manifest_path}"
+      Logger.info "Index file is #{inspect index}"
+      manifest_proper = String.trim(manifest)
+      manifest_path = target_dir <> "/" <> manifest_proper
+      Logger.info "Manifest file is #{inspect manifest_proper}"
       
       non_manifests = file_paths
-      |> List.delete(manifest_path)
-      |> List.delete(index_path)      
+      |> List.delete(manifest_proper)
+      |> List.delete(index)
       Logger.info "Non-manifest files are #{inspect non_manifests}"      
 
-      %GCP{uuid: uuid, manifest: manifest_path, resources: non_manifests}
+      %GCP{uuid: uuid, manifest: manifest_proper, resources: non_manifests}
     else
       {:error, uuid, errors} -> {:error, job.uuid, errors}
       {:error, reason}       ->

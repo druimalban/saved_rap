@@ -16,7 +16,7 @@ defmodule RAP.Job.Result do
     System.cmd shell, [ command | args ]
   end
   
-  def run_job(%JobSpec{type: "ignore"} = spec) do
+  def run_job(_uuid, _cache_dir, %JobSpec{type: "ignore"} = spec) do
     %Result{
       name:        spec.name,
       title:       spec.title,
@@ -27,37 +27,47 @@ defmodule RAP.Job.Result do
     }
   end
 
-  def run_job(%JobSpec{
-	type: "density",
-	scope_collected: [
-	  %ColumnSpec{variable: "lice_count_total",
-		      column:   label_count,
-		      table:    table_count,
-		      resource: resource_count}
-	  | _ ],
-	scope_modelled: [
-	  %ColumnSpec{variable: "density",
-		      column:   label_density,
-		      table:    table_density,
-		      resource: resource_density},
-	  %ColumnSpec{variable: "time",
-		      column:   label_time,
-		      table:    table_time,
-		      resource: resource_time}
-	  | _ ]
-	} = spec) do
+  def run_job(
+    uuid, cache_directory,
+
+    %JobSpec{
+      type: "density",
+      scope_collected: [ %ColumnSpec{
+			   variable: "lice_count_total",
+			   column:   label_count,
+			   table:    table_count,
+			   resource: resource_count}
+			 | _ ],
+      scope_modelled:  [ %ColumnSpec{
+			   variable: "density",
+			   column:   label_density,
+			   table:    table_density,
+			   resource: resource_density},
+			 %ColumnSpec{
+			   variable: "time",
+			   column:   label_time,
+			   table:    table_time,
+			   resource: resource_time}
+			 | _ ]
+    } = spec) do
+
     if resource_density != resource_time do
       res = "Density and time not derived from same data file"
       %Result{ title:  spec.title, description: spec.description,
 	       type:   "density",  signal:      :failure_prereq,
 	       result: res }
     else
+      file_path_count   = "#{cache_directory}/#{uuid}/#{resource_count}"
+      file_path_density = "#{cache_directory}/#{uuid}/#{resource_density}"
+      _file_path_time   = "#{cache_directory}/#{uuid}/#{resource_time}"
+      
       { res, sig } =
  	cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
- 	            resource_count,   label_count,
- 	            resource_density, label_time,  label_density])
+ 	            file_path_count,   label_count,
+ 	            file_path_density, label_time,  label_density])
       if (sig == 0) do
- 	Logger.info "Call to external command/executable density_count_ode succeeded"
+ 	Logger.info "Call to external command/executable density_count_ode succeeded:"
+	Logger.info res
  	%Result{ title:  spec.title, description: spec.description,
 		 type:   "density",  signal:      :ok,
 		 result: res }
@@ -101,9 +111,8 @@ defmodule RAP.Job.Runner do
 	      :manifest_path,  :resources,
 	      :staging_tables, :staging_jobs,	      :results ]
   
-  def start_link _args do
+  def start_link initial_state do
     Logger.info "Called Job.Runner.start_link (_)"
-    initial_state = []
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
   end
 
@@ -120,12 +129,15 @@ defmodule RAP.Job.Runner do
     is = inspect state
     Logger.info "Called Job.Runner.handle_events (events = #{ie}, _, state = #{is})"
     
-    target_events = events |> Enum.map(&process_jobs/1)
+    target_events = events |> Enum.map(&process_jobs(&1, state.cache_directory))
     { :noreply, target_events, state }
   end
   
-  def process_jobs(%ManifestSpec{} = spec) do
-    results = spec.staging_jobs |> Enum.map(&Result.run_job/1)
+  def process_jobs(%ManifestSpec{} = spec, cache_directory) do
+    
+    results = spec.staging_jobs
+    |> Enum.map(&Result.run_job(spec.uuid, cache_directory, &1))
+    
     %Runner{ uuid:           spec.uuid,
 	     local_version:  spec.local_version,
 	     title:          spec.title,
