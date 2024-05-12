@@ -36,21 +36,6 @@ defmodule RAP.Storage.GCP do
     processed = Enum.map(events, &coalesce_job(state.cache_directory, state.index_file, &1))
     { :noreply, processed, state }
   end
-  
-  @doc """
-  Simple helper function to compare MD5 checksums given by the storage
-  objects API to the actual file downloaded.
-
-  Erlang's `:crypto' works on a binary, not a file path, which is very
-  convenient because it avoids writing to disk duff file responses.
-
-  Further note that in `fetch_job_deps/3', sets `:decode' to false, as
-  there may be a risk that the decoding breaks this workflow.
-  """
-  defp dl_success?(purported_md5, body) do
-    actual_md5 = :crypto.hash(:md5, body) |> Base.encode64()
-    purported_md5 == actual_md5
-  end
 
   defp wrap_gcp_fetch(session, obj) do
     GCPReqObjs.storage_objects_get(session, obj.gcp_bucket, obj.gcp_name, [alt: "media"], decode: false)
@@ -82,7 +67,7 @@ defmodule RAP.Storage.GCP do
     # output_file => target_full
     target_full = "#{target_dir}/#{target_base}"
     Logger.info "Polling GCP storage bucket for flat object #{obj.gcp_name}"
-    with false <- File.exists?(target_full) && dl_success?(obj.gcp_md5, File.read!(target_full)),
+    with false <- File.exists?(target_full) && Staging.dl_success?(obj.gcp_md5, File.read!(target_full)),
          session <- GenStage.call(RAP.Storage.Monitor, :yield_session),
 	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
 	 :ok <- File.write(target_full, body) do

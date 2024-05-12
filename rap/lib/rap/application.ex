@@ -9,13 +9,14 @@ defmodule RAP.Application do
   # filesystem which we monitor for changes, rather than a place to *put*
   # things monitored locally.
   #
-  @interval_seconds 300
-  @index_file       ".index"
-  @index_fall_back  "manifest.ttl"
-  @gcp_bucket       "saved-rap-test"
-  @local_directory  "/var/db/saved"  # Monitor this like GCP
-  @cache_directory  "./data_cache"
-  @bakery_directory "./bakery"       # The place to output results
+  @interval_seconds   300
+  @index_file         ".index"
+  @index_fall_back    "manifest.ttl"
+  @gcp_bucket         "saved-rap-test"
+  @local_directory    "/var/db/saved"  # Monitor this like GCP
+  @cache_directory    "./data_cache"
+  @bakery_directory   "./bakery"       # The place to output results
+  @linked_result_stem "result"
   
   use Application
 
@@ -35,16 +36,16 @@ defmodule RAP.Application do
   data contained within differently.
   """
   defstruct [ :gcp_session,
-	      :last_poll,
-	      
-	      interval_seconds: @interval_seconds,
-	      index_file:       @index_file,
-	      index_fall_back:  @index_fall_back,
-	      gcp_bucket:       @gcp_bucket,
-	      local_directory:  @local_directory,
-	      cache_directory:  @cache_directory,
-	      bakery_directory: @bakery_directory,
-	      staging_objects:  []               ]
+	      :last_poll,	      
+	      interval_seconds:   @interval_seconds,
+	      index_file:         @index_file,
+	      index_fall_back:    @index_fall_back,
+	      gcp_bucket:         @gcp_bucket,
+	      local_directory:    @local_directory,
+	      cache_directory:    @cache_directory,
+	      bakery_directory:   @bakery_directory,
+	      linked_result_stem: @linked_result_stem,
+	      staging_objects:    []               ]
   
   @impl true
   def start(_type, _args) do

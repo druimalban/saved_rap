@@ -10,7 +10,7 @@ defmodule RAP.Job.Result do
   alias RAP.Job.Result
   alias RAP.Job.{ColumnSpec, JobSpec, TableSpec, ManifestSpec}
   
-  defstruct [ :name, :title, :description, :type, :signal, :result ]
+  defstruct [ :name, :title, :description, :type, :signal, :contents, :start, :end ]
 
   defp cmd_wrapper(shell, command, args) do
     System.cmd shell, [ command | args ]
@@ -52,12 +52,14 @@ defmodule RAP.Job.Result do
 			 | _ ]
     } = spec) do
     Logger.info "Running job #{job_name} (associated with UUID #{uuid})"
+    start_ts = DateTime.utc_now() |> DateTime.to_unix()
 
     if resource_density != resource_time do
+      end_ts = DateTime.utc_now() |> DateTime.to_unix()
       res = "Density and time not derived from same data file"
       %Result{ title:  spec.title, description: spec.description,
 	       type:   "density",  signal:      :failure_prereq,
-	       result: res }
+	       contents: res, start: start_ts, end: end_ts }
     else
       file_path_count   = "#{cache_directory}/#{uuid}/#{resource_count}"
       file_path_density = "#{cache_directory}/#{uuid}/#{resource_density}"
@@ -70,17 +72,19 @@ defmodule RAP.Job.Result do
  	cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
  	            file_path_count,   label_count,
  	            file_path_density, label_time,  label_density])
+
+      end_ts = DateTime.utc_now() |> DateTime.to_unix()
       if (sig == 0) do
  	Logger.info "Call to external command/executable density_count_ode succeeded:"
 	Logger.info res
  	%Result{ title:  spec.title, description: spec.description,
 		 type:   "density",  signal:      :ok,
-		 result: res }
+		 contents: res, start: start_ts, end: end_ts }
       else
  	Logger.info "Call to external command/executable density_count_ode failed"
  	%Result{ title:  spec.title, description: spec.description,
 		 type:   "density",  signal:      :error,
-		 result: res }
+		 contents: res, start: start_ts, end: end_ts }
        end
      end
     
@@ -143,7 +147,7 @@ defmodule RAP.Job.Runner do
     
     Logger.info "Staging jobs: #{inspect staging}"
     
-    results = staging
+    result_contents = staging
     |> Enum.map(&Result.run_job(spec.uuid, cache_directory, &1))
     
     %Runner{ uuid:           spec.uuid,
@@ -154,7 +158,7 @@ defmodule RAP.Job.Runner do
 	     resource_bases: spec.resource_bases,
 	     staging_tables: spec.staging_tables,
 	     staging_jobs:   spec.staging_jobs,
-	     results:        results            }
+	     contents:       result_contents    }
   end
   
 end

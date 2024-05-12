@@ -103,7 +103,7 @@ defmodule RAP.Job.Producer do
     |> Enum.at(-1)
   end
 
-  defp check_table(%TableDesc{} = desc, _target_dir, resources) do
+  defp check_table(%TableDesc{} = desc, resources) do
 
     table_name  = extract_id(desc.__id__)
     table_title = desc.title
@@ -205,17 +205,15 @@ defmodule RAP.Job.Producer do
   defp check_manifest(%ManifestDesc{description: nil, title: nil,
 				    tables:      [],  jobs:  [],
 				    gcp_source:  nil, local_version: nil} = desc,
-                      _uuid, _cache, _path, _resources) do
+                      _uuid, _manifest, _resources) do
     {:error, :empty}
   end
-  defp check_manifest(%ManifestDesc{} = desc, uuid, cache_dir, manifest_base, resources) do    
-    Logger.info "Check manifest `RootManifest' (title #{inspect desc.title})"
+  defp check_manifest(%ManifestDesc{} = desc, uuid, manifest_base, resources) do    
+    Logger.info "Check manifest (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
-    target_dir = "#{cache_dir}/#{uuid}"
     
-    processed_tables = desc.tables
-    |> Enum.map(&check_table(&1, target_dir, resources))
+    processed_tables = desc.tables |> Enum.map(&check_table(&1, resources))
     
     extant_tables = processed_tables
     |> Enum.filter(fn tab ->
@@ -239,12 +237,12 @@ defmodule RAP.Job.Producer do
     {:ok, manifest_obj}
   end
 
-  def invoke_manifest(%GCP{uuid: uuid, manifest: manifest, resources: resources}, cache_dir) do
+  def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_base, resources: resources}, cache_dir) do
     Logger.info "Building RDF graph from turtle manifest using data in #{cache_dir}/#{uuid}"
     manifest_full_path = "#{cache_dir}/#{uuid}/#{manifest}"
     with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
          {:ok, ex_struct}    <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
-         {:ok, manifest_obj} <- check_manifest(ex_struct, uuid, cache_dir, manifest, resources)
+         {:ok, manifest_obj} <- check_manifest(ex_struct, uuid, manifest_base, resources)
       do
         Logger.info "Detecting feasible jobs"
 	Logger.info "Found RDF graph:"

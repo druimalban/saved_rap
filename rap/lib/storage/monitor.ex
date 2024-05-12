@@ -141,9 +141,10 @@ defmodule RAP.Storage.Monitor do
 
     with %Monitor{} = index <- Enum.find(target_files, find_index),
          resources <- List.delete(target_files, index) do
-      :ets.insert(:uuid, {uuid})
+      curr = DateTime.utc_now() |> DateTime.to_unix()
+      :ets.insert(:uuid, {uuid, curr})
       ds = %Staging{uuid: uuid, index: index, resources: resources}
-      Logger.info("Inserted #{uuid} into Erlang term storage (:ets)")
+      Logger.info("Inserted #{uuid} and current UNIX time stamp #{inspect curr} into Erlang term storage (:ets)")
       Logger.info("UUID/content map: #{pretty_print_object ds}")
       ds
     else
@@ -183,9 +184,10 @@ defmodule RAP.Storage.Monitor do
   The most efficient way to check which jobs are feasible is to summarise
   the list of objects into unique UUIDs. This is just a map to extract
   the UUIDs then run `Enum.uniq/2'. We then filter these unique UUIDs
-  using `Staging.feasible/1' and `ets_feasible/1', which produce a
-  set of jobs which are neither cached (finished) nor currently running
-  (in Erlang term storage ~ `:ets').
+  using `Staging.feasible/1' and `Staging.ets_feasible/1', which produce
+  a set of UUIDs of manifest descriptions which have neither finished
+  being processed (cached) nor currently running (UUID + start time-stamp
+  is registered in-memory in Erlang term storage ~ `:ets').
 
   We further group all objects provided by UUID. For each UUID which made
   it out of the filtering, use this as the key to lookup the collection
@@ -209,6 +211,7 @@ defmodule RAP.Storage.Monitor do
 
     with true <- elapsed > interval,
 	 {:ok, %GCPObjs{items: objects}} <- wrap_gcp_request(session, bucket) do
+      
       Logger.info "Time elapsed (#{inspect elapsed}s) is greater than interval (#{inspect interval}s)"
       normalised_objects = objects
       |> Enum.map(&uuid_helper/1)
@@ -220,8 +223,8 @@ defmodule RAP.Storage.Monitor do
       Logger.info "Found UUIDs on GCP: #{inspect remote_uuids}"
 
       staging_uuids = remote_uuids
-      |> Enum.filter(&Staging.feasible?/1)
-      |> Enum.filter(&ets_feasible?/1)
+      |> Enum.filter(&Staging.mnesia_feasible?/1)
+      |> Enum.filter(&Staging.ets_feasible?/1)
 
       grouped_objects = normalised_objects
       |> Enum.group_by(& &1.uuid)
@@ -233,6 +236,7 @@ defmodule RAP.Storage.Monitor do
       GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
       new_time_stamp = GenStage.call(__MODULE__, :update_last_poll)
       monitor_gcp(session, bucket, index_file, interval, new_time_stamp)
+      
     else
       false ->
 	monitor_gcp(session, bucket, index_file, interval, last_poll)
@@ -300,18 +304,6 @@ defmodule RAP.Storage.Monitor do
 	gcp_md5:    gcp_object.md5Hash }
     else
       _ -> nil
-    end
-  end
-    
-  @doc """
-  Simple wrapper around Erlang term storage table of UUIDs
-  """
-  defp ets_feasible?(uuid) do
-    case :ets.lookup(:uuid, uuid) do
-      [] -> true
-      _  ->
-	Logger.info("Job UUID #{uuid} is already running, cannot add to ETS.")
-	false
     end
   end
 
