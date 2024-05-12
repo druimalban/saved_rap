@@ -14,7 +14,7 @@ defmodule RAP.Storage.GCP do
   alias GoogleApi.Storage.V1.Api.Objects, as: GCPReqObjs
 
   alias RAP.Application
-  alias RAP.Storage.{GCP, Monitor, Staging}
+  alias RAP.Storage.{GCP, Monitor}
 
   defstruct [ :uuid, :manifest, :resources ]
 
@@ -48,7 +48,7 @@ defmodule RAP.Storage.GCP do
   3. If not, download and verify checksum.
   (Make sure this isn't recursive.)
   
-  Events are a `%Staging{}' struct: UUID, index object, and all other
+  Events are a `%Storage.PreRun{}' struct: UUID, index object, and all other
   objects. Objects are a `%Monitor{}' struct, which includes all the
   information needed to fetch.
   
@@ -67,8 +67,8 @@ defmodule RAP.Storage.GCP do
     # output_file => target_full
     target_full = "#{target_dir}/#{target_base}"
     Logger.info "Polling GCP storage bucket for flat object #{obj.gcp_name}"
-    with false <- File.exists?(target_full) && Staging.dl_success?(obj.gcp_md5, File.read!(target_full)),
-         session <- GenStage.call(RAP.Storage.Monitor, :yield_session),
+    with false <- File.exists?(target_full) && PreRun.dl_success?(obj.gcp_md5, File.read!(target_full)),
+         session <- GenStage.call(Monitor, :yield_session),
 	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
 	 :ok <- File.write(target_full, body) do
       Logger.info "Successfully wrote #{target_full}, file base name is #{target_base}"
@@ -86,7 +86,7 @@ defmodule RAP.Storage.GCP do
     end
   end
       
-  defp fetch_job_deps(cache_dir, %RAP.Storage.Staging{} = job) do
+  defp fetch_job_deps(cache_dir, %PreRun{} = job) do
     Logger.info "Called `Storage.GCP.fetch_job_deps' for job with UUID #{job.uuid}"
     all_resources = [job.index | job.resources]
     target_dir = "#{cache_dir}/#{job.uuid}"
@@ -111,7 +111,7 @@ defmodule RAP.Storage.GCP do
     end
   end
 
-  defp coalesce_job(cache_dir, index_base, %RAP.Storage.Staging{} = job) do
+  defp coalesce_job(cache_dir, index_base, %PreRun{} = job) do
     target_dir = "#{cache_dir}/#{job.uuid}"
     index_full = "#{target_dir}/#{index_base}"
     with {:ok, uuid, file_bases} <- fetch_job_deps(cache_dir, job),

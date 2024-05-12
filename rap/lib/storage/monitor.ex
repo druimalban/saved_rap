@@ -22,7 +22,10 @@ defmodule RAP.Storage.Monitor do
   alias GoogleApi.Storage.V1.Model.Objects, as: GCPObjs
   alias GoogleApi.Storage.V1.Api.Objects,   as: GCPReqObjs
 
-  alias RAP.Storage.{Monitor, Staging}
+  alias RAP.Application
+  alias RAP.Storage.Monitor
+
+  alias RAP.Storage.PreRun
   
   defstruct [:owner, :uuid, :path,
 	     :gcp_name, :gcp_id, :gcp_bucket, :gcp_md5]
@@ -44,7 +47,7 @@ defmodule RAP.Storage.Monitor do
   The idea is that any given store uses randomly generated UUIDs, which
   are de-facto unique, so there is no chance of conflict here.
   """
-  def init(%RAP.Application{} = initial_state) do
+  def init(%Application{} = initial_state) do
     Logger.info "Called Storage.Monitor.init (initial_state: #{inspect initial_state})"
     :ets.new(:uuid, [:set, :public, :named_table])
     with {:ok, initial_session} <- new_connection()
@@ -68,7 +71,7 @@ defmodule RAP.Storage.Monitor do
   @doc """
   Update session state from our recursive `monitor_gcp/4' function
   """
-  def handle_call(:update_session, _from, %RAP.Application{} = state) do
+  def handle_call(:update_session, _from, %Application{} = state) do
     Logger.info "Received call :update_session"
     new_session = new_connection()
     new_state   = state |> Map.put(:gcp_session, new_session)
@@ -78,7 +81,7 @@ defmodule RAP.Storage.Monitor do
   @doc """
   Update last poll state from our recursive `monitor_gcp/4' function
   """
-  def handle_call(:update_last_poll, _from, %RAP.Application{} = state) do
+  def handle_call(:update_last_poll, _from, %Application{} = state) do
     Logger.info "Received call :update_last_poll"
     new_time_stamp = DateTime.utc_now() |> DateTime.to_unix()
     new_state      = state |> Map.put(:last_poll, new_time_stamp)
@@ -91,7 +94,7 @@ defmodule RAP.Storage.Monitor do
   This is necessary since including the session in each event is annoying
   and does not feel ideal.
   """
-  def handle_call(:yield_session, subscriber, %RAP.Application{} = state) do
+  def handle_call(:yield_session, subscriber, %Application{} = state) do
     Logger.info "Received call to produce return current session, from subscriber #{inspect subscriber}"
     {:reply, state.gcp_session, [], state}
   end
@@ -106,7 +109,7 @@ defmodule RAP.Storage.Monitor do
   computationally and in terms of the subscription to the GCP storage
   platform.
   """
-  def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
+  def handle_cast({:stage_objects, additional}, %Application{staging_objects: extant} = state) do
     Logger.info "Received cast :stage_objects for objects #{inspect additional}"
     with [queue_head | queue_tail] <- extant ++ additional do
       new_state = state |> Map.put(:staging_objects, queue_tail)
@@ -143,7 +146,7 @@ defmodule RAP.Storage.Monitor do
          resources <- List.delete(target_files, index) do
       curr = DateTime.utc_now() |> DateTime.to_unix()
       :ets.insert(:uuid, {uuid, curr})
-      ds = %Staging{uuid: uuid, index: index, resources: resources}
+      ds = %PreRun{uuid: uuid, index: index, resources: resources}
       Logger.info("Inserted #{uuid} and current UNIX time stamp #{inspect curr} into Erlang term storage (:ets)")
       Logger.info("UUID/content map: #{pretty_print_object ds}")
       ds
@@ -155,7 +158,7 @@ defmodule RAP.Storage.Monitor do
   end
 
   def pretty_print_object(%Monitor{path: fp}), do: fp
-  def pretty_print_object(%Staging{uuid: uuid, resources: res}) do
+  def pretty_print_object(%PreRun{uuid: uuid, resources: res}) do
     pretty_resources = res |> Enum.map(&pretty_print_object/1)
     "%{UUID: #{uuid}, resources: #{inspect pretty_resources}}"
   end
@@ -184,10 +187,11 @@ defmodule RAP.Storage.Monitor do
   The most efficient way to check which jobs are feasible is to summarise
   the list of objects into unique UUIDs. This is just a map to extract
   the UUIDs then run `Enum.uniq/2'. We then filter these unique UUIDs
-  using `Staging.feasible/1' and `Staging.ets_feasible/1', which produce
-  a set of UUIDs of manifest descriptions which have neither finished
-  being processed (cached) nor currently running (UUID + start time-stamp
-  is registered in-memory in Erlang term storage ~ `:ets').
+  using `Storage.PreRun.feasible/1' and `Storage.PreRun.ets_feasible/1',
+  which produce a set of UUIDs of manifest descriptions which have
+  neither finished being processed (cached) nor currently running
+  (UUID + start time-stamp is registered in-memory in Erlang term
+  storage ~ `:ets').
 
   We further group all objects provided by UUID. For each UUID which made
   it out of the filtering, use this as the key to lookup the collection
@@ -223,8 +227,8 @@ defmodule RAP.Storage.Monitor do
       Logger.info "Found UUIDs on GCP: #{inspect remote_uuids}"
 
       staging_uuids = remote_uuids
-      |> Enum.filter(&Staging.mnesia_feasible?/1)
-      |> Enum.filter(&Staging.ets_feasible?/1)
+      |> Enum.filter(&PreRun.mnesia_feasible?/1)
+      |> Enum.filter(&PreRun.ets_feasible?/1)
 
       grouped_objects = normalised_objects
       |> Enum.group_by(& &1.uuid)
@@ -250,7 +254,6 @@ defmodule RAP.Storage.Monitor do
     end
   end
   
-
   @doc """
   Added this for testing with statements, but it was still productive to
   keep it around as informative messages in the log are good.

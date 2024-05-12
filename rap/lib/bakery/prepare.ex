@@ -20,12 +20,26 @@ defmodule RAP.Bakery.Prepare do
   
   This stage of the 'bakery' just outputs results from each job to the
   correct directory, then moves the files associated with the UUID.
+  However, note the naming of the `manifest_pre_base' attribute in the
+  module named struct. Subsequent stages will generate a 'post'-running
+  manifest which links results &c. (see above) with the extant data
+  submitted.
   """
   use GenStage
   require Logger
 
   alias RAP.Application
   alias RAP.Job.{Result, Runner, Staging}
+  alias RAP.Bakery.Prepare
+
+  # Note naming of manifest_pre_base
+  # The idea is that we 
+  defstruct [ :uuid,
+	      :title, :description,
+	      :start, :end,
+	      :manifest_pre_base,
+	      :resource_bases,
+	      :result_bases       ]
   
   def start_link(%Application{} = initial_state) do
     GenStage.start_link(__MODULE__, initial_state)
@@ -63,23 +77,31 @@ defmodule RAP.Bakery.Prepare do
     
     File.mkdir_p(target_dir)
 
-    cached_job_names = processed.staging_jobs
-    |> Enum.map(&Staging.cache_job/1)
+    cached_job_bases = processed.staging_jobs
+    |> Enum.map(&PostRun.cache_job/1)
     |> Enum.map(&write_result(&1.contents, bakery_directory, uuid,
 	linked_result_stem, ".json", &1.name))
-
-    {:ok, %Runner{manifest_base: manifest_base, resource_bases = resource_bases}} =
-      processed |> Staging.cache_manifest(cached_job_names)
-
-    moved_resources = [manifest_base | resource_bases]
+    
+    [moved_manifest, moved_resources] = [manifest_base | resource_bases]
     |> Enum.map(&move_wrapper(&1, cache_dir, target_dir, uuid))
 
     cache_end = DateTime.now() |> DateTime.to_unix()
     
-    cached_job = processed
-    |> Staging.cache_manifest(cached_job_names)
-   end
+    {:ok, start_ts, end_ts} = processed
+    |> PostRun.cache_manifest(cached_job_names)
 
+    %Prepare{
+      uuid:        processed.uuid,
+      title:       processed.title,
+      description: processed.description,
+      start:       start_ts,
+      end:         end_ts,
+      manifest_pre_base: moved_manifest,
+      resource_bases:    moved_resources,
+      result_bases:      cached_job_bases
+    }
+  end
+  
   @doc """
   This is called `write_result' but it should be generalised to any file
   we need to write which isn't already on disc, e.g. RDF descriptions of
@@ -97,7 +119,7 @@ defmodule RAP.Bakery.Prepare do
          :ok   <- File.write(target_contents, target_full) do
       
       Logger.info "Wrote result of target #{inspect target_name} to fully-qualified path #{target_full}"
-      target_name
+      target_base
     else
       true ->
 	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
@@ -127,9 +149,8 @@ defmodule RAP.Bakery.Prepare do
         move_wrapper(cache_dir, bakery_dir, uuid, fp)
       error ->
 	Logger.info "Couldn't move file #{inspect fp} from cache #{inspect cache_dir} to target directory #{target_dir}"
-	{:error}
+	error
     end
-
-    
   end
+
 end

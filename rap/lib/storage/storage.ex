@@ -21,7 +21,7 @@ defmodule RAP.Storage do
   end
 end  
 
-defmodule RAP.Storage.Staging do
+defmodule RAP.Storage.PreRun do
   @moduledoc """
   This module largely serves to provide utility functions
   """
@@ -80,6 +80,19 @@ defmodule RAP.Storage.Staging do
     end
   end
 
+end
+
+defmodule RAP.Storage.PostRun
+
+  require Amnesia
+  require Amnesia.Helper
+  require Logger
+
+  require RAP.Storage.DB.Job,      as: JobTable
+  require RAP.Storage.DB.Manifest, as: ManifestTable
+
+  alias RAP.Storage.{Result, Runner}
+
   @doc """
   Remove the UUID from ETS and add a manifest row in the Mnesia DB
 
@@ -131,7 +144,7 @@ defmodule RAP.Storage.Staging do
 	}
 	|> ManifestTable.write()
       end
-      {:ok, manifest}
+      {:ok, start_ts, end_ts}
     else
       [{_uuid, _start} | [_ | _]] = multiple_uuids ->
 	# Note, this should never happen for our usage of ETS as
@@ -161,5 +174,5 @@ defmodule RAP.Storage.Staging do
     end
     job
   end
-  
+
 end
