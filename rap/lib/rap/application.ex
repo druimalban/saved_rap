@@ -65,7 +65,7 @@ defmodule RAP.Application do
       {RAP.Storage.GCP,     hardcoded_state},
       {RAP.Job.Producer,    hardcoded_state},
       {RAP.Job.Runner,      hardcoded_state},
-      {RAP.Bakery,          hardcoded_state}
+      {RAP.Bakery.Prepare,  hardcoded_state}
       
       #RAP.Job.Cache.Supervisor,
       #RAP.Storage.TestConsumer

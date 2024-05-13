@@ -29,6 +29,7 @@ defmodule RAP.Bakery.Prepare do
   require Logger
 
   alias RAP.Application
+  alias RAP.Storage.PostRun
   alias RAP.Job.{Result, Runner, Staging}
   alias RAP.Bakery.Prepare
 
@@ -73,15 +74,15 @@ defmodule RAP.Bakery.Prepare do
   def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem, job_stem) do
     #source_dir = "#{cache_dir}/#{processed.uuid}"
     #target_dir = "#{bakery_dir}/#{processed.uuid}"
-    cache_start = DateTime.now() |> DateTime.to_unix()
+    cache_start = DateTime.utc_now() |> DateTime.to_unix()
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
     Logger.info "Prepare (mkdir(1) -p) #{bakery_dir}/#{processed.uuid}"
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
 
-    cached_job_bases = processed.staging_jobs
-    |> Enum.map(&PostRun.cache_job/1)
+    cached_job_bases = processed.results
+    |> Enum.map(&PostRun.cache_job(&1, processed.uuid))
     |> Enum.map(&write_result(&1.contents, bakery_dir, processed.uuid,
-	job_stem, ".json", &1.name))
+	job_stem, "json", &1.name))
 
     # Special case for the manifest, rename to something like
     # manifest_pre.ttl since we have a notion that we generate
@@ -99,7 +100,7 @@ defmodule RAP.Bakery.Prepare do
     moved_resources = processed.resource_bases
     |> Enum.map(&move_wrapper(&1, cache_dir, bakery_dir, processed.uuid))
 
-    cache_end = DateTime.now() |> DateTime.to_unix()
+    cache_end = DateTime.utc_now() |> DateTime.to_unix()
     
     {:ok, start_ts, end_ts} = processed
     |> PostRun.cache_manifest(cached_job_bases)
@@ -123,14 +124,21 @@ defmodule RAP.Bakery.Prepare do
 
   Check that the file does not exist and the file on disk doesn't have a
   matching checksum.
+
+  When logging, the name of the job is in the file name, so no problem
+  just printing that to the log.
+
+  Seems to fail with :enametoolong… bah!
   """
   def write_result(target_contents, bakery_directory, uuid, stem, extension, target_name) do
     target_base = "#{stem}_#{target_name}.#{extension}"
     target_full = "#{bakery_directory}/#{uuid}/#{target_base}"
 
+    Logger.info "Writing results file #{target_full}"
+    
     with false <- File.exists?(target_full) && Staging.dl_success?(
                     target_contents, File.read!(target_full), opts: [:input_text]),
-         :ok   <- File.write(target_contents, target_full) do
+         :ok   <- File.write(target_full, target_contents) do
       
       Logger.info "Wrote result of target #{inspect target_name} to fully-qualified path #{target_full}"
       target_base

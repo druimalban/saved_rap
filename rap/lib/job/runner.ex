@@ -34,7 +34,6 @@ defmodule RAP.Job.Result do
     uuid, cache_directory,
     
     %JobSpec{
-      name:            job_name,
       type:            "density",
       scope_collected: [ %ColumnSpec{
 			   variable:      "lice_count_total",
@@ -54,7 +53,7 @@ defmodule RAP.Job.Result do
 			   resource_base: resource_time}
 			 | _ ]
     } = spec) do
-    Logger.info "Running job #{job_name} (associated with UUID #{uuid})"
+    Logger.info "Running job #{spec.name} (associated with UUID #{uuid})"
     start_ts = DateTime.utc_now() |> DateTime.to_unix()
 
     if resource_density != resource_time do
@@ -80,16 +79,24 @@ defmodule RAP.Job.Result do
       if (sig == 0) do
  	Logger.info "Call to external command/executable density_count_ode succeeded:"
 	Logger.info res
- 	%Result{ title:      spec.title, description: spec.description,
-		 type:       "density",  signal:      :ok,
-		 start_time: start_ts,  end_time: end_ts,
-		 contents:   res}
+ 	%Result{ name:        spec.name,
+		 title:       spec.title,
+		 description: spec.description,
+		 type:        "density",
+		 signal:      :ok,
+		 start_time:  start_ts,
+		 end_time:    end_ts,
+		 contents:    res}
       else
  	Logger.info "Call to external command/executable density_count_ode failed"
- 	%Result{ title:      spec.title, description: spec.description,
-		 type:       "density",  signal:      :error,
-		 start_time: start_ts,   end_time:    end_ts,
-		 contents:   res }
+ 	%Result{ name:        spec.name,
+		 title:       spec.title,
+		 description: spec.description,
+		 type:        "density",
+		 signal:      :error,
+		 start_time:  start_ts,
+		 end_time:    end_ts,
+		 contents:    res }
        end
      end
     

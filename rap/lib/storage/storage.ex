@@ -156,8 +156,8 @@ defmodule RAP.Storage.PostRun do
     end
   end
   
-  def cache_job(uuid, %Result{} = job) do
-    Logger.info "Cache processed job information in mnesia DB `Job' table"
+  def cache_job(%Result{} = job, uuid) do
+    Logger.info "Cache processed job information in mnesia DB `Job' table for job #{job.name}"
     Amnesia.transaction do
       %JobTable{
 	uuid:        uuid,
