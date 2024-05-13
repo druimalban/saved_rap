@@ -10,7 +10,7 @@ defmodule RAP.Bakery.Prepare do
   - Post-results processing of input data and/or results
     (e.g. descriptive statistics, visualisations);
   - A file which links the input data and schemata, the RDF manifest,
-    results, and post-processing.
+    results, and post-processing. Effectively a manifest post-results.
 
   In addition to the post-processing of results, if applicable, it is
   possible that we would want to include any pre-processing performed on
@@ -36,10 +36,10 @@ defmodule RAP.Bakery.Prepare do
   # The idea is that we 
   defstruct [ :uuid,
 	      :title, :description,
-	      :start, :end,
+	      :start_time, :end_time,
 	      :manifest_pre_base,
 	      :resource_bases,
-	      :result_bases       ]
+	      :result_bases         ]
   
   def start_link(%Application{} = initial_state) do
     GenStage.start_link(__MODULE__, initial_state)
@@ -55,7 +55,9 @@ defmodule RAP.Bakery.Prepare do
 
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "Testing storage consumer received #{inspect events}"
-    #processed_events = events |> Enum.map(&bake_data(&1, bakery_directory))    
+    processed_events = events
+    |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.linked_result_stem, state.job_result_stem))
+    
     {:noreply, [], state}
   end
 
@@ -68,34 +70,46 @@ defmodule RAP.Bakery.Prepare do
   5. Add results to mnesia DB
   6. ?!
   """
-  def bake_data(%Runner{} = processed, bakery_directory, linked_result_stem) do
-    uuid       = results.uuid
-    target_dir = "#{bakery_directory}/#{uuid}"
-    Logger.info "Preparing result of job(s) associated with UUID #{uuid}`"
-
+  def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem, job_stem) do
+    #source_dir = "#{cache_dir}/#{processed.uuid}"
+    #target_dir = "#{bakery_dir}/#{processed.uuid}"
     cache_start = DateTime.now() |> DateTime.to_unix()
-    
-    File.mkdir_p(target_dir)
+    Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
+    Logger.info "Prepare (mkdir(1) -p) #{bakery_dir}/#{processed.uuid}"
+    File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
 
     cached_job_bases = processed.staging_jobs
     |> Enum.map(&PostRun.cache_job/1)
-    |> Enum.map(&write_result(&1.contents, bakery_directory, uuid,
-	linked_result_stem, ".json", &1.name))
+    |> Enum.map(&write_result(&1.contents, bakery_dir, processed.uuid,
+	job_stem, ".json", &1.name))
+
+    # Special case for the manifest, rename to something like
+    # manifest_pre.ttl since we have a notion that we generate
+    # a post-results manifest which links the results and the data
+    # presented
+    staging_pre = processed.manifest_base
+    |> String.replace(~r"\.([a-z]+)$", "_pre.\\1")    
+    pre_manifest_name = cond do
+      staging_pre != processed.manifest_base -> staging_pre
+      true                                   -> "manifest_pre.ttl"
+    end
+    moved_manifest = processed.manifest_base
+    |> move_wrapper(cache_dir, bakery_dir, processed.uuid, pre_manifest_name)
     
-    [moved_manifest, moved_resources] = [manifest_base | resource_bases]
-    |> Enum.map(&move_wrapper(&1, cache_dir, target_dir, uuid))
+    moved_resources = processed.resource_bases
+    |> Enum.map(&move_wrapper(&1, cache_dir, bakery_dir, processed.uuid))
 
     cache_end = DateTime.now() |> DateTime.to_unix()
     
     {:ok, start_ts, end_ts} = processed
-    |> PostRun.cache_manifest(cached_job_names)
+    |> PostRun.cache_manifest(cached_job_bases)
 
     %Prepare{
       uuid:        processed.uuid,
       title:       processed.title,
       description: processed.description,
-      start:       start_ts,
-      end:         end_ts,
+      start_time:  start_ts,
+      end_time:    end_ts,
       manifest_pre_base: moved_manifest,
       resource_bases:    moved_resources,
       result_bases:      cached_job_bases
@@ -132,23 +146,31 @@ defmodule RAP.Bakery.Prepare do
 
   @doc """
   Wrapper for `File.mv/2' similarly to above
+  
+  Extra field for overring the target file, useful when renaming manifest
+  to have `_pre' before the extension, since we generate a post-results
+  linking manifest as well.
   """
-  def move_wrapper(fp, cache_dir, target_dir, uuid) do
+  def move_wrapper(fp, source_dir, bakery_dir, uuid) do
+    move_wrapper(fp, source_dir, bakery_dir, uuid, fp)
+  end
+  def move_wrapper(fp, cache_dir, bakery_dir, uuid, target_fp) do
     source_full = "#{cache_dir}/#{uuid}/#{fp}"
-    target_full = "#{target_dir}/#{uuid}/#{fp}"
+    target_full = "#{bakery_dir}/#{uuid}/#{target_fp}"
 
     with false <- File.exists?(target_full),
 	 :ok   <- File.cp(source_full, target_full),
 	 :ok   <- File.rm(source_full) do
-      Logger.info "Moved file #{inspect fp} from cache #{inspect cache_dir} to target directory #{target_dir}"
+      Logger.info "Move file #{inspect source_full} to #{inspect target_full}"
       fp
     else
       true ->
 	Logger.info "Target file #{inspect target_full} already existed, forcibly removing"
 	File.rm(target_full)
-        move_wrapper(cache_dir, bakery_dir, uuid, fp)
+        move_wrapper(fp, cache_dir, bakery_dir, uuid, target_fp)
       error ->
-	Logger.info "Couldn't move file #{inspect fp} from cache #{inspect cache_dir} to target directory #{target_dir}"
+	#Logger.info "Couldn't move file #{inspect fp} from cache #{inspect cache_dir} to target directory #{target_dir}"
+	Logger.info "Couldn't move file #{inspect target_full} to #{target_full}"
 	error
     end
   end

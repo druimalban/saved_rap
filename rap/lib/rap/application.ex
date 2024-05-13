@@ -16,7 +16,8 @@ defmodule RAP.Application do
   @local_directory    "/var/db/saved"  # Monitor this like GCP
   @cache_directory    "./data_cache"
   @bakery_directory   "./bakery"       # The place to output results
-  @linked_result_stem "result"
+  @linked_result_stem "manifest_post"
+  @job_result_stem    "results"
   
   use Application
 
@@ -45,6 +46,7 @@ defmodule RAP.Application do
 	      cache_directory:    @cache_directory,
 	      bakery_directory:   @bakery_directory,
 	      linked_result_stem: @linked_result_stem,
+	      job_result_stem:    @job_result_stem,
 	      staging_objects:    []               ]
   
   @impl true

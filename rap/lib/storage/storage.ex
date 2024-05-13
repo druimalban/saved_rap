@@ -8,18 +8,17 @@ defmodule RAP.Storage do
     deftable Manifest, [
       :uuid, :title, :description,
       :manifest_base, :resource_bases,
-      :job_results,
-      :start, :end
+      :job_names,
+      :start_time, :end_time
     ], type: :bag
     
     deftable Job, [
-      :uuid, :name,   :title, :description, 
+      :uuid, :name, :title, :description, 
       :type, :signal, :result,
-      :start, :end
+      :start_time, :end_time
     ], type: :bag
-    
   end
-end  
+end
 
 defmodule RAP.Storage.PreRun do
   @moduledoc """
@@ -63,7 +62,7 @@ defmodule RAP.Storage.PreRun do
   def dl_success?(body0, body1, opts: [input_md5: false]) do
     body0_md5 = :crypto.hash(:md5, body0) |> Base.encode64()
     body1_md5 = :crypto.hash(:md5, body1) |> Base.encode64()
-    body0_md5 == actual_md5
+    body0_md5 == body1_md5
   end  
   def dl_success?(purported_md5, body, opts: _) do
     dl_success?(purported_md5, body, opts: [input_md5: true])
@@ -82,7 +81,7 @@ defmodule RAP.Storage.PreRun do
 
 end
 
-defmodule RAP.Storage.PostRun
+defmodule RAP.Storage.PostRun do
 
   require Amnesia
   require Amnesia.Helper
@@ -91,7 +90,7 @@ defmodule RAP.Storage.PostRun
   require RAP.Storage.DB.Job,      as: JobTable
   require RAP.Storage.DB.Manifest, as: ManifestTable
 
-  alias RAP.Storage.{Result, Runner}
+  alias RAP.Job.{Result, Runner}
 
   @doc """
   Remove the UUID from ETS and add a manifest row in the Mnesia DB
@@ -125,8 +124,8 @@ defmodule RAP.Storage.PostRun
   def cache_manifest(%Runner{} = manifest, job_names) do
     Logger.info "Cache processed manifest information in mnesia DB `Manifest' table"
     
-    with [{uuid, start_ts}] <- :ets.lookup(:uuid, uuid),
-         true               <- :ets.delete(:uuid, uuid) do
+    with [{uuid, start_ts}] <- :ets.lookup(:uuid, manifest.uuid),
+         true               <- :ets.delete(:uuid, manifest.uuid) do
       # `job_names' &c. to be expanded as above:
       #job_names   = manifest.staging_jobs   |> Enum.map(& &1.name)
       #table_names = manifest.staging_tables |> Enum.map(& &1.name)
@@ -154,7 +153,7 @@ defmodule RAP.Storage.PostRun
 	# Note, this should never happen if the lookup succeeded:
 	Logger.info "UUID was found in ETS but could not be removed"
         {:error, "UUID not found in ETS"}
-    end    
+    end
   end
   
   def cache_job(uuid, %Result{} = job) do
@@ -167,12 +166,11 @@ defmodule RAP.Storage.PostRun
 	description: job.description,
 	type:        job.type,
 	signal:      job.signal,
-	result:      job.result,
-	start:       job.start,
-	end:         job.end
+	result:      job.contents,
+	start_time:  job.start_time,
+	end_time:    job.end_time
       }
     end
     job
   end
-
 end

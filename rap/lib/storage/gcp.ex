@@ -14,7 +14,7 @@ defmodule RAP.Storage.GCP do
   alias GoogleApi.Storage.V1.Api.Objects, as: GCPReqObjs
 
   alias RAP.Application
-  alias RAP.Storage.{GCP, Monitor}
+  alias RAP.Storage.{PreRun, Monitor, GCP}
 
   defstruct [ :uuid, :manifest, :resources ]
 

@@ -204,7 +204,7 @@ defmodule RAP.Job.Producer do
 
   defp check_manifest(%ManifestDesc{description: nil, title: nil,
 				    tables:      [],  jobs:  [],
-				    gcp_source:  nil, local_version: nil} = desc,
+				    gcp_source:  nil, local_version: nil},
                       _uuid, _manifest, _resources) do
     {:error, :empty}
   end
@@ -239,7 +239,7 @@ defmodule RAP.Job.Producer do
 
   def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_base, resources: resources}, cache_dir) do
     Logger.info "Building RDF graph from turtle manifest using data in #{cache_dir}/#{uuid}"
-    manifest_full_path = "#{cache_dir}/#{uuid}/#{manifest}"
+    manifest_full_path = "#{cache_dir}/#{uuid}/#{manifest_base}"
     with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
          {:ok, ex_struct}    <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
          {:ok, manifest_obj} <- check_manifest(ex_struct, uuid, manifest_base, resources)

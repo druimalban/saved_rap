@@ -10,7 +10,10 @@ defmodule RAP.Job.Result do
   alias RAP.Job.Result
   alias RAP.Job.{ColumnSpec, JobSpec, TableSpec, ManifestSpec}
   
-  defstruct [ :name, :title, :description, :type, :signal, :contents, :start, :end ]
+  defstruct [ :name,        :title,
+	      :description, :type,
+	      :signal,      :contents,
+	      :start_time,  :end_time ]
 
   defp cmd_wrapper(shell, command, args) do
     System.cmd shell, [ command | args ]
@@ -23,7 +26,7 @@ defmodule RAP.Job.Result do
       description: spec.description,
       type:        "ignore",
       signal:      :ok,
-      result:      "Dummy/ignored job"
+      contents:    "Dummy/ignored job"
     }
   end
 
@@ -59,7 +62,7 @@ defmodule RAP.Job.Result do
       res = "Density and time not derived from same data file"
       %Result{ title:  spec.title, description: spec.description,
 	       type:   "density",  signal:      :failure_prereq,
-	       contents: res, start: start_ts, end: end_ts }
+	       contents: res, start_time: start_ts, end_time: end_ts }
     else
       file_path_count   = "#{cache_directory}/#{uuid}/#{resource_count}"
       file_path_density = "#{cache_directory}/#{uuid}/#{resource_density}"
@@ -77,14 +80,16 @@ defmodule RAP.Job.Result do
       if (sig == 0) do
  	Logger.info "Call to external command/executable density_count_ode succeeded:"
 	Logger.info res
- 	%Result{ title:  spec.title, description: spec.description,
-		 type:   "density",  signal:      :ok,
-		 contents: res, start: start_ts, end: end_ts }
+ 	%Result{ title:      spec.title, description: spec.description,
+		 type:       "density",  signal:      :ok,
+		 start_time: start_ts,  end_time: end_ts,
+		 contents:   res}
       else
  	Logger.info "Call to external command/executable density_count_ode failed"
- 	%Result{ title:  spec.title, description: spec.description,
-		 type:   "density",  signal:      :error,
-		 contents: res, start: start_ts, end: end_ts }
+ 	%Result{ title:      spec.title, description: spec.description,
+		 type:       "density",  signal:      :error,
+		 start_time: start_ts,   end_time:    end_ts,
+		 contents:   res }
        end
      end
     
@@ -149,7 +154,10 @@ defmodule RAP.Job.Runner do
     
     result_contents = staging
     |> Enum.map(&Result.run_job(spec.uuid, cache_directory, &1))
-    
+
+    # Not clear whether to rename results attribute
+    # these do contain %Result{} objects, whereas we don't want to repeat
+    # 
     %Runner{ uuid:           spec.uuid,
 	     local_version:  spec.local_version,
 	     title:          spec.title,
@@ -158,7 +166,7 @@ defmodule RAP.Job.Runner do
 	     resource_bases: spec.resource_bases,
 	     staging_tables: spec.staging_tables,
 	     staging_jobs:   spec.staging_jobs,
-	     contents:       result_contents    }
+	     results:        result_contents    }
   end
   
 end
