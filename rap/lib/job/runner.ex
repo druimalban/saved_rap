@@ -8,7 +8,7 @@ defmodule RAP.Job.Result do
 
   alias RAP.Manifest.TableDesc
   alias RAP.Job.Result
-  alias RAP.Job.{ColumnSpec, JobSpec, TableSpec, ManifestSpec}
+  alias RAP.Job.{ScopeSpec, JobSpec, TableSpec, ManifestSpec}
   
   defstruct [ :name,        :title,
 	      :description, :type,
@@ -35,21 +35,18 @@ defmodule RAP.Job.Result do
     
     %JobSpec{
       type:            "density",
-      scope_collected: [ %ColumnSpec{
+      scope_collected: [ %ScopeSpec{
 			   variable:      "lice_count_total",
 			   column:        label_count,
-			   table:         table_count,
 			   resource_base: resource_count}
 			 | _ ],
-      scope_modelled:  [ %ColumnSpec{
+      scope_modelled:  [ %ScopeSpec{
 			   variable:      "density",
 			   column:        label_density,
-			   table:         table_density,
 			   resource_base: resource_density},
-			 %ColumnSpec{
+			 %ScopeSpec{
 			   variable:      "time",
 			   column:        label_time,
-			   table:         table_time,
 			   resource_base: resource_time}
 			 | _ ]
     } = spec) do
@@ -79,23 +76,17 @@ defmodule RAP.Job.Result do
       if (sig == 0) do
  	Logger.info "Call to external command/executable density_count_ode succeeded:"
 	Logger.info res
- 	%Result{ name:        spec.name,
-		 title:       spec.title,
+ 	%Result{ name: spec.name, title: spec.title,
 		 description: spec.description,
-		 type:        "density",
-		 signal:      :ok,
-		 start_time:  start_ts,
-		 end_time:    end_ts,
+		 type:        "density", signal:   :ok,
+		 start_time:  start_ts,  end_time: end_ts,
 		 contents:    res}
       else
  	Logger.info "Call to external command/executable density_count_ode failed"
- 	%Result{ name:        spec.name,
-		 title:       spec.title,
+ 	%Result{ name: spec.name, title: spec.title,
 		 description: spec.description,
-		 type:        "density",
-		 signal:      :error,
-		 start_time:  start_ts,
-		 end_time:    end_ts,
+		 type:        "density", signal:   :error,
+		 start_time:  start_ts,  end_time: end_ts,
 		 contents:    res }
        end
      end

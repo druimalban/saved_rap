@@ -1,8 +1,8 @@
-defmodule RAP.Job.ColumnSpec do
+defmodule RAP.Job.ScopeSpec do
   @moduledoc """
   Simple struct for recording whether a given column is valid.
   There exists a mapping from this representation to an original
-  `%ColumnDesc{}' struct.
+  `%ScopeDesc{}' struct.
 
   In the original usage of this (I had called this `Staging'), I had a
   struct attribute called `target'. This had two uses: the IRI of the
@@ -21,7 +21,7 @@ defmodule RAP.Job.ColumnSpec do
   of the referenced table. This is necessary for pattern matching over
   processed job descriptions, and does not occur in our RDF manifests.
   """
-  defstruct [ :variable, :column, :table, :resource_base ]
+  defstruct [ :variable, :column, :resource_base ]
 end
 
 defmodule RAP.Job.ResourceSpec do

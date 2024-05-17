@@ -5,25 +5,44 @@ defmodule RAP.Manifest.TableDesc do
   alias RAP.Vocabulary.{DCTERMS, SAVED}
   
   schema SAVED.TableDesc do
-    property :title,         DCTERMS.title,       type: :string,  required: false
-    property :description,   DCTERMS.description, type: :string,  required: false
-    property :resource_path, SAVED.resource_path, type: :any_uri, required: true
-    property :schema_path,   SAVED.schema_path,   type: :any_uri, required: true
-    property :resource_hash, SAVED.resource_hash, type: :string,  required: true
+    property :title,            DCTERMS.title,          type: :string,  required: false
+    property :description,      DCTERMS.description,    type: :string,  required: false
+    property :resource_path,    SAVED.resource_path,    type: :any_uri, required: true
+    property :schema_path_yaml, SAVED.schema_path_yaml, type: :any_uri, required: true
+    property :schema_path_ttl,  SAVED.schema_path_ttl,  type: :any_uri, required: false
+    property :resource_hash,    SAVED.resource_hash,    type: :string,  required: true
   end
 end
 
-defmodule RAP.Manifest.ColumnDesc do
+defmodule RAP.Manifest.ExtColumnDesc do
+
+  use Grax.Schema, depth: +5
+  import RDF.Sigils
+  alias RAP.Vocabulary.{DCTERMS, SAVED}
+
+  # Something of a hack for now: this isn't actually defined in the vocabulary. Not sure if necessary.
+  schema SAVED.ExtColumnDesc do
+    property :title, DCTERMS.title, type: :string, required: false
+  end
+end
+
+defmodule RAP.Manifest.ScopeDesc do
 
   use Grax.Schema, depth: +5
   import RDF.Sigils
   alias RAP.Vocabulary.SAVED
+  alias RAP.Manifest.{ExtColumnDesc, TableDesc}
 
   # To-do: Make all three of these link to the schema
-  schema SAVED.ColumnDesc do
-    property :column,   SAVED.column,   type: :any_uri, required: true
-    property :variable, SAVED.variable, type: :any_uri, required: true
-    property :table,    SAVED.table,    type: :any_uri, required: true
+  schema SAVED.ScopeDesc do
+    #property :column,   SAVED.column,   type: :any_uri, required: true
+    #property :variable, SAVED.variable, type: :any_uri, required: true
+    #property :table,    SAVED.table,    type: :any_uri, required: true
+    
+    property :column,   SAVED.column,   type: :string, required: true
+
+    link variable: SAVED.variable, type: ExtColumnDesc, depth: +5
+    link table:    SAVED.table,    type: TableDesc, depth: +5
   end
 end
 
@@ -32,16 +51,16 @@ defmodule RAP.Manifest.JobDesc do
   use Grax.Schema, depth: +5
   import RDF.Sigils
   alias RAP.Vocabulary.{DCTERMS, SAVED}
-  alias RAP.Manifest.ColumnDesc
+  alias RAP.Manifest.ScopeDesc
 
   schema SAVED.JobDesc do
     property :title,       DCTERMS.title,       type: :string,  required: false
     property :description, DCTERMS.description, type: :string,  required: false
-    property :job_type,    SAVED.job_type,      type: :any_uri, required: true
+    property :job_type,    SAVED.job_type,      type: :string,  required: true
     
-    link job_scope_descriptive: SAVED.job_scope_descriptive, type: list_of(ColumnDesc), depth: +5
-    link job_scope_collected:   SAVED.job_scope_collected,   type: list_of(ColumnDesc), depth: +5
-    link job_scope_modelled:    SAVED.job_scope_modelled,    type: list_of(ColumnDesc), depth: +5
+    link job_scope_descriptive: SAVED.job_scope_descriptive, type: list_of(ScopeDesc), depth: +5
+    link job_scope_collected:   SAVED.job_scope_collected,   type: list_of(ScopeDesc), depth: +5
+    link job_scope_modelled:    SAVED.job_scope_modelled,    type: list_of(ScopeDesc), depth: +5
   end
 end
 

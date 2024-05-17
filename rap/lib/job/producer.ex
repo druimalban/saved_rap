@@ -32,9 +32,9 @@ defmodule RAP.Job.Producer do
      went wrong.
   """
 
-  alias RAP.Manifest.{TableDesc, ColumnDesc, JobDesc, ManifestDesc}
+  alias RAP.Manifest.{TableDesc, ScopeDesc, JobDesc, ManifestDesc}
   alias RAP.Storage.GCP
-  alias RAP.Job.{ColumnSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
+  alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
     
   use GenStage
   require Logger
@@ -118,85 +118,45 @@ defmodule RAP.Job.Producer do
     %TableSpec{ name:     table_name,    title:  table_title,
 		resource: data_validity, schema: schema_validity }
   end
-  
-  defp check_column(%ColumnDesc{table: tab, column: col, variable: var}, tables) do
-    target_table = extract_uri(tab)    
-    underlying   = extract_uri(var)
-    column       = extract_uri(col)
-    Logger.info "Checking column #{inspect column} is included in table #{inspect target_table}"
-    
-    staging = %ColumnSpec{column: column, variable: underlying, table: target_table}
-
-    test = fn k ->
-      if k.name == target_table do
-	res = k.resource
-	{:ok, {k.name, res.base}}
-      end
-    end
-
-    with {:ok, {_name, resource_base}} <- Enum.find_value(tables, :error, test)
-      do  
-        extant = staging |> Map.put(:resource_base, resource_base)
-        {:valid, extant}
-    else
-      :error ->
-	Logger.info "Column description referenced table #{target_table} does not exist in tables"
-	{:invalid, staging}
-    end
-  end
-
-  defp sort_scope(%{valid: columns, invalid: errors}) do
-    sub = fn(%ColumnSpec{variable: var0}, %ColumnSpec{variable: var1}) ->
-      var0 < var1
-    end
-    %{
-      valid:   Enum.sort(columns, sub),
-      invalid: Enum.sort(errors,  sub)
-    }
-  end
-    
-  defp group_columns(annotated_labels, table_bases) do
-    annotated_labels
-    |> Enum.map(&check_column(&1, table_bases))
-    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
-    |> Map.put_new(:valid,   [])
-    |> Map.put_new(:invalid, [])
-    |> sort_scope()
-  end
 
   @doc """
+  With the new data structure, the table is implictly valid, so we just
+  need to extract the information of interest (path to table).
+  Nonetheless, may consider a possible error case where this is nil. 
+  """
+  defp check_column(%ScopeDesc{column:   column,
+                               variable: underlying,
+                               table:    %RAP.Manifest.TableDesc{
+                                 resource_path: resource_uri
+                               }}) do
+    %ScopeSpec{
+      column:        column,
+      variable:      extract_id(underlying.__id__),
+      resource_base: extract_uri(resource_uri)
+    }
+  end
+
+ @doc """
   This is largely the same as the column-level errors. The main thing
   which we want to do is to preserve both the error columns and the non-
   error columns, and to be able to warn, or issue errors which highlight
   any errors *which are applicable*.
   """
-  defp check_job(%JobDesc{} = desc, table_bases) do
-    job_name  = extract_id(desc.__id__)
-    job_type  = extract_uri(desc.job_type)
-    job_title = desc.title
-    job_description = desc.description
-    
-    Logger.info "Checking job #{inspect job_name} (#{inspect job_title}) of type #{inspect job_type}"
-    res_descriptive = desc.job_scope_descriptive |> group_columns(table_bases)
-    res_collected   = desc.job_scope_collected   |> group_columns(table_bases)
-    res_modelled    = desc.job_scope_modelled    |> group_columns(table_bases)
+  defp check_job(%JobDesc{} = desc, _tables) do
 
-    Logger.info "Found descriptive results: #{inspect res_descriptive}"
-    Logger.info "Found collected results: #{inspect res_collected}"
-    Logger.info "Found modelled results: #{inspect res_modelled}"
-    
-    %{valid: scope_descriptive, invalid: errors_descriptive} = res_descriptive
-    %{valid: scope_collected,   invalid: errors_collected}   = res_collected
-    %{valid: scope_modelled,    invalid: errors_modelled}    = res_modelled
-    
+    job_name = extract_id(desc.__id__)
+    scope_descriptive = desc.job_scope_descriptive |> Enum.map(&check_column/1)
+    scope_collected   = desc.job_scope_collected   |> Enum.map(&check_column/1)
+    scope_modelled    = desc.job_scope_modelled    |> Enum.map(&check_column/1)
+
     generated_job = %JobSpec{
       name:              job_name,
-      type:              job_type,
-      title:             job_title,
-      description:       job_description,
-      scope_descriptive: scope_descriptive, errors_descriptive: errors_descriptive,
-      scope_collected:   scope_collected,   errors_collected:   errors_collected,
-      scope_modelled:    scope_modelled,    errors_modelled:    errors_modelled,
+      type:              desc.job_type,
+      title:             desc.title,
+      description:       desc.description,
+      scope_descriptive: scope_descriptive,
+      scope_collected:   scope_collected,
+      scope_modelled:    scope_modelled
     }
     Logger.info "Generated job: #{inspect generated_job}"
     generated_job
@@ -208,33 +168,38 @@ defmodule RAP.Job.Producer do
                       _uuid, _manifest, _resources) do
     {:error, :empty}
   end
-  defp check_manifest(%ManifestDesc{} = desc, uuid, manifest_base, resources) do    
+  defp check_manifest(%ManifestDesc{} = desc, uuid, manifest_base, resources) do
     Logger.info "Check manifest (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
-    
-    processed_tables = desc.tables |> Enum.map(&check_table(&1, resources))
-    
-    extant_tables = processed_tables
-    |> Enum.filter(fn tab ->
-      resource = tab.resource
-      schema   = tab.schema
-      resource.extant and schema.extant # May not be desirable depending how folks upload
-    end)
-    processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
 
-    # Include both invalid and valid tables, not just those extant above
-    # Job validation requires pattern-matching later, we're only validating
-    # presence/absence of referenced tables.
-    manifest_obj = %ManifestSpec{title:          desc.title,
-				 description:    desc.description,
-				 local_version:  desc.local_version,
-				 uuid:           uuid,
-				 manifest_base:  manifest_base,
-				 resource_bases: resources,
-				 staging_tables: processed_tables,   
-				 staging_jobs:   processed_jobs    }
-    {:ok, manifest_obj}
+    test_extant = fn tab ->
+      res = tab.resource
+      sch = tab.schema
+      res.extant and sch.extant
+    end
+
+    processed_tables  = desc.tables |> Enum.map(&check_table(&1, resources))
+    extant_tables     = processed_tables |> Enum.filter(test_extant)
+    non_extant_tables = processed_tables |> Enum.reject(test_extant)
+
+    if length(processed_tables) != length(extant_tables) do
+	{:error, :bad_tables, non_extant_tables}
+    else
+      processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
+      
+      manifest_obj = %ManifestSpec{
+	title:         desc.title,
+	description:   desc.description,
+	local_version: desc.local_version,
+	uuid:          uuid,
+	manifest_base: manifest_base,
+	resource_bases: resources,
+	staging_tables: processed_tables,
+	staging_jobs:   processed_jobs
+      }
+      {:ok, manifest_obj}
+    end
   end
 
   def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_base, resources: resources}, cache_dir) do

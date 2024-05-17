@@ -88,9 +88,7 @@ defmodule RAP.Vocabulary do
 
   @vocabdoc """
   SAVED data-model
-  
-  Temporarily living on localhost.
-  
+    
   See <https://github.com/saved-models/data-model>
 
   Note that the meta-model imports *most* of schemata in its repository,
@@ -110,7 +108,7 @@ defmodule RAP.Vocabulary do
   loaded/injected.
   """
   defvocab SAVED,
-    base_iri: "http://marine.gov.scot/metadata/saved/schema/",
+    base_iri: "https://marine.gov.scot/metadata/saved/schema/",
     file: "saved.nt",
     case_violations: :ignore,
     terms: {RAP.TermHandler, :sub_special, [:variant1]},
@@ -130,7 +128,7 @@ defmodule RAP.Vocabulary do
   keeping it in mind, as this is really at the stage proof-of-concept.
   """
   defvocab RAP,
-    base_iri: "http://marine.gov.scot/metadata/saved/rap/",
+    base_iri: "https://marine.gov.scot/metadata/saved/rap/",
     terms: [:RootManifest],
     strict: false
 
