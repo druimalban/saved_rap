@@ -20,8 +20,20 @@ defmodule RAP.Job.ScopeSpec do
   This struct does duplicate the purported path (base name, to be exact)
   of the referenced table. This is necessary for pattern matching over
   processed job descriptions, and does not occur in our RDF manifests.
+
+  There are both a URI
+  (e.g., `https://marine.gov.scot/metadata/saved/column_descriptive')
+  and CURIE (e.g. `saved:column_descriptive') fields. Resolving the URI
+  into a CURIE is useful for reporting, i.e. use this in generated HTML
+  documents instead of the full URI. Doing this robustly involves
+  querying an RDF graph's prefix map, so we add a private field to the
+  Grax struct which is filled out on loading the RDF graph using Grax.
+
+  In addition to the base name of the resource file, further record th
+  atomic name of the table, which is useful for generating reporting.
   """
-  defstruct [ :variable, :column, :resource_base ]
+  defstruct [ :variable_uri,  :variable_curie, :column,
+	      :resource_name, :resource_base ]
 end
 
 defmodule RAP.Job.ResourceSpec do
@@ -53,11 +65,11 @@ defmodule RAP.Job.TableSpec do
   Unlike the columns, which are blank nodes, tables are named and so can
   be associated with a name (the struct's generated `__id__' attribute).
 
-  The `resource' and `schema' attributes are not fully qualified file
+`  The `resource' and `schema' attributes are not fully qualified file
   names or base file names, but instances of the above `%ResourceSpec{}'
   struct.
   """
-  defstruct [ :name, :title, :resource, :schema ]
+  defstruct [ :name, :title, :description, :resource, :schema ]
 end
 
 defmodule RAP.Job.JobSpec do

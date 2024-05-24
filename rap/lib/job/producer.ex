@@ -112,8 +112,8 @@ defmodule RAP.Job.Producer do
     inject = fn fp -> 
       %ResourceSpec{ base: fp, extant: fp in resources }
     end
-    data_validity   = desc.resource_path |> extract_uri() |> then(inject)
-    schema_validity = desc.schema_path   |> extract_uri() |> then(inject)
+    data_validity   = desc.resource_path   |> extract_uri() |> then(inject)
+    schema_validity = desc.schema_path_ttl |> extract_uri() |> then(inject) ## TO-DO: ADD YAML
     
     %TableSpec{ name:     table_name,    title:  table_title,
 		resource: data_validity, schema: schema_validity }
@@ -126,13 +126,16 @@ defmodule RAP.Job.Producer do
   """
   defp check_column(%ScopeDesc{column:   column,
                                variable: underlying,
-                               table:    %RAP.Manifest.TableDesc{
-                                 resource_path: resource_uri
+                               table: %RAP.Manifest.TableDesc{
+				        __id__:        table_id,
+					resource_path: resource_uri
                                }}) do
     %ScopeSpec{
-      column:        column,
-      variable:      extract_id(underlying.__id__),
-      resource_base: extract_uri(resource_uri)
+      column:         column,
+      variable_uri:   RDF.IRI.to_string(underlying.__id__),
+      variable_curie: underlying.compact_uri,
+      resource_name:  extract_id(table_id),
+      resource_base:  extract_uri(resource_uri)
     }
   end
 
@@ -143,20 +146,23 @@ defmodule RAP.Job.Producer do
   any errors *which are applicable*.
   """
   defp check_job(%JobDesc{} = desc, _tables) do
+    sub = fn(%ScopeSpec{variable_curie: var0}, %ScopeSpec{variable_curie: var1}) ->
+     var0 < var1
+    end
 
     job_name = extract_id(desc.__id__)
-    scope_descriptive = desc.job_scope_descriptive |> Enum.map(&check_column/1)
-    scope_collected   = desc.job_scope_collected   |> Enum.map(&check_column/1)
-    scope_modelled    = desc.job_scope_modelled    |> Enum.map(&check_column/1)
+    scope_descriptive = desc.job_scope_descriptive |> Enum.map(&check_column/1) |> Enum.sort(sub)
+    scope_collected   = desc.job_scope_collected   |> Enum.map(&check_column/1) |> Enum.sort(sub)
+    scope_modelled    = desc.job_scope_modelled    |> Enum.map(&check_column/1) |> Enum.sort(sub)
 
     generated_job = %JobSpec{
       name:              job_name,
       type:              desc.job_type,
       title:             desc.title,
       description:       desc.description,
-      scope_descriptive: scope_descriptive,
-      scope_collected:   scope_collected,
-      scope_modelled:    scope_modelled
+      scope_descriptive: Enum.sort(scope_descriptive, sub),
+      scope_collected:   Enum.sort(scope_collected, sub),
+      scope_modelled:    Enum.sort(scope_modelled, sub)
     }
     Logger.info "Generated job: #{inspect generated_job}"
     generated_job

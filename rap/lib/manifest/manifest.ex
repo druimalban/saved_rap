@@ -17,17 +17,29 @@ end
 defmodule RAP.Manifest.ExtColumnDesc do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
+  import RDF
+  alias RAP.Manifest.ExtColumnDesc
   alias RAP.Vocabulary.{DCTERMS, SAVED}
 
-  # Something of a hack for now: this isn't actually defined in the vocabulary. Not sure if necessary.
+  # Avoid having to pass the entire graph over
+  # Avoid defining a term which does not exist in the vocabulary
   schema SAVED.ExtColumnDesc do
-    property :title, DCTERMS.title, type: :string, required: false
+    #property :title, DCTERMS.title, type: :string
+    field :compact_uri
   end
+
+  def on_load(column_desc, graph, _opts) do
+    curie = RDF.PrefixMap.prefixed_name(graph.prefixes, column_desc.__id__)
+    new_desc = column_desc |> Map.put(:compact_uri, curie)
+    {:ok, new_desc}
+  end
+  
 end
 
 defmodule RAP.Manifest.ScopeDesc do
 
+  require Logger
+  
   use Grax.Schema, depth: +5
   import RDF.Sigils
   alias RAP.Vocabulary.SAVED
@@ -44,6 +56,7 @@ defmodule RAP.Manifest.ScopeDesc do
     link variable: SAVED.variable, type: ExtColumnDesc, depth: +5
     link table:    SAVED.table,    type: TableDesc, depth: +5
   end
+  
 end
 
 defmodule RAP.Manifest.JobDesc do

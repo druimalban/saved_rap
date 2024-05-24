@@ -36,18 +36,18 @@ defmodule RAP.Job.Result do
     %JobSpec{
       type:            "density",
       scope_collected: [ %ScopeSpec{
-			   variable:      "lice_count_total",
-			   column:        label_count,
-			   resource_base: resource_count}
+			   variable_curie: "saved:lice_af_total",
+			   column:         label_count,
+			   resource_base:  resource_count}
 			 | _ ],
       scope_modelled:  [ %ScopeSpec{
-			   variable:      "density",
-			   column:        label_density,
-			   resource_base: resource_density},
+			   variable_curie: "saved:density",
+			   column:         label_density,
+			   resource_base:  resource_density},
 			 %ScopeSpec{
-			   variable:      "time",
-			   column:        label_time,
-			   resource_base: resource_time}
+			   variable_curie: "saved:time",
+			   column:         label_time,
+			   resource_base:  resource_time}
 			 | _ ]
     } = spec) do
     Logger.info "Running job #{spec.name} (associated with UUID #{uuid})"
@@ -93,6 +93,15 @@ defmodule RAP.Job.Result do
     
   end
 
+  def run_job(_uuid, _cache_dir, %JobSpec{} = bad_spec) do
+    %Result{ name:        bad_spec.name,
+	     title:       bad_spec.title,
+	     description: bad_spec.description,
+	     type:        bad_spec.type,
+	     signal:      :error,
+	     contents:    "Unrecognised job spec" }
+  end
+  
   defp mae col0, col1 do
     Logger.info "Called Job.Spec.mae (col0 = #{inspect col0} ,col1 = #{inspect col1})"
     Enum.zip(col0, col1)

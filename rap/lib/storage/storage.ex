@@ -1,23 +1,48 @@
 defmodule RAP.Storage do
   @moduledoc """
-  
+
+  Original %Prepare module named struct:
+      defstruct [ :uuid,
+		  :title, :description,
+		  :start_time, :end_time,
+		  :manifest_signal,
+		  :manifest_pre_base,
+		  :resource_bases,
+		  :result_bases,
+		  :results,
+		  :staged_tables,
+		  :staged_jobs          ]  
   """
   use Amnesia
 
+  #defdatabase DB do
+    #deftable Manifest, [
+    #  :uuid, :title, :description,
+    #  :manifest_base, :resource_bases,
+    #  :job_names,
+    #  :start_time, :end_time
+    #], type: :bag
+    #deftable Job, [
+    #  :uuid, :name, :title, :description, 
+    #  :type, :signal, :result,
+    #  :start_time, :end_time
+    #], type: :bag
+  #end
+
   defdatabase DB do
     deftable Manifest, [
-      :uuid, :title, :description,
-      :manifest_base, :resource_bases,
-      :job_names,
-      :start_time, :end_time
-    ], type: :bag
-    
-    deftable Job, [
-      :uuid, :name, :title, :description, 
-      :type, :signal, :result,
-      :start_time, :end_time
-    ], type: :bag
+      :uuid,
+      :title, :description,
+      :start_time, :end_time,
+      :manifest_signal,
+      :manifest_pre_base,
+      :resource_bases,
+      :result_bases,
+      :results,
+      :staged_tables,
+      :staged_jobs          ]
   end
+  
 end
 
 defmodule RAP.Storage.PreRun do
@@ -26,7 +51,7 @@ defmodule RAP.Storage.PreRun do
   """
   require Amnesia
   require Amnesia.Helper
-  require RAP.Storage.DB.Job,      as: JobTable
+  #require RAP.Storage.DB.Job,      as: JobTable
   require RAP.Storage.DB.Manifest, as: ManifestTable
 
   require Logger
@@ -87,10 +112,11 @@ defmodule RAP.Storage.PostRun do
   require Amnesia.Helper
   require Logger
 
-  require RAP.Storage.DB.Job,      as: JobTable
+  #require RAP.Storage.DB.Job,      as: JobTable
   require RAP.Storage.DB.Manifest, as: ManifestTable
 
   alias RAP.Job.{Result, Runner}
+  alias RAP.Bakery.Prepare
 
   @doc """
   Remove the UUID from ETS and add a manifest row in the Mnesia DB
@@ -121,29 +147,24 @@ defmodule RAP.Storage.PostRun do
   We do want to keep track of these somehow, and this may be the place,
   just not quite yet.
   """
-  def cache_manifest(%Runner{} = manifest, job_names) do
+  def cache_manifest(%Prepare{} = manifest) do
     Logger.info "Cache processed manifest information in mnesia DB `Manifest' table"
     
     with [{uuid, start_ts}] <- :ets.lookup(:uuid, manifest.uuid),
          true               <- :ets.delete(:uuid, manifest.uuid) do
-      # `job_names' &c. to be expanded as above:
-      #job_names   = manifest.staging_jobs   |> Enum.map(& &1.name)
-      #table_names = manifest.staging_tables |> Enum.map(& &1.name)
+      
       end_ts = DateTime.utc_now() |> DateTime.to_unix()
+
+      annotated_manifest = %Prepare{ manifest | start_time: start_ts, end_time: end_ts }
+      Logger.info "Annotated manifest with start/end time: #{inspect annotated_manifest}"
+
+      transformed_manifest = %{ annotated_manifest | __struct__: ManifestTable }
+      Logger.info "Transformed annotated manifest into: #{inspect transformed_manifest}"
       
       Amnesia.transaction do
-	%ManifestTable{
-	  uuid:           uuid,
-	  title:          manifest.title,
-	  manifest_base:  manifest.manifest_base,
-	  resource_bases: manifest.resource_bases,
-	  job_names:      job_names,
-	  start_time:     start_ts,
-	  end_time:       end_ts,
-	}
-	|> ManifestTable.write()
+	transformed_manifest |> ManifestTable.write()
       end
-      {:ok, start_ts, end_ts}
+      {:ok, annotated_manifest}
     else
       [{_uuid, _start} | [_ | _]] = multiple_uuids ->
 	# Note, this should never happen for our usage of ETS as
@@ -156,21 +177,21 @@ defmodule RAP.Storage.PostRun do
     end
   end
   
-  def cache_job(%Result{} = job, uuid) do
-    Logger.info "Cache processed job information in mnesia DB `Job' table for job #{job.name}"
-    Amnesia.transaction do
-      %JobTable{
-	uuid:        uuid,
-	name:        job.name,
-	title:       job.title,
-	description: job.description,
-	type:        job.type,
-	signal:      job.signal,
-	result:      job.contents,
-	start_time:  job.start_time,
-	end_time:    job.end_time
-      }
-    end
-    job
-  end
+#  def cache_job(%Result{} = job, uuid) do
+#    Logger.info "Cache processed job information in mnesia DB `Job' table for job #{job.name}"
+#    Amnesia.transaction do
+#      %JobTable{
+#	uuid:        uuid,
+#	name:        job.name,
+#	title:       job.title,
+#	description: job.description,
+#	type:        job.type,
+#	signal:      job.signal,
+#	result:      job.contents,
+#	start_time:  job.start_time,
+#	end_time:    job.end_time
+#      }
+#    end
+#    job
+#  end
 end

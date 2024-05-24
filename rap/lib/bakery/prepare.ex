@@ -24,26 +24,37 @@ defmodule RAP.Bakery.Prepare do
   module named struct. Subsequent stages will generate a 'post'-running
   manifest which links results &c. (see above) with the extant data
   submitted.
+
+  Calling the cache functions here, rather than at the end of the
+  pipeline, makes good sense because it is feasible that we want to be
+  able to generate new HTML documentation / descriptive statistics /
+  visualisations at arbitrary times, without re-running or re-submitting
+  any jobs. Further, we might want to do it for certain jobs, but not
+  others.
   """
   use GenStage
   require Logger
 
   alias RAP.Application
-  alias RAP.Storage.PostRun
-  alias RAP.Job.{Result, Runner, Staging}
+  alias RAP.Storage.{PreRun, PostRun}
+  alias RAP.Job.{Result, Runner}
   alias RAP.Bakery.Prepare
 
   # Note naming of manifest_pre_base
-  # The idea is that we 
+  # Manifest signal is simple "are all the tables valid"?
   defstruct [ :uuid,
 	      :title, :description,
 	      :start_time, :end_time,
+	      :manifest_signal,
 	      :manifest_pre_base,
 	      :resource_bases,
-	      :result_bases         ]
+	      :result_bases,
+	      :results,
+	      :staged_tables,
+	      :staged_jobs          ]
   
   def start_link(%Application{} = initial_state) do
-    GenStage.start_link(__MODULE__, initial_state)
+    GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
   end
 
   def init(initial_state) do
@@ -51,15 +62,14 @@ defmodule RAP.Bakery.Prepare do
     subscription = [
       { Runner, min_demand: 0, max_demand: 1 }
     ]
-    {:consumer, initial_state, subscribe_to: subscription}
+    {:producer_consumer, initial_state, subscribe_to: subscription}
   end
 
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "Testing storage consumer received #{inspect events}"
     processed_events = events
     |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.linked_result_stem, state.job_result_stem))
-    
-    {:noreply, [], state}
+    {:noreply, processed_events, state}
   end
 
   @doc """
@@ -74,13 +84,12 @@ defmodule RAP.Bakery.Prepare do
   def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem, job_stem) do
     #source_dir = "#{cache_dir}/#{processed.uuid}"
     #target_dir = "#{bakery_dir}/#{processed.uuid}"
-    cache_start = DateTime.utc_now() |> DateTime.to_unix()
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
     Logger.info "Prepare (mkdir(1) -p) #{bakery_dir}/#{processed.uuid}"
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
 
     cached_job_bases = processed.results
-    |> Enum.map(&PostRun.cache_job(&1, processed.uuid))
+    #|> Enum.map(&PostRun.cache_job(&1, processed.uuid))
     |> Enum.map(&write_result(&1.contents, bakery_dir, processed.uuid,
 	job_stem, "json", &1.name))
 
@@ -100,21 +109,21 @@ defmodule RAP.Bakery.Prepare do
     moved_resources = processed.resource_bases
     |> Enum.map(&move_wrapper(&1, cache_dir, bakery_dir, processed.uuid))
 
-    cache_end = DateTime.utc_now() |> DateTime.to_unix()
-    
-    {:ok, start_ts, end_ts} = processed
-    |> PostRun.cache_manifest(cached_job_bases)
-
-    %Prepare{
+    # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
+    #end_time = DateTime.utc_now() |> DateTime.to_unix()
+    semi_final_data = %Prepare{
       uuid:        processed.uuid,
       title:       processed.title,
       description: processed.description,
-      start_time:  start_ts,
-      end_time:    end_ts,
       manifest_pre_base: moved_manifest,
       resource_bases:    moved_resources,
-      result_bases:      cached_job_bases
+      result_bases:      cached_job_bases,
+      results:           processed.results,
+      staged_tables:     processed.staging_tables,
+      staged_jobs:       processed.staging_jobs
     }
+    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data)
+    cached_manifest
   end
   
   @doc """
@@ -127,16 +136,18 @@ defmodule RAP.Bakery.Prepare do
 
   When logging, the name of the job is in the file name, so no problem
   just printing that to the log.
-
-  Seems to fail with :enametoolong… bah!
   """
-  def write_result(target_contents, bakery_directory, uuid, stem, extension, target_name) do
-    target_base = "#{stem}_#{target_name}.#{extension}"
+  def write_result(target_contents, bakery_directory, uuid, stem, extension, target_name \\ "") do
+    target_base = if String.length(target_name) == 0 do
+      "#{stem}.#{extension}"
+    else
+      "#{stem}_#{target_name}.#{extension}"
+    end
     target_full = "#{bakery_directory}/#{uuid}/#{target_base}"
-
+      
     Logger.info "Writing results file #{target_full}"
     
-    with false <- File.exists?(target_full) && Staging.dl_success?(
+    with false <- File.exists?(target_full) && PreRun.dl_success?(
                     target_contents, File.read!(target_full), opts: [:input_text]),
          :ok   <- File.write(target_full, target_contents) do
       
@@ -159,23 +170,23 @@ defmodule RAP.Bakery.Prepare do
   to have `_pre' before the extension, since we generate a post-results
   linking manifest as well.
   """
-  def move_wrapper(fp, source_dir, bakery_dir, uuid) do
-    move_wrapper(fp, source_dir, bakery_dir, uuid, fp)
+  def move_wrapper(orig_fp, source_dir, bakery_dir, uuid) do
+    move_wrapper(orig_fp, source_dir, bakery_dir, uuid, orig_fp)
   end
-  def move_wrapper(fp, cache_dir, bakery_dir, uuid, target_fp) do
-    source_full = "#{cache_dir}/#{uuid}/#{fp}"
+  def move_wrapper(orig_fp, cache_dir, bakery_dir, uuid, target_fp) do
+    source_full = "#{cache_dir}/#{uuid}/#{orig_fp}"
     target_full = "#{bakery_dir}/#{uuid}/#{target_fp}"
 
     with false <- File.exists?(target_full),
 	 :ok   <- File.cp(source_full, target_full),
 	 :ok   <- File.rm(source_full) do
       Logger.info "Move file #{inspect source_full} to #{inspect target_full}"
-      fp
+      target_fp # Previously `fp' but this is the original file name…
     else
       true ->
 	Logger.info "Target file #{inspect target_full} already existed, forcibly removing"
 	File.rm(target_full)
-        move_wrapper(fp, cache_dir, bakery_dir, uuid, target_fp)
+        move_wrapper(orig_fp, cache_dir, bakery_dir, uuid, target_fp)
       error ->
 	#Logger.info "Couldn't move file #{inspect fp} from cache #{inspect cache_dir} to target directory #{target_dir}"
 	Logger.info "Couldn't move file #{inspect target_full} to #{target_full}"

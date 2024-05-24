@@ -213,10 +213,11 @@ defmodule RAP.Storage.Monitor do
     invocation_ts = DateTime.utc_now() |> DateTime.to_unix()
     elapsed = invocation_ts - last_poll
 
-    with true <- elapsed > interval,
-	 {:ok, %GCPObjs{items: objects}} <- wrap_gcp_request(session, bucket) do
+    with true           <- elapsed > interval,
+	 {:ok, objects} <- wrap_gcp_request(session, bucket) do
       
       Logger.info "Time elapsed (#{inspect elapsed}s) is greater than interval (#{inspect interval}s)"
+
       normalised_objects = objects
       |> Enum.map(&uuid_helper/1)
       |> Enum.reject(&is_nil/1)
@@ -232,11 +233,12 @@ defmodule RAP.Storage.Monitor do
 
       grouped_objects = normalised_objects
       |> Enum.group_by(& &1.uuid)
-	
+
       staging_objects = staging_uuids
       |> Enum.map(&prep_job(&1, grouped_objects, index_file))
       |> Enum.reject(&is_nil/1)
-	
+
+      Logger.info "Casting staged objects"
       GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
       new_time_stamp = GenStage.call(__MODULE__, :update_last_poll)
       monitor_gcp(session, bucket, index_file, interval, new_time_stamp)
@@ -246,7 +248,8 @@ defmodule RAP.Storage.Monitor do
 	monitor_gcp(session, bucket, index_file, interval, last_poll)
       {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
-        new_session = GenStage.call(__MODULE__, :update_session)
+        {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
+	Logger.info "Call to seek new session returned #{inspect new_session}"
 	monitor_gcp(new_session, bucket, index_file, interval, last_poll)
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
@@ -260,7 +263,11 @@ defmodule RAP.Storage.Monitor do
   """
   defp wrap_gcp_request(session, bucket) do
     Logger.info "Polling GCP storage bucket #{bucket} for flat objects"
-    GCPReqObjs.storage_objects_list(session, bucket)
+    case GCPReqObjs.storage_objects_list(session, bucket) do
+      {:ok, %GCPObjs{items: nil}}   -> {:ok, []}
+      {:ok, %GCPObjs{items: items}} -> {:ok, items}
+      error -> error
+    end
   end
 
   @doc """

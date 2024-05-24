@@ -28,7 +28,8 @@ defmodule RAP.MixProject do
       { :goth,               "~> 1.4"  },
       { :grax,               "~> 0.4"  },
       { :math,               "~> 0.7"  },
-      { :rdf,                "~> 1.2"  }
+      { :rdf,                "~> 1.2"  },
+      { :zoneinfo,           "~> 0.1.0"}
       # {:explorer, "~> 0.8"},
       # {:nx, "~> 0.7"}
     ]
