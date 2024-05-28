@@ -1,11 +1,12 @@
 <h2><%= title %></h2>
 <ul>
-  <li>Source job atomic name/identifier: <tt>name</tt></li>
+  <li>Atomic name/identifier: <tt><%= name %></tt></li>
+  <li>Source job: <tt><%= source_job %></tt></li>
   <li>Title: <i><%= title %></i></li>
   <li>Description: <i><%= description %></i></li>
   <li>Signal: <tt><%= signal %></tt></li>
   <li>Begin: <u><%= start_time_readable %></u></li>
   <li>End: <u><%= end_time_readable %></u></li>
-  <li>Raw results: <a href=<%= contents_uri %>><tt><%= contents_base %></tt></a></li>
+  <li>Raw results: <a href="<%= contents_uri %>"><tt><%= contents_base %></tt></a></li>
   <%= generated_results %>
 </ul>
