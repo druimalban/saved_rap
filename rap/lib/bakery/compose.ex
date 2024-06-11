@@ -1,16 +1,7 @@
 defmodule RAP.Bakery.Compose do
   @moduledoc """
-  RAP.Bakery.Prepare has following named struct:
-  defstruct [ :uuid,
-	      :title, :description,
-	      :start_time, :end_time,
-	      :manifest_signal,
-	      :manifest_pre_base,
-	      :resource_bases,
-	      :result_bases,
-	      :staged_tables,
-	      :staged_jobs,
-              :staged_results ]
+  Given a struct from the previous stage, either directly passed on, or
+  taken from the cache, generate an static HTML representation.
   """
   use GenStage
   require Logger
@@ -21,12 +12,6 @@ defmodule RAP.Bakery.Compose do
   alias RAP.Bakery.Prepare
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.Result
-  
-  # Move me once this module works
-  @time_zone   "GB-Eire"
-  @rap_uri     "http://localhost/saved/rap"
-  @style_sheet "/saved/rap/assets/app.css"
-  @fragments   "./html_fragments"
 
   def start_link(%Application{} = initial_state) do
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
@@ -44,7 +29,7 @@ defmodule RAP.Bakery.Compose do
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "HTML document consumer received #{inspect events}"
     processed_events = events
-    |> Enum.map(&compose_document(@rap_uri, @time_zone, state.job_result_stem, "json", &1))
+    |> Enum.map(&compose_document(state.html_directory, state.rap_uri, state.style_sheet, state.time_zone, state.job_result_stem, "json", &1))
     |> Enum.map(&Prepare.write_result(&1.contents, state.bakery_directory, &1.uuid, "index", "html"))
     {:noreply, [], state}
   end
@@ -54,30 +39,64 @@ defmodule RAP.Bakery.Compose do
   # runs, i.e. we could start the program with different parameters,
   # and then past generated HTML pages may break
   def compose_document(
+    html_directory,
     rap_uri,
+    style_sheet,
     time_zone,
-    result_stem,     
+    result_stem,
     result_extension,
-    %Prepare{} = prepared
-  ) do
+    %Prepare{} = prepared 
+  ) when prepared.runner_signal in [:working, :job_errors] do
     # %Prepare{} is effectively an annotated manifest struct, pass in a map
     potted_manifest = %{
-      title:        prepared.title,
-      description:  prepared.description,
-      uuid:         prepared.uuid,
-      manifest_ttl: prepared.manifest_pre_base, #TODO: YAML + TTL
-      start_time:   prepared.start_time,
-      end_time:     prepared.end_time
+      title:             prepared.title,
+      description:       prepared.description,
+      uuid:              prepared.uuid,
+      manifest_pre_ttl:  prepared.manifest_pre_base_ttl,
+      manifest_pre_yaml: prepared.manifest_pre_base_yaml,
+      start_time:        prepared.start_time,
+      end_time:          prepared.end_time
     }
     html_contents = doc_lead_in()
     |> head_lead_in()
-    |> preamble(prepared.uuid)
+    |> preamble(html_directory, style_sheet, prepared.uuid)
     |> head_lead_out()
     |> body_lead_in()
-    |> manifest_info(rap_uri, time_zone, potted_manifest)
-    |> tables_info(rap_uri, prepared.uuid, prepared.staged_tables)
-    |> jobs_info(prepared.staged_jobs)
-    |> results_info(rap_uri, time_zone, prepared.uuid, result_stem, result_extension, prepared.results)
+    |> manifest_info(html_directory, rap_uri, time_zone, potted_manifest)
+    |> tables_info(  html_directory, rap_uri, prepared.uuid, prepared.staged_tables)
+    |> jobs_info(    html_directory, prepared.staged_jobs)
+    |> results_info( html_directory, rap_uri, time_zone, prepared.uuid, result_stem, result_extension, prepared.results)
+    |> body_lead_out()
+    |> doc_lead_out()
+    %{
+      uuid:     prepared.uuid,
+      contents: html_contents
+    }
+  end
+
+
+  ## FIXME
+  def compose_document(
+    html_directory,
+    rap_uri,
+    style_sheet,
+    time_zone,
+    _result_stem,
+    _result_extension,
+    %Prepare{ runner_signal: :see_producer } = prepared
+  ) do
+    potted_manifest = %{
+      manifest_pre_ttl:  prepared.manifest_pre_base_ttl,
+      manifest_pre_yaml: prepared.manifest_pre_base_yaml,
+      start_time:        prepared.start_time,
+      end_time:          prepared.end_time
+    }
+    html_contents = doc_lead_in()
+    |> head_lead_in()
+    |> preamble(html_directory, style_sheet, prepared.uuid)
+    |> head_lead_out()
+    |> body_lead_in()
+    |> manifest_info(html_directory, rap_uri, time_zone, potted_manifest)
     |> body_lead_out()
     |> doc_lead_out()
     %{
@@ -93,33 +112,48 @@ defmodule RAP.Bakery.Compose do
   def head_lead_out(curr), do: curr <> "</head>\n"
   def body_lead_out(curr), do: curr <> "</body>\n"
 
-  def preamble(curr, uuid, style_sheet \\ @style_sheet) do
+  def preamble(curr, html_directory, style_sheet, uuid) do
     preamble_input = [uuid: uuid, style_sheet: style_sheet]
-    preamble_fragment = EEx.eval_file("#{@fragments}/preamble.html", preamble_input)
+    preamble_fragment = EEx.eval_file("#{html_directory}/preamble.html", preamble_input)
     curr <> preamble_fragment
   end
 
-  # With this number of arguments, this function really ought to take the requisite named struct we've already defined
-  def manifest_info(curr, rap_uri, time_zone, %{} = manifest_spec) do
-    ttl_full  = "#{rap_uri}/#{manifest_spec.uuid}/#{manifest_spec.manifest_ttl}"
-    #yaml_full = "#{rap_uri}/#{manifest_spec.uuid}/#{manifest_spec.manifest_yaml}"
-
-    info_extra = %{ 
-      manifest_uri_ttl:  ttl_full,
-      #manifest_uri_yaml: yaml_full,
+  def manifest_info(curr, html_directory, rap_uri, time_zone, %{manifest_pre_ttl: nil} = manifest_spec) do
+    info_extra = %{
+      manifest_uri_ttl:    nil,
+      manifest_uri_yaml:   nil,
       start_time_readable: format_time(manifest_spec.start_time, time_zone),
       end_time_readable:   format_time(manifest_spec.end_time,   time_zone)
     }
     info_input = manifest_spec |> Map.merge(info_extra) |> Map.to_list()
 
-    info_fragment = EEx.eval_file("#{@fragments}/manifest.html", info_input)
+    info_fragment = EEx.eval_file("#{html_directory}/manifest.html", info_input)
+    curr <> info_fragment
+  end
+  
+  def manifest_info(curr, html_directory, rap_uri, time_zone, %{} = manifest_spec) do
+    ttl_full  = "#{rap_uri}/#{manifest_spec.uuid}/#{manifest_spec.manifest_pre_ttl}"
+    yaml_full = "#{rap_uri}/#{manifest_spec.uuid}/#{manifest_spec.manifest_pre_yaml}"
+
+    info_extra = %{ 
+      manifest_uri_ttl:    ttl_full,
+      manifest_uri_yaml:   yaml_full,
+      start_time_readable: format_time(manifest_spec.start_time, time_zone),
+      end_time_readable:   format_time(manifest_spec.end_time,   time_zone)
+    }
+    info_input = manifest_spec |> Map.merge(info_extra) |> Map.to_list()
+
+    info_fragment = EEx.eval_file("#{html_directory}/manifest.html", info_input)
     curr <> info_fragment
   end
   
   # uuid not included in object
   # for the maps, we don't weave in current state of document
-  def stage_table(rap_uri, uuid, %TableSpec{resource: %ResourceSpec{base: resource_path},
-					    schema:   %ResourceSpec{base: schema_path_ttl}} = table_spec) do
+  def stage_table(html_directory, rap_uri, uuid,
+    %TableSpec{
+      resource: %ResourceSpec{base: resource_path},
+      schema:   %ResourceSpec{base: schema_path_ttl}
+    } = table_spec) do
     table_extra = %{
       uuid:            uuid,
       resource_path:   resource_path,
@@ -132,50 +166,54 @@ defmodule RAP.Bakery.Compose do
     |> Map.merge(table_extra)
     |> Map.to_list()
     
-    EEx.eval_file("#{@fragments}/table.html", table_input)
+    EEx.eval_file("#{html_directory}/table.html", table_input)
   end
 
-  def tables_info(curr, rap_uri, uuid, tables) do
+  def tables_info(curr, html_directory, rap_uri, uuid, tables) do
     tables_lead     = "<h1>Specified tables</h1>\n"
     table_fragments = tables
-    |> Enum.map(&stage_table(rap_uri, uuid, &1))
+    |> Enum.map(&stage_table(html_directory, rap_uri, uuid, &1))
     |> Enum.join("\n")
     curr <> tables_lead <> table_fragments
   end
 
-  def stage_scope(%ScopeSpec{} = scope_spec) do
+  def stage_scope(html_directory, %ScopeSpec{} = scope_spec) do
     EEx.eval_file(
-      "#{@fragments}/scope.html",
+      "#{html_directory}/scope.html",
       Map.to_list(scope_spec)
     )
   end
 
-  def stage_scope_list(nil, scope_type), do: nil
-  def stage_scope_list(scope_triples, scope_type) do
+  def stage_scope_list(_dir, nil, scope_type), do: nil
+  def stage_scope_list(html_directory, scope_triples, scope_type) do
     scope_lead      = EEx.eval_string("<li>‘<%= type %>’ columns in scope:\n<ul>", type: scope_type)
     scope_fragments = scope_triples
-    |> Enum.map(&stage_scope/1)
+    |> Enum.map(&stage_scope(html_directory, &1))
     |> Enum.join("\n")
     scope_lead <> scope_fragments <> "</ul>\n"
   end
   
-  def stage_job(%JobSpec{} = job_spec) do
+  def stage_job(html_directory, %JobSpec{} = job_spec) do
+    descriptive = stage_scope_list(html_directory, job_spec.scope_descriptive, "Descriptive")
+    collected   = stage_scope_list(html_directory, job_spec.scope_collected,   "Collected")
+    modelled    = stage_scope_list(html_directory, job_spec.scope_modelled,    "Modelled")
+    
     job_input = [
       name:  job_spec.name,
       title: job_spec.title,
       type:  job_spec.type,
       description:       job_spec.description,
-      scope_descriptive: stage_scope_list(job_spec.scope_descriptive, "Descriptive"),
-      scope_collected:   stage_scope_list(job_spec.scope_collected,   "Collected"),
-      scope_modelled:    stage_scope_list(job_spec.scope_modelled,    "Modelled")
+      scope_descriptive: descriptive,
+      scope_collected:   collected,
+      scope_modelled:    modelled,
     ]
-    EEx.eval_file("#{@fragments}/job.html", job_input)
+    EEx.eval_file("#{html_directory}/job.html", job_input)
   end
   
-  def jobs_info(curr, jobs) do
+  def jobs_info(curr, html_directory, jobs) do
     jobs_lead = "<h1>Specified jobs</h1>\n"
     job_fragments = jobs
-    |> Enum.map(&stage_job/1)
+    |> Enum.map(&stage_job(html_directory, &1))
     |> Enum.join("\n")
     curr <> jobs_lead <> job_fragments
   end
@@ -186,7 +224,7 @@ defmodule RAP.Bakery.Compose do
   # bunch of information.
   # Call the base name of the output file contents_base since result text
   # contents are called `contents'
-  def stage_result(rap_uri, time_zone, uuid, stem, extension, %Result{} = result) do
+  def stage_result(html_directory, rap_uri, time_zone, uuid, stem, extension, %Result{} = result) do
     target_base = "#{stem}_#{result.name}.#{extension}"
     target_uri  = "#{rap_uri}/#{uuid}/#{target_base}"
     result_extra = %{
@@ -199,13 +237,13 @@ defmodule RAP.Bakery.Compose do
     result_input = result
     |> Map.merge(result_extra)
     |> Map.to_list()
-    EEx.eval_file("#{@fragments}/result.html", result_input)
+    EEx.eval_file("#{html_directory}/result.html", result_input)
   end
   
-  def results_info(curr, rap_uri, time_zone, uuid, stem, extension, results) do
+  def results_info(curr, html_directory, rap_uri, time_zone, uuid, stem, extension, results) do
     results_lead = "<h1>Results</h1>\n"
     results_fragments = results
-    |> Enum.map(&stage_result(rap_uri, time_zone, uuid, stem, extension, &1))
+    |> Enum.map(&stage_result(html_directory, rap_uri, time_zone, uuid, stem, extension, &1))
     |> Enum.join("\n")
     curr <> results_lead <> results_fragments
   end

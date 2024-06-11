@@ -42,12 +42,14 @@ defmodule RAP.Bakery.Prepare do
 
   # Note naming of manifest_pre_base
   # Manifest signal is simple "are all the tables valid"?
-  defstruct [ :uuid,
-	      :title, :description,
+  defstruct [ :uuid, :name, :title, :description,
 	      :start_time, :end_time,
-	      :manifest_signal,
-	      :manifest_pre_base,
+	      :manifest_pre_base_ttl,
+	      :manifest_pre_base_yaml,
 	      :resource_bases,
+	      :pre_signal,
+	      :producer_signal,
+	      :runner_signal,
 	      :result_bases,
 	      :results,
 	      :staged_tables,
@@ -73,6 +75,22 @@ defmodule RAP.Bakery.Prepare do
   end
 
   @doc """
+  Special case for the manifest, rename to something like
+  manifest_pre.ttl since we have a notion that we generate
+  a post-results manifest which links the results and the data
+  presented
+  """
+  defp move_manifest(fp, cache_dir, bakery_dir, uuid) do
+    fp_pre    = fp |> String.replace(~r"\.([a-z]+)$", "_pre.\\1")
+    fp_target = cond do
+      fp_pre != fp -> fp_pre
+      true         -> fp
+    end
+    fp |> move_wrapper(cache_dir, bakery_dir, uuid, fp_target)
+    fp_target
+  end
+  
+  @doc """
   0. Check target UUID directory doesn't already exist like when fetching
   1. If it does exist, check that the files are identical
   2. Output results into the directory and call something related to job
@@ -80,8 +98,18 @@ defmodule RAP.Bakery.Prepare do
   4. Remove UUID from ETS
   5. Add results to mnesia DB
   6. ?!
+
+  This function is structured a bit differently to the previous stages,
+  i.e. not using the `with' macro.
+
+  In terms of the signal, the %Runner{} signal `:job_errors' records *at
+  least one* job error. This is carried over here, and although it is
+  meaningful on the level of a single job (i.e. when caching the job bases),
+  it's not especially meaningful here.
+
+  Therefore, this stage doesn't record a signal.
   """
-  def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem, job_stem) do
+  def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem, job_stem) when processed.signal in [:working, :job_errors] do
     #source_dir = "#{cache_dir}/#{processed.uuid}"
     #target_dir = "#{bakery_dir}/#{processed.uuid}"
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
@@ -89,41 +117,87 @@ defmodule RAP.Bakery.Prepare do
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
 
     cached_job_bases = processed.results
-    #|> Enum.map(&PostRun.cache_job(&1, processed.uuid))
     |> Enum.map(&write_result(&1.contents, bakery_dir, processed.uuid,
 	job_stem, "json", &1.name))
-
-    # Special case for the manifest, rename to something like
-    # manifest_pre.ttl since we have a notion that we generate
-    # a post-results manifest which links the results and the data
-    # presented
-    staging_pre = processed.manifest_base
-    |> String.replace(~r"\.([a-z]+)$", "_pre.\\1")    
-    pre_manifest_name = cond do
-      staging_pre != processed.manifest_base -> staging_pre
-      true                                   -> "manifest_pre.ttl"
-    end
-    moved_manifest = processed.manifest_base
-    |> move_wrapper(cache_dir, bakery_dir, processed.uuid, pre_manifest_name)
     
+    moved_manifest_ttl = processed.manifest_base_ttl
+    |> move_manifest(cache_dir, bakery_dir, processed.uuid)
+    moved_manifest_yaml = processed.manifest_base_yaml
+    |> move_manifest(cache_dir, bakery_dir, processed.uuid)
+
     moved_resources = processed.resource_bases
     |> Enum.map(&move_wrapper(&1, cache_dir, bakery_dir, processed.uuid))
 
     # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
     #end_time = DateTime.utc_now() |> DateTime.to_unix()
     semi_final_data = %Prepare{
-      uuid:        processed.uuid,
-      title:       processed.title,
-      description: processed.description,
-      manifest_pre_base: moved_manifest,
-      resource_bases:    moved_resources,
-      result_bases:      cached_job_bases,
-      results:           processed.results,
-      staged_tables:     processed.staging_tables,
-      staged_jobs:       processed.staging_jobs
+      uuid:                   processed.uuid,
+      name:                   processed.name,
+      title:                  processed.title,
+      description:            processed.description,
+      pre_signal:             processed.pre_signal,
+      producer_signal:        processed.producer_signal,
+      runner_signal:          processed.signal,
+      manifest_pre_base_ttl:  moved_manifest_ttl,
+      manifest_pre_base_yaml: moved_manifest_yaml,
+      resource_bases:         moved_resources,
+      result_bases:           cached_job_bases,
+      results:                processed.results,
+      staged_tables:          processed.staging_tables,
+      staged_jobs:            processed.staging_jobs
     }
     {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data)
     cached_manifest
+  end
+
+  # [:working | :job_errors] | :see_producer | :see_pre
+  # :see_producer means that we're only able to move the data package over
+  @doc """
+  %Runner{ name:               spec.name,
+	   uuid:               spec.uuid,
+	   pre_signal:         spec.pre_signal,
+	   producer_signal:    spec.signal,
+	   signal:             :see_producer,
+	   manifest_base_ttl:  spec.manifest_base_ttl,
+	   manifest_base_yaml: spec.manifest_base_yaml,
+	   resource_bases:     spec.resource_bases    }
+  """
+  def bake_data(%Runner{signal: :see_producer} = processed, cache_dir, bakery_dir, _linked_stem, job_stem) do
+
+    File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
+    
+    moved_manifest_ttl = processed.manifest_base_ttl
+    |> move_manifest(cache_dir, bakery_dir, processed.uuid)
+    moved_manifest_yaml = processed.manifest_base_yaml
+    |> move_manifest(cache_dir, bakery_dir, processed.uuid)
+
+    moved_resources = processed.resource_bases
+    |> Enum.map(&move_wrapper(&1, cache_dir, bakery_dir, processed.uuid))
+
+    # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
+    #end_time = DateTime.utc_now() |> DateTime.to_unix()
+    semi_final_data = %Prepare{
+      uuid:                   processed.uuid,
+      name:                   processed.name,
+      pre_signal:             processed.pre_signal,
+      producer_signal:        processed.producer_signal,
+      runner_signal:          processed.signal,
+      manifest_pre_base_ttl:  moved_manifest_ttl,
+      manifest_pre_base_yaml: moved_manifest_yaml,
+      resource_bases:         moved_resources
+    }
+    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data)
+    cached_manifest
+  end
+
+  # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
+  def bake_data(%Runner{signal: :see_pre} = processed, _cache, _bakery, _ln, _stem) do
+    semi_final_data = %Prepare{
+      uuid:            processed.uuid,
+      pre_signal:      processed.pre_signal,
+      producer_signal: :see_pre,
+      runner_signal:   :see_pre      
+    }
   end
   
   @doc """

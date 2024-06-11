@@ -14,9 +14,7 @@ defmodule RAP.Storage.GCP do
   alias GoogleApi.Storage.V1.Api.Objects, as: GCPReqObjs
 
   alias RAP.Application
-  alias RAP.Storage.{PreRun, Monitor, GCP}
-
-  defstruct [ :uuid, :manifest, :resources ]
+  alias RAP.Storage.{PreRun, MidRun, Monitor}
 
   def start_link initial_state do
     Logger.info "Called Storage.GCP.start_link (_)"
@@ -115,23 +113,36 @@ defmodule RAP.Storage.GCP do
     target_dir = "#{cache_dir}/#{job.uuid}"
     index_full = "#{target_dir}/#{index_base}"
     with {:ok, uuid, file_bases} <- fetch_job_deps(cache_dir, job),
-         {:ok, manifest_base}    <- File.read(index_full) do
-      Logger.info "Index file is #{inspect index_base}"
-      manifest_proper = String.trim(manifest_base)
-      manifest_full   = target_dir <> "/" <> manifest_proper
-      Logger.info "Manifest file is #{inspect manifest_proper}"
+         {:ok, index_contents}   <- File.read(index_full),
+         [manifest_yaml, manifest_ttl, manifest_name] <- String.split(index_contents, "\n")
+    do
+      Logger.info "Index file is #{inspect index_base}"      
       
       non_manifest_bases = file_bases
-      |> List.delete(manifest_proper)
+      |> List.delete(manifest_yaml)
+      |> List.delete(manifest_ttl)
       |> List.delete(index_base)
       Logger.info "Non-manifest files are #{inspect non_manifest_bases}"      
 
-      %GCP{uuid: uuid, manifest: manifest_proper, resources: non_manifest_bases}
+      %MidRun{ uuid:          uuid,
+	       signal:        :working,
+	       data_source:   :gcp,
+	       manifest_name: manifest_name,
+	       manifest_yaml: manifest_yaml,
+	       manifest_ttl:  manifest_ttl,
+	       resources:     non_manifest_bases }
     else
-      {:error, uuid, errors} -> {:error, job.uuid, errors}
-      {:error, reason}       ->
+      {:error, uuid, errors} -> {:error, uuid, errors}
+      {:error, reason} ->
 	Logger.info "Could not read index file #{index_full}"
-	{:error, reason}
+	%MidRun{ uuid: job.uuid, signal: reason, data_source: :gcp }
+      [] ->
+	Logger.info "Index file #{index_full} is empty!"
+	{:error, :empty_index, job.uuid}
+        %MidRun{ uuid: job.uuid, signal: :empty_index, data_source: :gcp }
+      _ ->
+	Logger.info "Malformed index file #{index_full}!"
+	%MidRun{ uuid: job.uuid, signal: :bad_index, data_source: :gcp }
     end
   end
 

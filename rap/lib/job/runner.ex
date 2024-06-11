@@ -10,10 +10,10 @@ defmodule RAP.Job.Result do
   alias RAP.Job.Result
   alias RAP.Job.{ScopeSpec, JobSpec, TableSpec, ManifestSpec}
   
-  defstruct [ :name,        :title,
-	      :description, :type,
-	      :signal,      :contents,
-	      :start_time,  :end_time ]
+  defstruct [ :name, :title, :description,
+	      :source_job, :type,
+	      :signal,     :contents,
+	      :start_time, :end_time ]
 
   defp cmd_wrapper(shell, command, args) do
     System.cmd shell, [ command | args ]
@@ -24,6 +24,7 @@ defmodule RAP.Job.Result do
       name:        spec.name,
       title:       spec.title,
       description: spec.description,
+      source_job:  spec.name,
       type:        "ignore",
       signal:      :ok,
       contents:    "Dummy/ignored job"
@@ -78,16 +79,16 @@ defmodule RAP.Job.Result do
 	Logger.info res
  	%Result{ name: spec.name, title: spec.title,
 		 description: spec.description,
-		 type:        "density", signal:   :ok,
-		 start_time:  start_ts,  end_time: end_ts,
-		 contents:    res}
+		 type:        "density", source_job: spec.name,
+		 start_time:  start_ts,  end_time:   end_ts,
+		 signal:      :ok,       contents:   res}
       else
  	Logger.info "Call to external command/executable density_count_ode failed"
  	%Result{ name: spec.name, title: spec.title,
 		 description: spec.description,
-		 type:        "density", signal:   :error,
-		 start_time:  start_ts,  end_time: end_ts,
-		 contents:    res }
+		 type:        "density", source_job: spec.name,
+		 start_time:  start_ts,  end_time:   end_ts,
+		 signal:      :error,    contents:   res }
        end
      end
     
@@ -98,6 +99,7 @@ defmodule RAP.Job.Result do
 	     title:       bad_spec.title,
 	     description: bad_spec.description,
 	     type:        bad_spec.type,
+	     source_job:  bad_spec.name,
 	     signal:      :error,
 	     contents:    "Unrecognised job spec" }
   end
@@ -127,11 +129,13 @@ defmodule RAP.Job.Runner do
   alias RAP.Job.{Producer, Result, Runner}
   alias RAP.Job.ManifestSpec
 
-  defstruct [ :uuid,  :local_version,
-	      :title, :description,
-	      :manifest_base,  :resource_bases,
-	      :staging_tables, :staging_jobs,
-	      :results                        ]
+  defstruct [
+    :uuid,  :local_version, :name, :title, :description,
+    :manifest_base_ttl, :manifest_base_yaml, :resource_bases,
+    :staging_tables, :staging_jobs,
+    :pre_signal, :producer_signal,
+    :signal, :results
+  ]
   
   def start_link initial_state do
     Logger.info "Called Job.Runner.start_link (_)"
@@ -155,26 +159,65 @@ defmodule RAP.Job.Runner do
     { :noreply, target_events, state }
   end
   
-  def process_jobs(%ManifestSpec{staging_jobs: staging} = spec, cache_directory) do
-    
+  def process_jobs(%ManifestSpec{signal: :working, staging_jobs: staging} = spec, cache_directory) do  
     Logger.info "Staging jobs: #{inspect staging}"
     
     result_contents = staging
     |> Enum.map(&Result.run_job(spec.uuid, cache_directory, &1))
 
-    # Not clear whether to rename results attribute
-    # these do contain %Result{} objects, whereas we don't want to repeat
-    # 
-    %Runner{ uuid:           spec.uuid,
-	     local_version:  spec.local_version,
-	     title:          spec.title,
-	     description:    spec.description,
-	     manifest_base:  spec.manifest_base,
-	     resource_bases: spec.resource_bases,
-	     staging_tables: spec.staging_tables,
-	     staging_jobs:   spec.staging_jobs,
-	     results:        result_contents    }
+    # Do need to have a notion of different signals
+    overall_signal = cond do
+      Enum.any(result_contents, &(&1 == :error)) -> :job_errors
+      true                                       -> :working
+    end
+      
+    %Runner{ uuid:               spec.uuid,
+	     local_version:      spec.local_version,
+	     name:               spec.name,
+	     title:              spec.title,
+	     description:        spec.description,
+	     manifest_base_ttl:  spec.manifest_base_ttl,
+	     manifest_base_yaml: spec.manifest_base_yaml,
+	     resource_bases:     spec.resource_bases,
+	     staging_tables:     spec.staging_tables,
+	     staging_jobs:       spec.staging_jobs,
+	     pre_signal:         spec.pre_signal,
+	     producer_signal:    spec.signal,
+	     signal:             overall_signal,
+	     results:            result_contents    }
   end
-  
+
+  def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache) do
+    %Runner{
+      uuid:            spec.uuid,
+      pre_signal:      spec.pre_signal,
+      producer_signal: :see_pre,
+      signal:          :see_pre      
+    }
+  end
+
+  @doc """
+  # :empty_manifest | :bad_input_graph | :bad_manifest_tables
+  # We thus have access to anything in the `minimal_manifest/2' function:
+
+  def minimal_manifest(%MidRun{} = prev, curr_signal) do
+    %ManifestSpec{ name:               prev.manifest_name,
+		   uuid:               prev.uuid,
+		   pre_signal:         prev.signal,
+		   signal:             curr_signal,
+		   manifest_base_ttl:  prev.manifest_ttl,
+		   manifest_base_yaml: prev.manifest_yaml,
+		   resource_bases:     prev.resources    }
+  end
+  """
+  def process_jobs(%ManifestSpec{} = spec, _cache) do
+    %Runner{ name:               spec.name,
+	     uuid:               spec.uuid,
+	     pre_signal:         spec.pre_signal,
+	     producer_signal:    spec.signal,
+	     signal:             :see_producer,
+	     manifest_base_ttl:  spec.manifest_base_ttl,
+	     manifest_base_yaml: spec.manifest_base_yaml,
+	     resource_bases:     spec.resource_bases    }
+  end
 end
-    

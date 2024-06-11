@@ -70,10 +70,21 @@ defmodule RAP.Manifest.JobDesc do
     property :title,       DCTERMS.title,       type: :string,  required: false
     property :description, DCTERMS.description, type: :string,  required: false
     property :job_type,    SAVED.job_type,      type: :string,  required: true
+
+    field :job_result_format
     
     link job_scope_descriptive: SAVED.job_scope_descriptive, type: list_of(ScopeDesc), depth: +5
     link job_scope_collected:   SAVED.job_scope_collected,   type: list_of(ScopeDesc), depth: +5
     link job_scope_modelled:    SAVED.job_scope_modelled,    type: list_of(ScopeDesc), depth: +5
+  end
+
+  def on_load(job_desc, _graph, _opts) do
+    fmt = case job_desc.job_type do
+	    "density" -> "json"
+	    _         -> "txt"
+	  end
+    new_desc = job_desc |> Map.put(:job_result_format, fmt)
+    {:ok, new_desc}
   end
 end
 
@@ -87,8 +98,8 @@ defmodule RAP.Manifest.ManifestDesc do
   schema SAVED.ManifestDesc do
     property :title,         DCTERMS.title,       type: :string, required: false, required: false
     property :description,   DCTERMS.description, type: :string, required: false, required: false
-    property :gcp_source,    SAVED.gcp_source,    type: :string, required: false, required: false
     property :local_version, SAVED.local_version, type: :string, required: false, required: true
+    # property :gcp_source,    SAVED.gcp_source,    type: :string, required: false, required: false
 
     link tables: SAVED.tables, type: list_of(TableDesc), depth: +5, required: true
     link jobs:   SAVED.jobs,   type: list_of(JobDesc),   depth: +5, required: true

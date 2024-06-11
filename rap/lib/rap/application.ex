@@ -17,7 +17,11 @@ defmodule RAP.Application do
   @cache_directory    "./data_cache"
   @bakery_directory   "./bakery"       # The place to output results
   @linked_result_stem "manifest_post"
-  @job_result_stem    "results"
+  @job_result_stem    "results"  
+  @time_zone          "GB-Eire"
+  @rap_uri_prefix     "/saved/rap"
+  @rap_style_sheet    "/saved/rap/assets/app.css"
+  @html_directory     "./html_fragments"
   
   use Application
 
@@ -47,6 +51,10 @@ defmodule RAP.Application do
 	      bakery_directory:   @bakery_directory,
 	      linked_result_stem: @linked_result_stem,
 	      job_result_stem:    @job_result_stem,
+	      time_zone:          @time_zone,
+	      rap_uri_prefix:     @rap_uri_prefix,
+	      rap_style_sheet:    @rap_style_sheet,
+	      html_directory:     @html_directory,
 	      staging_objects:    []               ]
   
   @impl true

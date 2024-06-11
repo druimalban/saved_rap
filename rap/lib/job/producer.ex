@@ -33,7 +33,7 @@ defmodule RAP.Job.Producer do
   """
 
   alias RAP.Manifest.{TableDesc, ScopeDesc, JobDesc, ManifestDesc}
-  alias RAP.Storage.GCP
+  alias RAP.Storage.{MidRun, GCP}
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
     
   use GenStage
@@ -168,23 +168,24 @@ defmodule RAP.Job.Producer do
     generated_job
   end
 
-  defp check_manifest(%ManifestDesc{description: nil, title: nil,
-				    tables:      [],  jobs:  [],
-				    gcp_source:  nil, local_version: nil},
+  # Don't check gcp_source for now, it's not in any generated RDF graphs
+  defp check_manifest(%ManifestDesc{ description: nil, title: nil,
+				     tables: [], jobs: [],
+				     local_version: nil},
                       _uuid, _manifest, _resources) do
-    {:error, :empty}
+    {:error, :empty_manifest}
   end
-  defp check_manifest(%ManifestDesc{} = desc, uuid, manifest_base, resources) do
-    Logger.info "Check manifest (title #{inspect desc.title})"
+  defp check_manifest(%ManifestDesc{} = desc, uuid, manifest_name, manifest_ttl, manifest_yaml, resources, previous_signal) do
+    Logger.info "Check manifest #{manifest_name} (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
-
+    
     test_extant = fn tab ->
       res = tab.resource
       sch = tab.schema
       res.extant and sch.extant
     end
-
+    
     processed_tables  = desc.tables |> Enum.map(&check_table(&1, resources))
     extant_tables     = processed_tables |> Enum.filter(test_extant)
     non_extant_tables = processed_tables |> Enum.reject(test_extant)
@@ -195,25 +196,98 @@ defmodule RAP.Job.Producer do
       processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
       
       manifest_obj = %ManifestSpec{
-	title:         desc.title,
-	description:   desc.description,
-	local_version: desc.local_version,
-	uuid:          uuid,
-	manifest_base: manifest_base,
-	resource_bases: resources,
-	staging_tables: processed_tables,
-	staging_jobs:   processed_jobs
+	name:               manifest_name,
+	title:              desc.title,
+	description:        desc.description,
+	local_version:      desc.local_version,
+	uuid:               uuid,
+	pre_signal:         previous_signal,
+	signal:             :working,
+	manifest_base_ttl:  manifest_ttl,
+	manifest_base_yaml: manifest_yaml,
+	resource_bases:     resources,
+	staging_tables:     processed_tables,
+	staging_jobs:       processed_jobs
       }
       {:ok, manifest_obj}
     end
   end
 
-  def invoke_manifest(%GCP{uuid: uuid, manifest: manifest_base, resources: resources}, cache_dir) do
-    Logger.info "Building RDF graph from turtle manifest using data in #{cache_dir}/#{uuid}"
-    manifest_full_path = "#{cache_dir}/#{uuid}/#{manifest_base}"
+  def minimal_manifest(%MidRun{} = prev, curr_signal) do
+    %ManifestSpec{ name:               prev.manifest_name,
+		   uuid:               prev.uuid,
+		   pre_signal:         prev.signal,
+		   signal:             curr_signal,
+		   manifest_base_ttl:  prev.manifest_ttl,
+		   manifest_base_yaml: prev.manifest_yaml,
+		   resource_bases:     prev.resources    }
+  end
+
+  
+  # defstruct [ :uuid, :signal, :data_source,  :manifest_name, :manifest_yaml, :manifest_ttl, :resources ]
+  #def minimal_manifest(%MidRun{} = prev, curr_signal) do
+  #  %ManifestSpec{
+  #    name:               prev.manifest_name,
+  #    title:              prev.title,
+  #    description:        prev.description,
+  #    local_version:      prev.local_version,
+  #    uuid:               prev.uuid,
+  #    pre_signal:         prev.signal,
+  #    signal:             curr_signal,
+  #    manifest_base_ttl:  prev.manifest_ttl,
+  #    manifest_base_yaml: prev.manifest_yaml,
+  #  }
+  #end
+
+  @doc """
+  Invoke manifest based on signal from previous stage `RAP.Storage.GCP'.
+
+  The function which produces the `%GCP{}' struct passed on to this stage
+  is `RAP.Storage.GCP.coalesce_job/3'.
+
+  This function does the following:
+  1. Fetch the index file `.index';
+  2. Read the file
+  3. Extract name of the YAML manifest and TTL conversion
+  
+  In any case, if the function does not complete, the only thing we know
+  about the job is the UUID. This is annotated with the signal.
+  That is, if the signal is not the atom `:working', then we have no
+  access to the file name of the two manifest files.
+
+  Therefore pattern match on that signal and pass it up.
+
+  In the following function `invoke_manifest/2', the :working signal
+  indicates that not only was `coalesce_job/3' successful, but we were
+  able to extract an RDF graph from it. If we weren't, then we wouldn't
+  be able to know anything about the resources and can't run any jobs,
+  because these are described by the RDF graph.
+
+  There are three signals of interest here which we can pattern-match on.
+  1. The `:empty_manifest' signal implies that the manifest in question
+     could not be loaded by Grax. Any other error tuple with two fields
+     arises from `RDF.Turtle.read_file/1', since our `check_manifest/5'
+     function either returns {:ok, <manifest object>} or
+     {:error, :bad_tables, <tables>}.
+  2. The `:bad_input_graph' signal implies that the manifest in question
+     has a duff RDF graph. This usually arises in terms of cardinality,
+     i.e. mandatory fields are of length zero.
+  3. The `:bad_manifest_tables' signal implies that the manifest in
+     question is a valid RDF graph, but that the specified tables are
+     duff in some way.
+
+  It is possible that the :bad_manifest_tables signal is something which
+  we can use, but it also implies that no jobs should be run, so don't
+  try to run these, at least for now. Only pattern-match on `:working'.
+  """
+  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir) do
+    target_dir         = "#{cache_dir}/#{prev.uuid}"
+    manifest_full_path = "#{target_dir}/#{prev.manifest_ttl}"
+    load_target        = String.to_atom("RAP.Vocabulary.RAP.#{prev.manifest_name}") # Fix me!
+    Logger.info "Building RDF graph from turtle manifest #{load_target} using data in #{target_dir}"
     with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
-         {:ok, ex_struct}    <- Grax.load(rdf_graph, RAP.Vocabulary.RAP.RootManifest, ManifestDesc),
-         {:ok, manifest_obj} <- check_manifest(ex_struct, uuid, manifest_base, resources)
+         {:ok, ex_struct}    <- Grax.load(rdf_graph, load_target, ManifestDesc),
+         {:ok, manifest_obj} <- check_manifest(ex_struct, prev.uuid, prev.manifest_name, prev.manifest_ttl, prev.manifest_yaml, prev.resources, :working)
       do
         Logger.info "Detecting feasible jobs"
 	Logger.info "Found RDF graph:"
@@ -224,16 +298,24 @@ defmodule RAP.Job.Producer do
 	Logger.info "#{inspect manifest_obj}"
 	manifest_obj
     else
-      {:error,   err} ->
+      {:error, :empty_manifest} ->
+	Logger.info "Corresponding struct to RDF graph was empty!"
+	minimal_manifest(prev, :empty_manifest)
+      {:error, err} ->
 	Logger.info "Could not read RDF graph #{manifest_full_path}"
         Logger.info "Error was #{inspect err}"
-	{:error, :input_graph}
-      {:error,   :empty} ->
-	Logger.info "Corresponding struct to RDF graph was empty!"
-	{:error, :output_struct}
-      message ->
-	message
+	minimal_manifest(prev, :bad_input_graph)
+      {:error, :bad_tables, _tables} ->
+	Logger.info "Error arising from manifest object shape"
+	minimal_manifest(prev, :bad_manifest_tables)
     end
-  end 
+  end
+  def invoke_manifest(%MidRun{uuid: uuid, signal: pre_signal}, _cache) do
+    %ManifestSpec{
+      uuid:       uuid,
+      pre_signal: pre_signal,
+      signal:     :see_pre
+    }
+  end
   
 end

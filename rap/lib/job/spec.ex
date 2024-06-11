@@ -86,15 +86,15 @@ end
 defmodule RAP.Job.ManifestSpec do
   @moduledoc """
   While the manifest is associated with a name (it's not a blank node),
-  this is always hard-coded as `RootManifest'.
+  this is by default `RootManifest'. Nonetheless, it's feasible that we
+  submit manifests with a different name.
 
   This module reincoprorates the UUID, path of the manifest proper, and
   paths of the various resources associated with the job.
   """
-  defstruct [ :title,
-	      :description,    :local_version,
-	      :uuid,
-	      :manifest_base,  :resource_bases,
+  defstruct [ :name, :title, :description, :local_version, :uuid,
+	      :pre_signal, :signal, :manifest_base_ttl, :manifest_base_yaml,
+	      :resource_bases,
 	      :staging_tables, :staging_jobs ]
 end
 

@@ -3,44 +3,32 @@ defmodule RAP.Storage do
 
   Original %Prepare module named struct:
       defstruct [ :uuid,
-		  :title, :description,
-		  :start_time, :end_time,
-		  :manifest_signal,
-		  :manifest_pre_base,
-		  :resource_bases,
-		  :result_bases,
-		  :results,
-		  :staged_tables,
-		  :staged_jobs          ]  
+	      :title, :description,
+	      :start_time, :end_time,
+	      :manifest_signal,
+	      :manifest_pre_base_ttl,
+	      :manifest_pre_base_yaml,
+	      :resource_bases,
+	      :result_bases,
+	      :results,
+	      :staged_tables,
+	      :staged_jobs          ]
   """
   use Amnesia
-
-  #defdatabase DB do
-    #deftable Manifest, [
-    #  :uuid, :title, :description,
-    #  :manifest_base, :resource_bases,
-    #  :job_names,
-    #  :start_time, :end_time
-    #], type: :bag
-    #deftable Job, [
-    #  :uuid, :name, :title, :description, 
-    #  :type, :signal, :result,
-    #  :start_time, :end_time
-    #], type: :bag
-  #end
 
   defdatabase DB do
     deftable Manifest, [
       :uuid,
-      :title, :description,
+      :name, :title, :description,
       :start_time, :end_time,
-      :manifest_signal,
-      :manifest_pre_base,
+      :signal,
+      :manifest_pre_base_ttl,
+      :manifest_pre_base_yaml,
       :resource_bases,
       :result_bases,
       :results,
       :staged_tables,
-      :staged_jobs          ]
+      :staged_jobs      ]
   end
   
 end
@@ -104,6 +92,23 @@ defmodule RAP.Storage.PreRun do
     end
   end
 
+end
+
+defmodule RAP.Storage.MidRun do
+  @moduledoc """
+  This is a generic minimal named module to describe a 'package'
+  of data files, and where they are sourced from.
+
+  The basic idea is, we have a bunch of modules which can fetch
+  data from various places. Once they've actually fetched the data,
+  it's stored in the local data cache, and it's got the same components.
+
+  To make feedback richer, we can record also the source (e.g. GCP, some
+  local directory we're monitoring, some other object store like S3), so
+  it's clear where failures occur.
+  """
+  defstruct [ :uuid, :signal, :data_source,
+	      :manifest_name, :manifest_yaml, :manifest_ttl, :resources ]
 end
 
 defmodule RAP.Storage.PostRun do
@@ -176,22 +181,5 @@ defmodule RAP.Storage.PostRun do
         {:error, "UUID not found in ETS"}
     end
   end
-  
-#  def cache_job(%Result{} = job, uuid) do
-#    Logger.info "Cache processed job information in mnesia DB `Job' table for job #{job.name}"
-#    Amnesia.transaction do
-#      %JobTable{
-#	uuid:        uuid,
-#	name:        job.name,
-#	title:       job.title,
-#	description: job.description,
-#	type:        job.type,
-#	signal:      job.signal,
-#	result:      job.contents,
-#	start_time:  job.start_time,
-#	end_time:    job.end_time
-#      }
-#    end
-#    job
-#  end
+
 end
