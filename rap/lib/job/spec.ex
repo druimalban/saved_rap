@@ -78,7 +78,8 @@ defmodule RAP.Job.JobSpec do
   These are not blank nodes and so are associated with a name like a
   table description.
   """
-  defstruct [ :name, :title, :description, :type,
+  defstruct [ :name, :title, :description,
+	      :type, :result_format, :result_stem,
 	      :scope_descriptive,   :scope_collected,  :scope_modelled,
 	      :errors_descriptive,  :errors_collected, :errors_modelled ]
 end
@@ -92,7 +93,7 @@ defmodule RAP.Job.ManifestSpec do
   This module reincoprorates the UUID, path of the manifest proper, and
   paths of the various resources associated with the job.
   """
-  defstruct [ :name, :title, :description, :local_version, :uuid,
+  defstruct [ :name, :title, :description, :local_version, :uuid, :data_source,
 	      :pre_signal, :signal, :manifest_base_ttl, :manifest_base_yaml,
 	      :resource_bases,
 	      :staging_tables, :staging_jobs ]

@@ -158,6 +158,8 @@ defmodule RAP.Job.Producer do
     generated_job = %JobSpec{
       name:              job_name,
       type:              desc.job_type,
+      result_format:     desc.job_result_format,
+      result_stem:       desc.job_result_stem,
       title:             desc.title,
       description:       desc.description,
       scope_descriptive: Enum.sort(scope_descriptive, sub),
@@ -175,7 +177,7 @@ defmodule RAP.Job.Producer do
                       _uuid, _manifest, _resources) do
     {:error, :empty_manifest}
   end
-  defp check_manifest(%ManifestDesc{} = desc, uuid, manifest_name, manifest_ttl, manifest_yaml, resources, previous_signal) do
+  defp check_manifest(%ManifestDesc{} = desc, uuid, data_source, manifest_name, manifest_ttl, manifest_yaml, resources, previous_signal) do
     Logger.info "Check manifest #{manifest_name} (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
@@ -201,6 +203,7 @@ defmodule RAP.Job.Producer do
 	description:        desc.description,
 	local_version:      desc.local_version,
 	uuid:               uuid,
+	data_source:        data_source,
 	pre_signal:         previous_signal,
 	signal:             :working,
 	manifest_base_ttl:  manifest_ttl,
@@ -216,6 +219,7 @@ defmodule RAP.Job.Producer do
   def minimal_manifest(%MidRun{} = prev, curr_signal) do
     %ManifestSpec{ name:               prev.manifest_name,
 		   uuid:               prev.uuid,
+		   data_source:        prev.data_source,
 		   pre_signal:         prev.signal,
 		   signal:             curr_signal,
 		   manifest_base_ttl:  prev.manifest_ttl,
@@ -287,7 +291,7 @@ defmodule RAP.Job.Producer do
     Logger.info "Building RDF graph from turtle manifest #{load_target} using data in #{target_dir}"
     with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
          {:ok, ex_struct}    <- Grax.load(rdf_graph, load_target, ManifestDesc),
-         {:ok, manifest_obj} <- check_manifest(ex_struct, prev.uuid, prev.manifest_name, prev.manifest_ttl, prev.manifest_yaml, prev.resources, :working)
+         {:ok, manifest_obj} <- check_manifest(ex_struct, prev.uuid, prev.data_source, prev.manifest_name, prev.manifest_ttl, prev.manifest_yaml, prev.resources, :working)
       do
         Logger.info "Detecting feasible jobs"
 	Logger.info "Found RDF graph:"
@@ -310,11 +314,12 @@ defmodule RAP.Job.Producer do
 	minimal_manifest(prev, :bad_manifest_tables)
     end
   end
-  def invoke_manifest(%MidRun{uuid: uuid, signal: pre_signal}, _cache) do
+  def invoke_manifest(%MidRun{uuid: uuid, data_source: data_source, signal: pre_signal}, _cache) do
     %ManifestSpec{
-      uuid:       uuid,
-      pre_signal: pre_signal,
-      signal:     :see_pre
+      uuid:        uuid,
+      data_source: data_source,
+      pre_signal:  pre_signal,
+      signal:      :see_pre
     }
   end
   

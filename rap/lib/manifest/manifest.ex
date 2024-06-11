@@ -64,13 +64,14 @@ defmodule RAP.Manifest.JobDesc do
   use Grax.Schema, depth: +5
   import RDF.Sigils
   alias RAP.Vocabulary.{DCTERMS, SAVED}
-  alias RAP.Manifest.ScopeDesc
+  alias RAP.Manifest.{JobDesc, ScopeDesc}
 
   schema SAVED.JobDesc do
     property :title,       DCTERMS.title,       type: :string,  required: false
     property :description, DCTERMS.description, type: :string,  required: false
     property :job_type,    SAVED.job_type,      type: :string,  required: true
 
+    field :job_result_stem
     field :job_result_format
     
     link job_scope_descriptive: SAVED.job_scope_descriptive, type: list_of(ScopeDesc), depth: +5
@@ -78,12 +79,21 @@ defmodule RAP.Manifest.JobDesc do
     link job_scope_modelled:    SAVED.job_scope_modelled,    type: list_of(ScopeDesc), depth: +5
   end
 
-  def on_load(job_desc, _graph, _opts) do
-    fmt = case job_desc.job_type do
-	    "density" -> "json"
-	    _         -> "txt"
-	  end
-    new_desc = job_desc |> Map.put(:job_result_format, fmt)
+  def on_load(%JobDesc{job_type: job_type} = job_desc, _graph, _opts) do
+    fmt =
+      case job_type do
+	"density" -> "json"
+	_         -> "txt"
+      end
+    stem =
+      case job_type do
+	"density" -> "result_density"
+	_         -> "result_misc"
+      end
+
+    new_desc = job_desc
+    |> Map.put(:job_result_format, fmt)
+    |> Map.put(:job_result_stem,   stem)
     {:ok, new_desc}
   end
 end

@@ -29,7 +29,7 @@ defmodule RAP.Bakery.Compose do
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "HTML document consumer received #{inspect events}"
     processed_events = events
-    |> Enum.map(&compose_document(state.html_directory, state.rap_uri, state.style_sheet, state.time_zone, state.job_result_stem, "json", &1))
+    |> Enum.map(&compose_document(state.html_directory, state.rap_uri_prefix, state.style_sheet, state.time_zone, state.job_result_stem, "json", &1))
     |> Enum.map(&Prepare.write_result(&1.contents, state.bakery_directory, &1.uuid, "index", "html"))
     {:noreply, [], state}
   end

@@ -11,9 +11,10 @@ defmodule RAP.Job.Result do
   alias RAP.Job.{ScopeSpec, JobSpec, TableSpec, ManifestSpec}
   
   defstruct [ :name, :title, :description,
-	      :source_job, :type,
-	      :signal,     :contents,
-	      :start_time, :end_time ]
+	      :source_job,    :type,
+	      :result_format, :result_stem,
+	      :signal,        :contents,
+	      :start_time,    :end_time ]
 
   defp cmd_wrapper(shell, command, args) do
     System.cmd shell, [ command | args ]
@@ -67,7 +68,11 @@ defmodule RAP.Job.Result do
 
       Logger.info "Fully-qualified path for count data is #{file_path_count}"
       Logger.info "Fully-qualified path for density/time data is #{file_path_density}"
-      
+
+      # This needs to be fixed so that it's less fragile, at least in terms of:
+      # a) Python version
+      # b) Guarantees about dependencies
+      # We're after good reporting, and this information should certainly be part of that.
       { res, sig } =
  	cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
  	            file_path_count,   label_count,
@@ -78,30 +83,36 @@ defmodule RAP.Job.Result do
  	Logger.info "Call to external command/executable density_count_ode succeeded:"
 	Logger.info res
  	%Result{ name: spec.name, title: spec.title,
-		 description: spec.description,
-		 type:        "density", source_job: spec.name,
-		 start_time:  start_ts,  end_time:   end_ts,
-		 signal:      :ok,       contents:   res}
+		 description:   spec.description,
+		 type:          "density",
+		 result_format: spec.result_format,
+		 result_stem:   spec.result_stem,
+		 source_job:    spec.name,
+		 start_time:    start_ts,  end_time:   end_ts,
+		 signal:        :ok,       contents:   res}
       else
  	Logger.info "Call to external command/executable density_count_ode failed"
  	%Result{ name: spec.name, title: spec.title,
-		 description: spec.description,
-		 type:        "density", source_job: spec.name,
-		 start_time:  start_ts,  end_time:   end_ts,
-		 signal:      :error,    contents:   res }
+		 description:   spec.description,
+		 type:          "density",
+		 result_format: spec.result_format,
+		 result_stem:   spec.result_stem,
+		 source_job:    spec.name,
+		 start_time:    start_ts,  end_time:   end_ts,
+		 signal:        :error,    contents:   res }
        end
      end
     
   end
 
   def run_job(_uuid, _cache_dir, %JobSpec{} = bad_spec) do
-    %Result{ name:        bad_spec.name,
-	     title:       bad_spec.title,
-	     description: bad_spec.description,
-	     type:        bad_spec.type,
-	     source_job:  bad_spec.name,
-	     signal:      :error,
-	     contents:    "Unrecognised job spec" }
+    %Result{ name:          bad_spec.name,
+	     title:         bad_spec.title,
+	     description:   bad_spec.description,
+	     type:          bad_spec.type,
+	     source_job:    bad_spec.name,
+	     signal:        :error,
+	     contents:      "Unrecognised job spec" }
   end
   
   defp mae col0, col1 do
@@ -130,7 +141,7 @@ defmodule RAP.Job.Runner do
   alias RAP.Job.ManifestSpec
 
   defstruct [
-    :uuid,  :local_version, :name, :title, :description,
+    :uuid,  :data_source, :local_version, :name, :title, :description,
     :manifest_base_ttl, :manifest_base_yaml, :resource_bases,
     :staging_tables, :staging_jobs,
     :pre_signal, :producer_signal,
@@ -172,6 +183,7 @@ defmodule RAP.Job.Runner do
     end
       
     %Runner{ uuid:               spec.uuid,
+	     data_source:        spec.data_source,
 	     local_version:      spec.local_version,
 	     name:               spec.name,
 	     title:              spec.title,
@@ -190,6 +202,7 @@ defmodule RAP.Job.Runner do
   def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache) do
     %Runner{
       uuid:            spec.uuid,
+      data_source:     spec.data_source,
       pre_signal:      spec.pre_signal,
       producer_signal: :see_pre,
       signal:          :see_pre      
@@ -213,6 +226,7 @@ defmodule RAP.Job.Runner do
   def process_jobs(%ManifestSpec{} = spec, _cache) do
     %Runner{ name:               spec.name,
 	     uuid:               spec.uuid,
+	     data_source:        spec.data_source,
 	     pre_signal:         spec.pre_signal,
 	     producer_signal:    spec.signal,
 	     signal:             :see_producer,
