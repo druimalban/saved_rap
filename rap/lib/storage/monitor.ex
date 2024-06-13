@@ -296,7 +296,8 @@ defmodule RAP.Storage.Monitor do
   have `text/plain' for directories, `application/octet_stream' for empty
   files.
   """
-  defp uuid_helper(%GCPObj{name: nom} = gcp_object) do
+  def uuid_helper(%GCPObj{name: nil}), do: nil
+  def uuid_helper(%GCPObj{name: nom} = gcp_object) do
     atom_pattern = "[^\\/]+"
     date_pattern = "[0-9]{8}"
     uuid_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"

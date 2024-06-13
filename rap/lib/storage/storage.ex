@@ -1,14 +1,16 @@
 defmodule RAP.Storage do
   @moduledoc """
 
-  Original %Prepare module named struct:
-      defstruct [ :uuid,
-	      :title, :description,
+  Original %RAP.Bakery.Prepare module named struct:
+      defstruct [ :uuid, :data_source,
+	      :name, :title, :description,
 	      :start_time, :end_time,
-	      :manifest_signal,
 	      :manifest_pre_base_ttl,
 	      :manifest_pre_base_yaml,
 	      :resource_bases,
+	      :pre_signal,
+	      :producer_signal,
+	      :runner_signal,
 	      :result_bases,
 	      :results,
 	      :staged_tables,
@@ -18,17 +20,20 @@ defmodule RAP.Storage do
 
   defdatabase DB do
     deftable Manifest, [
-      :uuid,
+      :uuid, :data_source,
       :name, :title, :description,
       :start_time, :end_time,
-      :signal,
       :manifest_pre_base_ttl,
       :manifest_pre_base_yaml,
       :resource_bases,
+      :pre_signal,
+      :producer_signal,
+      :runner_signal,
       :result_bases,
       :results,
       :staged_tables,
-      :staged_jobs      ]
+      :staged_jobs
+    ]
   end
   
 end
@@ -49,11 +54,11 @@ defmodule RAP.Storage.PreRun do
   @doc """
   Simple wrapper around Erlang term storage table of UUIDs with 
   """
-  def ets_feasible?(uuid) do
-    case :ets.lookup(:uuid, uuid) do
+  def ets_feasible?(uuid, table \\ :uuid) do
+    case :ets.lookup(table, uuid) do
       [] -> true
       _  ->
-	Logger.info("Job UUID #{uuid} is already running, cannot add to ETS.")
+	Logger.info("Job UUID #{uuid} is already running, cannot add to ETS (table #{table}).")
 	false
     end
   end
@@ -77,7 +82,7 @@ defmodule RAP.Storage.PreRun do
     body1_md5 = :crypto.hash(:md5, body1) |> Base.encode64()
     body0_md5 == body1_md5
   end  
-  def dl_success?(purported_md5, body, opts: _) do
+  def dl_success?(purported_md5, body) do
     dl_success?(purported_md5, body, opts: [input_md5: true])
   end
   
