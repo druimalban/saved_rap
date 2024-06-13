@@ -113,3 +113,16 @@ defmodule RAP.Test.Storage.Monitor do
   end
   
 end
+
+defmodule RAP.Test.Storage.GCP do
+
+  use Amnesia
+  use ExUnit.Case, async: true
+  doctest RAP.Storage.GCP
+  alias RAP.Storage.GCP
+
+  test "Test various index files" do
+    # coalesce_job(cache_dir, index_base, %PreRun{} = job)
+  end
+  
+end
