@@ -119,10 +119,26 @@ defmodule RAP.Test.Storage.GCP do
   use Amnesia
   use ExUnit.Case, async: true
   doctest RAP.Storage.GCP
-  alias RAP.Storage.GCP
-
-  test "Test various index files" do
-    # coalesce_job(cache_dir, index_base, %PreRun{} = job)
-  end
+  alias RAP.Storage.{GCP, PreRun, MidRun}
+  
+  #  test "Test various index files" do
+  #    # coalesce_job(cache_dir, index_base, %PreRun{} = job)
+  #
+  #    test_cache_dir = "test/manual_test"
+  #    test_job_spec = %PreRun{ uuid: "9a55d938-7f50-45b5-8960-08c78d73facc" }
+  #
+  #    test_run0 = GCP.coalesce_job(test_cache_dir, "dot.index.good",  test_job_spec)
+  #    test_run1 = GCP.coalesce_job(test_cache_dir, "dot.index.empty", test_job_spec)
+  #    test_run2 = GCP.coalesce_job(test_cache_dir, "dot.index.bad0",  test_job_spec)
+  #    test_run3 = GCP.coalesce_job(test_cache_dir, "dot.index.bad1",  test_job_spec)
+  #    test_run4 = GCP.coalesce_job(test_cache_dir, "dot.index.fake",  test_job_spec)
+  #
+  #    assert match?(test_run0, %MidRun{signal: :working})
+  #    assert match?(test_run1, %MidRun{signal: :empty_index})
+  #    assert match?(test_run2, %MidRun{signal: :bad_index})
+  #    assert match?(test_run3, %MidRun{signal: :bad_index})
+  #    assert match?(test_run4, %MidRun{})
+  #    
+  #  end
   
 end

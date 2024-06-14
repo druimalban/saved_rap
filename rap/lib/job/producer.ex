@@ -89,13 +89,16 @@ defmodule RAP.Job.Producer do
   resource available, given it's highly specific to the given manifest
   file.
   """
-  defp extract_uri(%URI{path: path, scheme: nil, userinfo: nil,
-			host: nil,  port:   nil, query:    nil,
-			fragment: nil}), do: path
-  defp extract_uri(%URI{path: path}) do
-    path |> String.split("/") |> Enum.at(-1)
+  def extract_uri(%URI{path: path, scheme: nil, userinfo: nil,
+		       host: nil,  port:   nil, query:    nil,
+		       fragment: nil}), do: path
+  def extract_uri(%URI{path: path}) do
+    path
+    |> String.trim("/")
+    |> String.split("/")
+    |> Enum.at(-1)
   end
-  defp extract_id(id) do
+  def extract_id(id) do
     id
     |> RDF.IRI.to_string()
     |> String.trim("/")
@@ -103,7 +106,7 @@ defmodule RAP.Job.Producer do
     |> Enum.at(-1)
   end
 
-  defp check_table(%TableDesc{} = desc, resources) do
+  def check_table(%TableDesc{} = desc, resources) do
 
     table_name  = extract_id(desc.__id__)
     table_title = desc.title
@@ -124,7 +127,7 @@ defmodule RAP.Job.Producer do
   need to extract the information of interest (path to table).
   Nonetheless, may consider a possible error case where this is nil. 
   """
-  defp check_column(%ScopeDesc{column:   column,
+  def check_column(%ScopeDesc{column:   column,
                                variable: underlying,
                                table: %RAP.Manifest.TableDesc{
 				        __id__:        table_id,
@@ -145,7 +148,7 @@ defmodule RAP.Job.Producer do
   error columns, and to be able to warn, or issue errors which highlight
   any errors *which are applicable*.
   """
-  defp check_job(%JobDesc{} = desc, _tables) do
+  def check_job(%JobDesc{} = desc, _tables) do
     sub = fn(%ScopeSpec{variable_curie: var0}, %ScopeSpec{variable_curie: var1}) ->
      var0 < var1
     end
@@ -171,7 +174,7 @@ defmodule RAP.Job.Producer do
   end
 
   # Don't check gcp_source for now, it's not in any generated RDF graphs
-  defp check_manifest(%ManifestDesc{ description: nil, title: nil,
+  def check_manifest(%ManifestDesc{ description: nil, title: nil,
 				     tables: [], jobs: [],
 				     local_version: nil},
                       _uuid, _manifest, _resources) do

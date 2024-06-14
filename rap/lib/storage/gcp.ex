@@ -109,7 +109,7 @@ defmodule RAP.Storage.GCP do
     end
   end
 
-  defp coalesce_job(cache_dir, index_base, %PreRun{} = job) do
+  def coalesce_job(cache_dir, index_base, %PreRun{} = job) do
     target_dir = "#{cache_dir}/#{job.uuid}"
     index_full = "#{target_dir}/#{index_base}"
     with {:ok, uuid, file_bases} <- fetch_job_deps(cache_dir, job),
