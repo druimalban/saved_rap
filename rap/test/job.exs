@@ -123,8 +123,8 @@ defmodule RAP.Test.Job.Producer do
     lhs_table_stations = %TableSpec{
       name:     "sentinel_cages_site",
       title:    "Sentinel cages site: known-good test table",
-      resource: %ResourceSpec{ base: "sentinel_cages_cleaned.csv",  extant: true },
-      schema:   %ResourceSpec{ base: "sentinel_cages_site.ttl",     extant: true }
+      resource: %ResourceSpec{ base: "Sentinel_cage_station_info_6.csv", extant: true },
+      schema:   %ResourceSpec{ base: "sentinel_cages_site.ttl",          extant: true }
     }
     lhs_table_bad_resource = %TableSpec{
       name:     "sentinel_cages_sampling",
@@ -141,7 +141,7 @@ defmodule RAP.Test.Job.Producer do
     lhs_table_bad_misc = %TableSpec{
       name:     "sentinel_cages_site",
       title:    "Sentinel cages site: test variant with various non-existent resources",
-      resource: %ResourceSpec{ base: "stations.csv",  extant: false },
+      resource: %ResourceSpec{ base: "station_info.csv",  extant: false },
       schema:   %ResourceSpec{ base: "stations.ttl", extant: false}
     }
 
@@ -166,25 +166,66 @@ defmodule RAP.Test.Job.Producer do
   end
   
   test "Test load/injection of manifest" do
-    # with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
-    #      {:ok, ex_struct}    <- Grax.load(rdf_graph, load_target, ManifestDesc),
-    #      {:ok, manifest_obj} <- check_manifest(ex_struct, prev, :working)
-    #  do
-
-    # CHECK NOTE MADE EARLIER ABOUT POSSIBLE TEST CASES
-    # Test case #1: :working:             Good RDF graph, good load target, wholly valid tables
-    # Test case #2: :bad_manifest_tables: Good RDF graph, good load target, bad table reference
-    # Test case #3: :empty_manifest:      Good RDF graph, bad load target
-    # Test case #4: :bad_input_graph:     Bad RDF graph
-
+    table_sampling = %TableSpec{
+      name:     "sentinel_cages_sampling",
+      title:    "Sentinel cages sampling: known-good test table",
+      resource: %ResourceSpec{ base: "sentinel_cages_cleaned.csv",  extant: true },
+      schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true } 
+    }
+    table_stations = %TableSpec{
+      name:     "sentinel_cages_site",
+      title:    "Sentinel cages site: known-good test table",
+      resource: %ResourceSpec{ base: "Sentinel_cage_station_info_6.csv", extant: true },
+      schema:   %ResourceSpec{ base: "sentinel_cages_site.ttl",          extant: true }
+    }
+    
+    test_resources = [ "Sentinel_cage_station_info_6.csv",
+		       "sentinel_cages_cleaned.csv",
+		       "sentinel_cages_site.ttl",
+		       "sentinel_cages_sampling.ttl" ]
+    
     desc_working = %MidRun{
       signal:        :working,
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
       manifest_name: "RootManifest",
-      manifest_ttl:  "manifest0.ttl"
+      manifest_ttl:  "manifest.ttl",
+      resources:     test_resources
     }
+    desc_bad_cardinality = %MidRun{
+      signal:        :working,
+      uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
+      manifest_name: "RootManifest",
+      manifest_ttl:  "manifest.bad_cardinality.ttl",
+      resources:     test_resources
+    }
+    desc_bad_tables = %MidRun{
+      signal:        :working,
+      uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
+      manifest_name: "RootManifest",
+      manifest_ttl:  "manifest.bad_tables.ttl",
+      resources:     test_resources
+    }
+    desc_alt_base = %MidRun{
+      # A valid RDF graph, but with different base
+      signal:        :working,
+      uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
+      manifest_name: "RootManifest",
+      manifest_ttl:  "manifest.alt_base.ttl",
+      resources:     test_resources
+    }
+    
+    rhs_working         = Producer.invoke_manifest(desc_working,         "test/manual_test")
+    rhs_bad_cardinality = Producer.invoke_manifest(desc_bad_cardinality, "test/manual_test")
+    rhs_bad_tables      = Producer.invoke_manifest(desc_bad_tables,      "test/manual_test")
+    #rhs_empty           = Producer.invoke_manifest(desc_empty,           "test/manual_test")
+    alt_base     = "https://marine.gov.scot/metadata/saved/rap_alt/"
+    rhs_alt_base = Producer.invoke_manifest(desc_alt_base, "test/manual_test", alt_base)
 
-    assert match?(%ManifestSpec{signal: :working}, Producer.invoke_manifest(desc_working, "test/manual_test"))
+    assert match?(%ManifestSpec{signal: :working},             rhs_working)
+    assert match?(%ManifestSpec{signal: :working},             rhs_alt_base)
+    assert match?(%ManifestSpec{signal: :bad_input_graph},     rhs_bad_cardinality)
+    assert match?(%ManifestSpec{signal: :bad_manifest_tables}, rhs_bad_tables)
+    #assert match?(%ManifestSpec{signal: :empty_manifest},      rhs_empty)
   end
   
 end

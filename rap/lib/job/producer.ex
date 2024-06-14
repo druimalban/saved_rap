@@ -110,7 +110,7 @@ defmodule RAP.Job.Producer do
 
     table_name  = extract_id(desc.__id__)
     table_title = desc.title
-    Logger.info "Checking table #{inspect table_name}"
+    Logger.info "Checking table #{inspect table_name}, in resources #{inspect resources}"
     
     inject = fn fp -> 
       %ResourceSpec{ base: fp, extant: fp in resources }
@@ -198,6 +198,9 @@ defmodule RAP.Job.Producer do
     extant_tables     = processed_tables |> Enum.filter(test_extant)
     non_extant_tables = processed_tables |> Enum.reject(test_extant)
 
+    Logger.info "Processed tables: #{inspect processed_tables}"
+    Logger.info "Actually extant tables: #{inspect extant_tables}"
+    
     if length(processed_tables) != length(extant_tables) do
 	{:error, :bad_tables, non_extant_tables}
     else
@@ -290,11 +293,11 @@ defmodule RAP.Job.Producer do
   we can use, but it also implies that no jobs should be run, so don't
   try to run these, at least for now. Only pattern-match on `:working'.
   """
-  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir) do
+  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir, base_prefix \\ "https://marine.gov.scot/metadata/saved/rap/") do
     target_dir         = "#{cache_dir}/#{prev.uuid}"
     manifest_full_path = "#{target_dir}/#{prev.manifest_ttl}"
-    #load_target        = String.to_atom("RAP.Vocabulary.RAP.#{prev.manifest_name}") # Fix me!
-    load_target = RAP.Vocabulary.RAP.RootManifest
+    load_target        = RDF.iri("#{base_prefix}#{prev.manifest_name}")
+    #load_target = RAP.Vocabulary.RAP.RootManifest
     Logger.info "Building RDF graph from turtle manifest #{load_target} using data in #{target_dir}"
     with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
          {:ok, ex_struct}    <- Grax.load(rdf_graph, load_target, ManifestDesc),
@@ -321,7 +324,7 @@ defmodule RAP.Job.Producer do
 	minimal_manifest(prev, :bad_manifest_tables)
     end
   end
-  def invoke_manifest(%MidRun{uuid: uuid, data_source: data_source, signal: pre_signal}, _cache) do
+  def invoke_manifest(%MidRun{uuid: uuid, data_source: data_source, signal: pre_signal}, _cache, _base) do
     %ManifestSpec{
       uuid:        uuid,
       data_source: data_source,
