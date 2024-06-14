@@ -16,8 +16,35 @@ defmodule RAP.Job.Result do
 	      :signal,        :contents,
 	      :start_time,    :end_time ]
 
-  defp cmd_wrapper(shell, command, args) do
-    System.cmd shell, [ command | args ]
+  @doc """
+  Normalises the two elements of failure:
+    a) Command runs, but the exit code is non-zero;
+    b) Command cannot be run at all (throw `ErlangError' with various codes,
+       most commonly :enoent).
+  """
+  def cmd_wrapper(shell, command, args) do
+    cmd_result =
+      try do
+	System.cmd shell, [ command | args ], parallelism: true
+      rescue
+        erlang_error -> IO.inspect(erlang_error)
+      end
+    case cmd_result do
+      {result, 0} ->
+	Logger.info "Result.cmd_wrapper/3: Exit status was zero"
+	Logger.info(inspect result)
+	{:run_success, 0, result}
+      {result, signal} ->
+	Logger.info "Result.cmd_wrapper/3: Exit status was non-zero"
+	Logger.info(inspect result)
+	{:run_error, signal, result}
+      %ErlangError{original: signal, reason: reason} ->
+	Logger.info "Result.cmd_wrapper/3: Call to executable failed with signal #{inspect signal} and reason #{inspect reason}}"
+	{:call_error, signal, reason }
+      error ->
+	Logger.info "Result.cmd_wrapper/3: Call to executable failed with error #{inspect error}"
+	{:call_error, error, nil}
+    end
   end
   
   def run_job(_uuid, _cache_dir, %JobSpec{type: "ignore"} = spec) do
@@ -69,37 +96,54 @@ defmodule RAP.Job.Result do
       Logger.info "Fully-qualified path for count data is #{file_path_count}"
       Logger.info "Fully-qualified path for density/time data is #{file_path_density}"
 
+      end_ts = DateTime.utc_now() |> DateTime.to_unix()
+      
       # This needs to be fixed so that it's less fragile, at least in terms of:
       # a) Python version
       # b) Guarantees about dependencies
       # We're after good reporting, and this information should certainly be part of that.
-      { res, sig } =
+      py_result = 
  	cmd_wrapper("python3.9", "contrib/density_count_ode.py", [
  	            file_path_count,   label_count,
  	            file_path_density, label_time,  label_density])
-
-      end_ts = DateTime.utc_now() |> DateTime.to_unix()
-      if (sig == 0) do
- 	Logger.info "Call to external command/executable density_count_ode succeeded:"
-	Logger.info res
- 	%Result{ name: spec.name, title: spec.title,
-		 description:   spec.description,
-		 type:          "density",
-		 result_format: spec.result_format,
-		 result_stem:   spec.result_stem,
-		 source_job:    spec.name,
-		 start_time:    start_ts,  end_time:   end_ts,
-		 signal:        :ok,       contents:   res}
-      else
- 	Logger.info "Call to external command/executable density_count_ode failed"
- 	%Result{ name: spec.name, title: spec.title,
-		 description:   spec.description,
-		 type:          "density",
-		 result_format: spec.result_format,
-		 result_stem:   spec.result_stem,
-		 source_job:    spec.name,
-		 start_time:    start_ts,  end_time:   end_ts,
-		 signal:        :error,    contents:   res }
+      case py_result do
+	{:run_success, _sig, py_result} ->
+	  Logger.info "Call to external command/executable density_count_ode succeeded:"
+	  Logger.info(inspect py_result)
+ 	  %Result{ name: spec.name, title: spec.title,
+		   description:   spec.description,
+		   type:          "density",
+		   result_format: spec.result_format,
+		   result_stem:   spec.result_stem,
+		   source_job:    spec.name,
+		   start_time:    start_ts,  end_time: end_ts,
+		   signal:        :working,
+		   contents:      py_result }
+		   
+	{:run_error, _sig, py_result} ->
+	  Logger.info "Call to external command/executable density_count_ode: non-zero exit status:"
+	  Logger.info(inspect py_result)
+ 	  %Result{ name: spec.name, title: spec.title,
+		   description:   spec.description,
+		   type:          "density",
+		   result_format: spec.result_format,
+		   result_stem:   spec.result_stem,
+		   source_job:    spec.name,
+		   start_time:    start_ts,      end_time: end_ts,
+		   signal:        :job_failure,
+		   contents:      py_result }
+	  
+	{:call_error, py_error, py_result} ->
+	  Logger.info "Call to Python interpreter failed or system is locked up"
+ 	  %Result{ name: spec.name, title: spec.title,
+		   description:   spec.description,
+		   type:          "density",
+		   result_format: spec.result_format,
+		   result_stem:   spec.result_stem,
+		   source_job:    spec.name,
+		   start_time:    start_ts,  end_time:   end_ts,
+		   signal:        :python_error,
+		   contents:      py_result }
        end
      end
     
@@ -177,10 +221,12 @@ defmodule RAP.Job.Runner do
     |> Enum.map(&Result.run_job(spec.uuid, cache_directory, &1))
 
     # Do need to have a notion of different signals
-    overall_signal = cond do
-      Enum.any(result_contents, &(&1 == :error)) -> :job_errors
-      true                                       -> :working
-    end
+    overall_signal =
+      if Enum.any(result_contents, &(&1 == :working)) do
+	:working
+      else
+	:job_errors
+      end
       
     %Runner{ uuid:               spec.uuid,
 	     data_source:        spec.data_source,

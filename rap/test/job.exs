@@ -229,3 +229,73 @@ defmodule RAP.Test.Job.Producer do
   end
   
 end
+
+defmodule RAP.Test.Job.Result do
+  use Amnesia
+  use ExUnit.Case, async: false
+  use RDF
+  doctest RAP.Job.Result
+  alias RAP.Job.{JobSpec, Result}
+
+  require Logger
+
+  test "Test external command wrapper error behaviour" do
+
+    file_path_count   = "test/manual_test/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/cagedata-10.csv"
+    file_path_density = "test/manual_test/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/density.csv"
+    
+    # Case 1: Exits cleanly with expected status 0
+    res0 = Result.cmd_wrapper("python3.12", "contrib/density_count_ode.py", [
+	  file_path_count,   "TOTAL",
+	  file_path_density, "time",  "density"
+	])
+    # Case 2: Exits uncleanly with a different status
+    res1 = Result.cmd_wrapper("python3.12", "contrib/density_count_ode.py", [
+	  file_path_count,   "total",
+	  file_path_density, "time",  "density"
+	])
+    res2 = Result.cmd_wrapper("python3.12", "contrib/ode.py", [
+	  file_path_count,   "TOTAL",
+	  file_path_density, "time",  "density"
+	])
+    # Case 3: Throw an ErlangError with :enoent
+    res3 = Result.cmd_wrapper("python3.4", "contrib/density_count_ode.py", [
+	  file_path_count,   "TOTAL",
+	  file_path_density, "time",  "density"
+	])
+    
+    assert match?({:run_success,  0, _res}, res0)
+    assert match?({:run_error, _sig, _res}, res1)
+    assert match?({:run_error, _sig, _res}, res2)
+    assert match?({:call_error, _se, _res}, res3)
+    
+  end
+
+  
+  test "Test handling of dummy/ignored jobs" do
+
+    test_uuid = "9a55d938-7f50-45b5-8960-08c78d73facc"
+    cache_dir = "test/manual_test"
+    
+    desc_ignore = %JobSpec{ type: "ignore" }
+    desc_fake   = %JobSpec{ type: "fake"   }
+
+    lhs_ignore = %Result{
+      type:     "ignore",
+      signal:   :ok,
+      contents: "Dummy/ignored job"
+    }
+    lhs_fake = %Result{
+      type:     "fake",
+      signal:   :error,
+      contents: "Fake/unrecognised job"
+    }
+    rhs_ignore = Result.run_job(test_uuid, cache_dir, desc_ignore)
+    rhs_fake   = Result.run_job(test_uuid, cache_dir, desc_fake)
+    
+    assert match?(lhs_ignore, rhs_ignore)
+    assert match?(lhs_fake,   rhs_fake)
+
+  end
+  
+end
