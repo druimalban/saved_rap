@@ -174,14 +174,17 @@ defmodule RAP.Job.Producer do
   end
 
   # Don't check gcp_source for now, it's not in any generated RDF graphs
-  def check_manifest(%ManifestDesc{ description: nil, title: nil,
-				     tables: [], jobs: [],
-				     local_version: nil},
-                      _uuid, _manifest, _resources) do
+  @doc """
+  Check the injected manifest against the previous stage
+  """
+  def check_manifest(%ManifestDesc{ description:   nil, title: nil,
+				    tables:        [],  jobs:  [],
+				    local_version: nil},
+                     _prev, _sig) do
     {:error, :empty_manifest}
   end
-  defp check_manifest(%ManifestDesc{} = desc, uuid, data_source, manifest_name, manifest_ttl, manifest_yaml, resources, previous_signal) do
-    Logger.info "Check manifest #{manifest_name} (title #{inspect desc.title})"
+  def check_manifest(%ManifestDesc{} = desc, %MidRun{} = prev, curr_signal) do
+    Logger.info "Check manifest #{prev.manifest_name} (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
     
@@ -191,7 +194,7 @@ defmodule RAP.Job.Producer do
       res.extant and sch.extant
     end
     
-    processed_tables  = desc.tables |> Enum.map(&check_table(&1, resources))
+    processed_tables  = desc.tables |> Enum.map(&check_table(&1, prev.resources))
     extant_tables     = processed_tables |> Enum.filter(test_extant)
     non_extant_tables = processed_tables |> Enum.reject(test_extant)
 
@@ -201,17 +204,17 @@ defmodule RAP.Job.Producer do
       processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
       
       manifest_obj = %ManifestSpec{
-	name:               manifest_name,
+	name:               prev.manifest_name,
 	title:              desc.title,
 	description:        desc.description,
 	local_version:      desc.local_version,
-	uuid:               uuid,
-	data_source:        data_source,
-	pre_signal:         previous_signal,
-	signal:             :working,
-	manifest_base_ttl:  manifest_ttl,
-	manifest_base_yaml: manifest_yaml,
-	resource_bases:     resources,
+	uuid:               prev.uuid,
+	data_source:        prev.data_source,
+	pre_signal:         prev.signal,
+	signal:             curr_signal,
+	manifest_base_ttl:  prev.manifest_ttl,
+	manifest_base_yaml: prev.manifest_yaml,
+	resource_bases:     prev.resources,
 	staging_tables:     processed_tables,
 	staging_jobs:       processed_jobs
       }
@@ -290,11 +293,12 @@ defmodule RAP.Job.Producer do
   def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir) do
     target_dir         = "#{cache_dir}/#{prev.uuid}"
     manifest_full_path = "#{target_dir}/#{prev.manifest_ttl}"
-    load_target        = String.to_atom("RAP.Vocabulary.RAP.#{prev.manifest_name}") # Fix me!
+    #load_target        = String.to_atom("RAP.Vocabulary.RAP.#{prev.manifest_name}") # Fix me!
+    load_target = RAP.Vocabulary.RAP.RootManifest
     Logger.info "Building RDF graph from turtle manifest #{load_target} using data in #{target_dir}"
     with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
          {:ok, ex_struct}    <- Grax.load(rdf_graph, load_target, ManifestDesc),
-         {:ok, manifest_obj} <- check_manifest(ex_struct, prev.uuid, prev.data_source, prev.manifest_name, prev.manifest_ttl, prev.manifest_yaml, prev.resources, :working)
+         {:ok, manifest_obj} <- check_manifest(ex_struct, prev, :working)
       do
         Logger.info "Detecting feasible jobs"
 	Logger.info "Found RDF graph:"

@@ -3,7 +3,7 @@ defmodule RAP.Test.Job.Producer do
   use ExUnit.Case, async: true
   use RDF
   doctest RAP.Job.Producer
-
+  
   alias RAP.Job.Producer
   alias RAP.Manifest.TableDesc
 
@@ -114,35 +114,30 @@ defmodule RAP.Test.Job.Producer do
 		  "sentinel_cages_site.ttl"         ]
 
     # LHSen
-    # table_sampling
     lhs_table_sampling = %TableSpec{
       name:     "sentinel_cages_sampling",
       title:    "Sentinel cages sampling: known-good test table",
       resource: %ResourceSpec{ base: "sentinel_cages_cleaned.csv",  extant: true },
       schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true } 
     }
-    # table_stations
     lhs_table_stations = %TableSpec{
       name:     "sentinel_cages_site",
       title:    "Sentinel cages site: known-good test table",
       resource: %ResourceSpec{ base: "sentinel_cages_cleaned.csv",  extant: true },
       schema:   %ResourceSpec{ base: "sentinel_cages_site.ttl",     extant: true }
     }
-    # table_bad_resource
     lhs_table_bad_resource = %TableSpec{
       name:     "sentinel_cages_sampling",
       title:    "Sentinel cages sampling: test variant with bad resource",
       resource: %ResourceSpec{ base: "cleaned.csv",                 extant: false },
       schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true  }
     }
-    # table_bad_schemata
     lhs_table_bad_schemata = %TableSpec{
       name:     "sentinel_cages_sampling",
       title:    "Sentinel cages sampling: test variant with bad schemata",
       resource: %ResourceSpec{ base: "sentinel_cages_cleaned.csv",  extant: true  },
       schema:   %ResourceSpec{ base: "sampling.ttl",                extant: false }
     }
-    # table_bad_general
     lhs_table_bad_misc = %TableSpec{
       name:     "sentinel_cages_site",
       title:    "Sentinel cages site: test variant with various non-existent resources",
@@ -165,4 +160,31 @@ defmodule RAP.Test.Job.Producer do
     
   end
 
+  # Can flesh this out later…
+  test "Test load/injection of empty manifest" do
+    assert match?({:error, :empty_manifest}, Producer.check_manifest(%ManifestDesc{}, nil, nil))
+  end
+  
+  test "Test load/injection of manifest" do
+    # with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
+    #      {:ok, ex_struct}    <- Grax.load(rdf_graph, load_target, ManifestDesc),
+    #      {:ok, manifest_obj} <- check_manifest(ex_struct, prev, :working)
+    #  do
+
+    # CHECK NOTE MADE EARLIER ABOUT POSSIBLE TEST CASES
+    # Test case #1: :working:             Good RDF graph, good load target, wholly valid tables
+    # Test case #2: :bad_manifest_tables: Good RDF graph, good load target, bad table reference
+    # Test case #3: :empty_manifest:      Good RDF graph, bad load target
+    # Test case #4: :bad_input_graph:     Bad RDF graph
+
+    desc_working = %MidRun{
+      signal:        :working,
+      uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
+      manifest_name: "RootManifest",
+      manifest_ttl:  "manifest0.ttl"
+    }
+
+    assert match?(%ManifestSpec{signal: :working}, Producer.invoke_manifest(desc_working, "test/manual_test"))
+  end
+  
 end
