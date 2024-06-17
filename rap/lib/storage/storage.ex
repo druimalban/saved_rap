@@ -157,11 +157,11 @@ defmodule RAP.Storage.PostRun do
   We do want to keep track of these somehow, and this may be the place,
   just not quite yet.
   """
-  def cache_manifest(%Prepare{} = manifest) do
+  def cache_manifest(%Prepare{} = manifest, ets_table \\ :uuid) do
     Logger.info "Cache processed manifest information in mnesia DB `Manifest' table"
     
-    with [{uuid, start_ts}] <- :ets.lookup(:uuid, manifest.uuid),
-         true               <- :ets.delete(:uuid, manifest.uuid) do
+    with [{uuid, start_ts}] <- :ets.lookup(ets_table, manifest.uuid),
+         true               <- :ets.delete(ets_table, manifest.uuid) do
       
       end_ts = DateTime.utc_now() |> DateTime.to_unix()
 
@@ -176,14 +176,17 @@ defmodule RAP.Storage.PostRun do
       end
       {:ok, annotated_manifest}
     else
+      [] ->
+	Logger.info "Could not find UUID in ETS!"
+	{:error, :ets_no_uuid}
       [{_uuid, _start} | [_ | _]] = multiple_uuids ->
 	# Note, this should never happen for our usage of ETS as
 	Logger.info "Found multiple matching UUIDs in ETS!"
-        {:error, "Found multiple matching UUIDs in ETS!", multiple_uuids}
+        {:error, :ets_multiple_uuids, multiple_uuids}
       false ->
 	# Note, this should never happen if the lookup succeeded:
 	Logger.info "UUID was found in ETS but could not be removed"
-        {:error, "UUID not found in ETS"}
+        {:error, :ets_no_uuid}
     end
   end
 

@@ -1,27 +1,10 @@
 defmodule RAP.Test.Storage.PreRun do
+
   use Amnesia
   use ExUnit.Case, async: true
   doctest RAP.Storage.PreRun
 
   alias RAP.Storage.PreRun
-  
-  defdatabase DB do
-    deftable Manifest, [
-      :uuid, :data_source,
-      :name, :title, :description,
-      :start_time, :end_time,
-      :manifest_pre_base_ttl,
-      :manifest_pre_base_yaml,
-      :resource_bases,
-      :pre_signal,
-      :producer_signal,
-      :runner_signal,
-      :result_bases,
-      :results,
-      :staged_tables,
-      :staged_jobs
-    ]
-  end
 
   test "Put/read UUID into ETS (`Storage.PreRun.ets_feasible?/2')" do
     :ets.new(:test, [:set, :public, :named_table])

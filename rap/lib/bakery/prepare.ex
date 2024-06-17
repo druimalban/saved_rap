@@ -71,7 +71,7 @@ defmodule RAP.Bakery.Prepare do
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "Testing storage consumer received #{inspect events}"
     processed_events = events
-    |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.linked_result_stem))
+    |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.linked_result_stem, :uuid))
     {:noreply, processed_events, state}
   end
 
@@ -110,7 +110,11 @@ defmodule RAP.Bakery.Prepare do
 
   Therefore, this stage doesn't record a signal.
   """
-  def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem) when processed.signal in [:working, :job_errors] do
+  #def bake_data(%Runner{} = processed, cache_dir, bakery_dir, linked_stem, ets_table \\ :) do
+  #  Logger.info "Called Prepare.bake_data/5 with ets_table #{ets_table}"
+  #  bake_data(processed, cache_dir, bakery_dir, linked_stem, ets_table)
+  #end
+  def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem, ets_table) when processed.signal in [:working, :job_errors] do
     #source_dir = "#{cache_dir}/#{processed.uuid}"
     #target_dir = "#{bakery_dir}/#{processed.uuid}"
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
@@ -147,7 +151,7 @@ defmodule RAP.Bakery.Prepare do
       staged_tables:          processed.staging_tables,
       staged_jobs:            processed.staging_jobs
     }
-    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data)
+    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
     cached_manifest
   end
 
@@ -163,7 +167,7 @@ defmodule RAP.Bakery.Prepare do
 	   manifest_base_yaml: spec.manifest_base_yaml,
 	   resource_bases:     spec.resource_bases    }
   """
-  def bake_data(%Runner{signal: :see_producer} = processed, cache_dir, bakery_dir, _linked_stem) do
+  def bake_data(%Runner{signal: :see_producer} = processed, cache_dir, bakery_dir, _linked_stem, ets_table) do
 
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
     
@@ -188,12 +192,12 @@ defmodule RAP.Bakery.Prepare do
       manifest_pre_base_yaml: moved_manifest_yaml,
       resource_bases:         moved_resources
     }
-    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data)
+    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
     cached_manifest
   end
 
   # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
-  def bake_data(%Runner{signal: :see_pre} = processed, _cache, _bakery, _ln) do
+  def bake_data(%Runner{signal: :see_pre} = processed, _cache, _bakery, _ln, ets_table) do
     semi_final_data = %Prepare{
       uuid:            processed.uuid,
       data_source:     processed.data_source,
@@ -201,6 +205,8 @@ defmodule RAP.Bakery.Prepare do
       producer_signal: :see_pre,
       runner_signal:   :see_pre      
     }
+    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
+    cached_manifest
   end
   
   @doc """
