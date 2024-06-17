@@ -155,7 +155,7 @@ defmodule RAP.Job.Result do
 	     description:   bad_spec.description,
 	     type:          bad_spec.type,
 	     source_job:    bad_spec.name,
-	     signal:        :error,
+	     signal:        :bad_job_spec,
 	     contents:      "Unrecognised job spec" }
   end
   

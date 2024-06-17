@@ -1,9 +1,12 @@
 defmodule RAP.Test.Storage.PreRun do
 
-  use Amnesia
-  use ExUnit.Case, async: true
+  require Amnesia
+  require Amnesia.Helper
+  
+  use ExUnit.Case, async: false
   doctest RAP.Storage.PreRun
 
+  require RAP.Storage.DB.Manifest, as: ManifestTable
   alias RAP.Storage.PreRun
 
   test "Put/read UUID into ETS (`Storage.PreRun.ets_feasible?/2')" do
@@ -25,6 +28,30 @@ defmodule RAP.Test.Storage.PreRun do
     assert PreRun.ets_feasible?(non_extant_uuid, :test)
   end
 
+  test "Put/read UUID in Amnesia DB (`Storage.PreRun.mnesia_feasible?/1')" do
+    # This test revealed that we have to start :mnesia in test_helper.exs
+    # if launching the tests with the --no-start option.
+
+    # 1. Generate a UUID, but don't add it
+    uuid0 = UUID.uuid4()
+    # 2. Run mnesia_feasible/1 (should return true as it's not cached)
+    assert PreRun.mnesia_feasible?(uuid0)
+    # 3. Inject into appropriate struct and insert struct into mnesia DB
+    struct0 = %ManifestTable{ uuid: uuid0 }
+    Amnesia.transaction do
+      struct0 |> ManifestTable.write()
+    end
+    # 4. Run mnesia_feasible/1 (should return false now)
+    assert not PreRun.mnesia_feasible?(uuid0)
+    # 5. Remove from mnesia DB
+    Amnesia.transaction do
+      uuid0 |> ManifestTable.delete()
+    end
+    # 6. Run mnesia_feasible/1 (should return true again)
+    assert PreRun.mnesia_feasible?(uuid0)
+    # Done!
+  end
+  
   test "Check MD5 caching plumbing (`Storage.PreRun.dl_success/3')" do
 
     test0_text = File.read!("/etc/profile")

@@ -17,8 +17,6 @@ defmodule RAP.Test.Bakery.Prepare do
   4. a) Look the error state, b) whether the files actually get moved, c) whether the files show up in the cache
   5. Flush the cache
 
-
-
   %Runner{ uuid:               spec.uuid,
 	     data_source:        spec.data_source,
 	     local_version:      spec.local_version,
@@ -47,11 +45,13 @@ defmodule RAP.Test.Bakery.Prepare do
   """
   test "Test bakery cache/moving" do
 
-    # Pretend we've already checked these into ETS
-    :ets.new(:test, [:set, :public, :named_table])
-    
     # See (1)
     uuid0 = UUID.uuid4()
+    curr_ts = DateTime.utc_now() |> DateTime.to_unix()
+    
+    # Pretend we've already checked these into ETS
+    :ets.new(:test, [:set, :public, :named_table])
+    :ets.insert(:test, {uuid0, curr_ts})
     
     source0  = "test/manual_test/9a55d938-7f50-45b5-8960-08c78d73facc"
     cache0   = "test/data_cache/#{uuid0}"
@@ -79,12 +79,14 @@ defmodule RAP.Test.Bakery.Prepare do
 	  contents:    "Dummy/ignored job"
 	},
 	%Result{
-	  name:        "test_result1",
-	  title:       "Test result 1 (density)",
-	  source_job:  "test1",
-	  type:        "density",
-	  signal:      :ok,
-	  contents:    res0
+	  name:          "test_result1",
+	  title:         "Test result 1 (density)",
+	  source_job:    "test1",
+	  type:          "density",
+	  signal:        :working,
+	  contents:      res0,
+	  result_format: "json",
+	  result_stem:   "density"
 	}
       ]
     }
@@ -95,6 +97,10 @@ defmodule RAP.Test.Bakery.Prepare do
     # See (3)
     #def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem) when processed.signal in [:working, :job_errors] do
     Prepare.bake_data(test0, "test/data_cache", "test/bakery", "post", :test)
+
+    # Clean up
+    :ets.delete(:test, uuid0)
+
   end
 
 end

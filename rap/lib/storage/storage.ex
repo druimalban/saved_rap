@@ -44,7 +44,6 @@ defmodule RAP.Storage.PreRun do
   """
   require Amnesia
   require Amnesia.Helper
-  #require RAP.Storage.DB.Job,      as: JobTable
   require RAP.Storage.DB.Manifest, as: ManifestTable
 
   require Logger
@@ -88,7 +87,7 @@ defmodule RAP.Storage.PreRun do
   
   def mnesia_feasible?(uuid) do
     Amnesia.transaction do
-      case ManifestTable.read(uuid) do
+      case ManifestTable.read!(uuid) do
 	nil -> true
 	_   ->
 	  Logger.info("Found job UUID #{uuid} in job cache!")
@@ -170,10 +169,10 @@ defmodule RAP.Storage.PostRun do
 
       transformed_manifest = %{ annotated_manifest | __struct__: ManifestTable }
       Logger.info "Transformed annotated manifest into: #{inspect transformed_manifest}"
-      
       Amnesia.transaction do
 	transformed_manifest |> ManifestTable.write()
       end
+     
       {:ok, annotated_manifest}
     else
       [] ->

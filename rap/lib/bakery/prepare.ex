@@ -117,12 +117,13 @@ defmodule RAP.Bakery.Prepare do
   def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem, ets_table) when processed.signal in [:working, :job_errors] do
     #source_dir = "#{cache_dir}/#{processed.uuid}"
     #target_dir = "#{bakery_dir}/#{processed.uuid}"
+    Logger.info "Called Prepare.bake_data/5 with signal `#{processed.signal}'"
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
     Logger.info "Prepare (mkdir(1) -p) #{bakery_dir}/#{processed.uuid}"
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
 
     cached_job_bases = processed.results
-    |> Enum.map(&write_result(&1.contents, bakery_dir, processed.uuid, &1.result_stem, &1.result_format, &1.name))
+    |> Enum.map(&write_result(&1, bakery_dir, processed.uuid))
     
     moved_manifest_ttl = processed.manifest_base_ttl
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
@@ -168,7 +169,8 @@ defmodule RAP.Bakery.Prepare do
 	   resource_bases:     spec.resource_bases    }
   """
   def bake_data(%Runner{signal: :see_producer} = processed, cache_dir, bakery_dir, _linked_stem, ets_table) do
-
+    Logger.info "Called Prepare.bake_data/5 with signal `see_producer'"
+    
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
     
     moved_manifest_ttl = processed.manifest_base_ttl
@@ -198,6 +200,7 @@ defmodule RAP.Bakery.Prepare do
 
   # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
   def bake_data(%Runner{signal: :see_pre} = processed, _cache, _bakery, _ln, ets_table) do
+    Logger.info "Called Prepare.bake_data/5 with signal `see_pre'"
     semi_final_data = %Prepare{
       uuid:            processed.uuid,
       data_source:     processed.data_source,
@@ -207,6 +210,10 @@ defmodule RAP.Bakery.Prepare do
     }
     {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
     cached_manifest
+  end
+
+  def bake_data(%Runner{signal: signal}, _cache, _bakery, _ln, _ets) do
+    Logger.info "Called Prepare.bake_data/5 with signal #{signal}, not doing anything"
   end
   
   @doc """
@@ -220,30 +227,35 @@ defmodule RAP.Bakery.Prepare do
   When logging, the name of the job is in the file name, so no problem
   just printing that to the log.
   """
-  def write_result(target_contents, bakery_directory, uuid, stem, extension, target_name \\ "") do
-    target_base = if String.length(target_name) == 0 do
-      "#{stem}.#{extension}"
-    else
-      "#{stem}_#{target_name}.#{extension}"
-    end
+  def write_result(%Result{type: "density", signal: :working} = result, bakery_directory, uuid) do
+    target_base = "#{result.result_stem}_#{result.name}.#{result.result_format}"
     target_full = "#{bakery_directory}/#{uuid}/#{target_base}"
       
     Logger.info "Writing results file #{target_full}"
     
     with false <- File.exists?(target_full) && PreRun.dl_success?(
-                    target_contents, File.read!(target_full), opts: [:input_text]),
-         :ok   <- File.write(target_full, target_contents) do
+                    result.contents, File.read!(target_full), opts: [:input_text]),
+         :ok   <- File.write(target_full, result.contents) do
       
-      Logger.info "Wrote result of target #{inspect target_name} to fully-qualified path #{target_full}"
+      Logger.info "Wrote result of target #{inspect result.name} to fully-qualified path #{target_full}"
       target_base
     else
       true ->
 	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
-	target_name
+	result.name
       {:error, error} ->
 	Logger.info "Could not write to fully-qualified path #{target_full}: #{inspect error}"
         {:error, error}
     end
+  end
+  def write_result(%Result{signal: signal} = result, _bakery, _uuid) when signal in [:job_failure, :python_error] do
+    Logger.info "Job exited with error: Not writing result to file"
+  end
+  def write_result(%Result{signal: :ignore}, _bakery, _uuid) do
+    Logger.info "Ignored/fake job: Not writing result to file"
+  end
+  def write_result(%Result{}, _bakery, _uuid) do
+    Logger.info "Invalid job: Not writing result to file"
   end
 
   @doc """
