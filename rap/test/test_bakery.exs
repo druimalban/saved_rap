@@ -57,18 +57,20 @@ defmodule RAP.Test.Bakery.Prepare do
     cache0   = "test/data_cache/#{uuid0}"
     dest0    = "test/bakery/#{uuid0}"
     res0     = "{ \"result\": \"test\" }"
+
+    target_resources = [ "Sentinel_cage_station_info_6.csv",
+			 "sentinel_cages_site.ttl",
+			 "sentinel_cages_site.yaml",
+			 "sentinel_cages_cleaned.csv",
+			 "sentinel_cages_sampling.ttl",
+			 "sentinel_cages_sampling.yaml"    ]
     
     test0 = %Runner{
       uuid:               uuid0,
       signal:             :working,
       manifest_base_ttl:  "manifest.ttl",
       manifest_base_yaml: "manifest.yaml",
-      resource_bases:     [ "Sentinel_cage_station_info_6.csv",
-			    "sentinel_cages_site.ttl",
-			    "sentinel_cages_site.yaml",
-			    "sentinel_cages_cleaned.csv",
-			    "sentinel_cages_sampling.ttl",
-			    "sentinel_cages_sampling.yaml"    ],
+      resource_bases:     target_resources,
       results: [
 	%Result{
 	  name:        "test_result0",
@@ -98,6 +100,15 @@ defmodule RAP.Test.Bakery.Prepare do
     #def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem) when processed.signal in [:working, :job_errors] do
     Prepare.bake_data(test0, "test/data_cache", "test/bakery", "post", :test)
 
+    # These should all have been copied over
+    assert Enum.all?(target_resources, &File.exists?("#{dest0}/#{&1}"))
+    # This should not have been written (note catch-all extension is .txt)
+    assert not File.exists?("#{dest0}/ignore_test_result0.txt")
+    # This should exist as it's a valid job type which is run by Job.Runner
+    assert File.exists?("#{dest0}/density_test_result1.json")
+    # We could test that the file got removed altogether, but this isn't necessarily desirable. Better to clean up periodically, I think, since keeping a cache  enables us to avoid downloads from GCP unneccesarily.
+    #assert not File.exists?("#{cache0}")
+    
     # Clean up
     :ets.delete(:test, uuid0)
 

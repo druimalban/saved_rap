@@ -2,11 +2,11 @@ defmodule RAP.Test.Storage.PreRun do
 
   require Amnesia
   require Amnesia.Helper
+  require RAP.Storage.DB.Manifest, as: ManifestTable
   
   use ExUnit.Case, async: false
   doctest RAP.Storage.PreRun
 
-  require RAP.Storage.DB.Manifest, as: ManifestTable
   alias RAP.Storage.PreRun
 
   test "Put/read UUID into ETS (`Storage.PreRun.ets_feasible?/2')" do
@@ -77,11 +77,33 @@ end
 
 defmodule RAP.Test.Storage.PostRun do
 
-  use Amnesia
-  use ExUnit.Case, async: true
+  require Amnesia
+  require Amnesia.Helper
+  require RAP.Storage.DB.Manifest, as: ManifestTable
+  
+  use ExUnit.Case, async: false
   doctest RAP.Storage.PostRun
 
-  alias RAP.Storage.PostRun
+  alias RAP.Storage.{PreRun, PostRun}
+  alias RAP.Bakery.Prepare
+
+  test "Test manifest caching function" do
+
+    uuid0   = UUID.uuid4()
+    struct0 = %Prepare{uuid: uuid0}
+
+    curr_ts    = DateTime.utc_now() |> DateTime.to_unix()
+    :ets.new(:test, [:set, :public, :named_table])
+    :ets.insert(:test, {uuid0, curr_ts})
+
+    assert PreRun.mnesia_feasible?(uuid0)
+    assert PostRun.cache_manifest(struct0, :test)
+
+    Amnesia.transaction do
+      uuid0 |> ManifestTable.delete()
+    end
+    assert PreRun.mnesia_feasible?(uuid0)
+  end
   
 end
 
