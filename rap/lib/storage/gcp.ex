@@ -114,7 +114,7 @@ defmodule RAP.Storage.GCP do
     index_full = "#{target_dir}/#{index_base}"
     with {:ok, uuid, file_bases} <- fetch_job_deps(cache_dir, job),
          {:ok, index_contents}   <- File.read(index_full),
-         [manifest_yaml, manifest_ttl, manifest_name] <- String.split(index_contents, "\n")
+         [manifest_yaml, manifest_ttl, manifest_iri] <- String.split(index_contents, "\n")
     do
       Logger.info "Index file is #{inspect index_base}"      
       
@@ -127,7 +127,7 @@ defmodule RAP.Storage.GCP do
       %MidRun{ uuid:          uuid,
 	       signal:        :working,
 	       data_source:   :gcp,
-	       manifest_name: manifest_name,
+	       manifest_iri:  RDF.iri(manifest_iri),
 	       manifest_yaml: manifest_yaml,
 	       manifest_ttl:  manifest_ttl,
 	       resources:     non_manifest_bases }

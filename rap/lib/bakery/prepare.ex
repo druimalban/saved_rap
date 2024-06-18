@@ -228,7 +228,7 @@ defmodule RAP.Bakery.Prepare do
   just printing that to the log.
   """
   def write_result(%Result{type: "density", signal: :working} = result, bakery_directory, uuid) do
-    target_base = "#{result.result_stem}_#{result.name}.#{result.result_format}"
+    target_base = "#{result.output_stem}_#{result.name}.#{result.output_format}"
     target_full = "#{bakery_directory}/#{uuid}/#{target_base}"
       
     Logger.info "Writing results file #{target_full}"

@@ -16,31 +16,6 @@ defmodule RAP.Test.Bakery.Prepare do
   3. Run the bake_data/4 function on each one
   4. a) Look the error state, b) whether the files actually get moved, c) whether the files show up in the cache
   5. Flush the cache
-
-  %Runner{ uuid:               spec.uuid,
-	     data_source:        spec.data_source,
-	     local_version:      spec.local_version,
-	     name:               spec.name,
-	     title:              spec.title,
-	     description:        spec.description,
-	     manifest_base_ttl:  spec.manifest_base_ttl,
-	     manifest_base_yaml: spec.manifest_base_yaml,
-	     resource_bases:     spec.resource_bases,
-	     staging_tables:     spec.staging_tables,
-	     staging_jobs:       spec.staging_jobs,
-	     pre_signal:         spec.pre_signal,
-	     producer_signal:    spec.signal,
-	     signal:             overall_signal,
-	     results:            result_contents    }
-
-   %Result{
-      name:        spec.name,
-      title:       spec.title,
-      description: spec.description,
-      source_job:  spec.name,
-      type:        "ignore",
-      signal:      :ok,
-      contents:    "Dummy/ignored job"
     }
   """
   test "Test bakery cache/moving" do
@@ -87,8 +62,8 @@ defmodule RAP.Test.Bakery.Prepare do
 	  type:          "density",
 	  signal:        :working,
 	  contents:      res0,
-	  result_format: "json",
-	  result_stem:   "density"
+	  output_format: "json",
+	  output_stem:   "density"
 	}
       ]
     }

@@ -29,7 +29,7 @@ defmodule RAP.Bakery.Compose do
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "HTML document consumer received #{inspect events}"
     processed_events = events
-    |> Enum.map(&compose_document(state.html_directory, state.rap_uri_prefix, state.style_sheet, state.time_zone, state.job_result_stem, "json", &1))
+    |> Enum.map(&compose_document(state.html_directory, state.rap_uri_prefix, state.rap_style_sheet, state.time_zone, &1))
     |> Enum.map(&Prepare.write_result(&1.contents, state.bakery_directory, &1.uuid, "index", "html"))
     {:noreply, [], state}
   end
@@ -43,8 +43,6 @@ defmodule RAP.Bakery.Compose do
     rap_uri,
     style_sheet,
     time_zone,
-    result_stem,
-    result_extension,
     %Prepare{} = prepared 
   ) when prepared.runner_signal in [:working, :job_errors] do
     # %Prepare{} is effectively an annotated manifest struct, pass in a map
@@ -65,7 +63,7 @@ defmodule RAP.Bakery.Compose do
     |> manifest_info(html_directory, rap_uri, time_zone, potted_manifest)
     |> tables_info(  html_directory, rap_uri, prepared.uuid, prepared.staged_tables)
     |> jobs_info(    html_directory, prepared.staged_jobs)
-    |> results_info( html_directory, rap_uri, time_zone, prepared.uuid, result_stem, result_extension, prepared.results)
+    |> results_info( html_directory, rap_uri, time_zone, prepared.uuid, prepared.results)
     |> body_lead_out()
     |> doc_lead_out()
     %{
@@ -224,8 +222,8 @@ defmodule RAP.Bakery.Compose do
   # bunch of information.
   # Call the base name of the output file contents_base since result text
   # contents are called `contents'
-  def stage_result(html_directory, rap_uri, time_zone, uuid, stem, extension, %Result{} = result) do
-    target_base = "#{stem}_#{result.name}.#{extension}"
+  def stage_result(html_directory, rap_uri, time_zone, uuid, %Result{} = result) do
+    target_base = "#{result.stem}_#{result.name}.#{result.extension}"
     target_uri  = "#{rap_uri}/#{uuid}/#{target_base}"
     result_extra = %{
       start_time_readable: format_time(result.start_time, time_zone),
@@ -240,10 +238,10 @@ defmodule RAP.Bakery.Compose do
     EEx.eval_file("#{html_directory}/result.html", result_input)
   end
   
-  def results_info(curr, html_directory, rap_uri, time_zone, uuid, stem, extension, results) do
+  def results_info(curr, html_directory, rap_uri, time_zone, uuid, results) do
     results_lead = "<h1>Results</h1>\n"
     results_fragments = results
-    |> Enum.map(&stage_result(html_directory, rap_uri, time_zone, uuid, stem, extension, &1))
+    |> Enum.map(&stage_result(html_directory, rap_uri, time_zone, uuid, &1))
     |> Enum.join("\n")
     curr <> results_lead <> results_fragments
   end

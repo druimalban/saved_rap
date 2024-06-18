@@ -184,7 +184,7 @@ defmodule RAP.Job.Producer do
     {:error, :empty_manifest}
   end
   def check_manifest(%ManifestDesc{} = desc, %MidRun{} = prev, curr_signal) do
-    Logger.info "Check manifest #{prev.manifest_name} (title #{inspect desc.title})"
+    Logger.info "Check manifest #{prev.manifest_iri} (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
     
@@ -205,9 +205,11 @@ defmodule RAP.Job.Producer do
 	{:error, :bad_tables, non_extant_tables}
     else
       processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
+
+      manifest_name = extract_id(prev.manifest_iri)
       
       manifest_obj = %ManifestSpec{
-	name:               prev.manifest_name,
+	name:               manifest_name,
 	title:              desc.title,
 	description:        desc.description,
 	local_version:      desc.local_version,
@@ -226,7 +228,8 @@ defmodule RAP.Job.Producer do
   end
 
   def minimal_manifest(%MidRun{} = prev, curr_signal) do
-    %ManifestSpec{ name:               prev.manifest_name,
+    manifest_name = extract_id(prev.manifest_iri)
+    %ManifestSpec{ name:               manifest_name,
 		   uuid:               prev.uuid,
 		   data_source:        prev.data_source,
 		   pre_signal:         prev.signal,
@@ -293,10 +296,10 @@ defmodule RAP.Job.Producer do
   we can use, but it also implies that no jobs should be run, so don't
   try to run these, at least for now. Only pattern-match on `:working'.
   """
-  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir, base_prefix \\ "https://marine.gov.scot/metadata/saved/rap/") do
+  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir) do
     target_dir         = "#{cache_dir}/#{prev.uuid}"
     manifest_full_path = "#{target_dir}/#{prev.manifest_ttl}"
-    load_target        = RDF.iri("#{base_prefix}#{prev.manifest_name}")
+    load_target        = RDF.iri(prev.manifest_iri)
     #load_target = RAP.Vocabulary.RAP.RootManifest
     Logger.info "Building RDF graph from turtle manifest #{load_target} using data in #{target_dir}"
     with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
@@ -324,7 +327,7 @@ defmodule RAP.Job.Producer do
 	minimal_manifest(prev, :bad_manifest_tables)
     end
   end
-  def invoke_manifest(%MidRun{uuid: uuid, data_source: data_source, signal: pre_signal}, _cache, _base) do
+  def invoke_manifest(%MidRun{uuid: uuid, data_source: data_source, signal: pre_signal}, _cache) do
     %ManifestSpec{
       uuid:        uuid,
       data_source: data_source,

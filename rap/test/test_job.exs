@@ -183,25 +183,29 @@ defmodule RAP.Test.Job.Producer do
 		       "sentinel_cages_cleaned.csv",
 		       "sentinel_cages_site.ttl",
 		       "sentinel_cages_sampling.ttl" ]
+
+    # Note no trailing slashes
+    manifest_iri_good = RDF.iri "https://marine.gov.scot/metadata/saved/rap/RootManifest"
+    manifest_iri_alt  = RDF.iri "https://marine.gov.scot/metadata/saved/rap_alt/RootManifest"
     
     desc_working = %MidRun{
       signal:        :working,
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
-      manifest_name: "RootManifest",
+      manifest_iri:  manifest_iri_good,
       manifest_ttl:  "manifest.ttl",
       resources:     test_resources
     }
     desc_bad_cardinality = %MidRun{
       signal:        :working,
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
-      manifest_name: "RootManifest",
+      manifest_iri:  manifest_iri_good,
       manifest_ttl:  "manifest.bad_cardinality.ttl",
       resources:     test_resources
     }
     desc_bad_tables = %MidRun{
       signal:        :working,
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
-      manifest_name: "RootManifest",
+      manifest_iri:  manifest_iri_good,
       manifest_ttl:  "manifest.bad_tables.ttl",
       resources:     test_resources
     }
@@ -209,7 +213,7 @@ defmodule RAP.Test.Job.Producer do
       # A valid RDF graph, but with different base
       signal:        :working,
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
-      manifest_name: "RootManifest",
+      manifest_iri:  manifest_iri_alt,
       manifest_ttl:  "manifest.alt_base.ttl",
       resources:     test_resources
     }
@@ -217,9 +221,8 @@ defmodule RAP.Test.Job.Producer do
     rhs_working         = Producer.invoke_manifest(desc_working,         "test/manual_test")
     rhs_bad_cardinality = Producer.invoke_manifest(desc_bad_cardinality, "test/manual_test")
     rhs_bad_tables      = Producer.invoke_manifest(desc_bad_tables,      "test/manual_test")
+    rhs_alt_base        = Producer.invoke_manifest(desc_alt_base, "test/manual_test")
     #rhs_empty           = Producer.invoke_manifest(desc_empty,           "test/manual_test")
-    alt_base     = "https://marine.gov.scot/metadata/saved/rap_alt/"
-    rhs_alt_base = Producer.invoke_manifest(desc_alt_base, "test/manual_test", alt_base)
 
     assert match?(%ManifestSpec{signal: :working},             rhs_working)
     assert match?(%ManifestSpec{signal: :working},             rhs_alt_base)
@@ -270,7 +273,6 @@ defmodule RAP.Test.Job.Result do
     assert match?({:call_error, _se, _res}, res3)
     
   end
-
   
   test "Test handling of dummy/ignored jobs" do
 

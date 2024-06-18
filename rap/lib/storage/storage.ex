@@ -111,8 +111,8 @@ defmodule RAP.Storage.MidRun do
   local directory we're monitoring, some other object store like S3), so
   it's clear where failures occur.
   """
-  defstruct [ :uuid, :signal, :data_source,
-	      :manifest_name, :manifest_yaml, :manifest_ttl, :resources ]
+  defstruct [ :uuid, :signal, :data_source,  :manifest_iri,
+	      :manifest_yaml, :manifest_ttl, :resources ]
 end
 
 defmodule RAP.Storage.PostRun do
