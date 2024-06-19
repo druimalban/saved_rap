@@ -3,6 +3,7 @@ defmodule RAP.Test.Bakery.Prepare do
   use ExUnit.Case, async: true
   doctest RAP.Bakery.Prepare
 
+  alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.{Runner, Result}
   alias RAP.Bakery.Prepare
 
@@ -87,6 +88,145 @@ defmodule RAP.Test.Bakery.Prepare do
     # Clean up
     :ets.delete(:test, uuid0)
 
+  end
+
+
+
+
+  
+  test "Test web page generation" do
+    # Note ,this is fairly manual, as far as tests go, since we're primarily looking to see if the HTML document generation is successful. 
+
+    #    defstruct [ :uuid, :data_source,
+    #              :name, :title, :description,
+    #              :start_time, :end_time,
+    #              :manifest_pre_base_ttl,
+    #              :manifest_pre_base_yaml,
+    #              :resource_bases,
+    #              :pre_signal,
+    #              :producer_signal,
+    #              :runner_signal,
+    #              :result_bases,
+    #              :results,
+    #              :staged_tables,
+    #              :staged_jobs          ]
+
+    uuid0    = UUID.uuid4()
+    source0  = "test/manual_test/7a0c9260-19b8-11ef-bd35-86d813ecdcdd"
+    cache0   = "test/data_cache/#{uuid0}"
+    dest0    = "test/bakery/#{uuid0}"
+    res0     = "{ \"result\": \"test\" }"
+
+    target_resources0 = [ "density.yaml", "density.ttl",
+		          "sentinel_cages_sampling.yaml", "sentinel_cages_sampling.ttl",
+			  "density.csv", "cagedata-10.csv" ]
+    
+    curr_ts = DateTime.utc_now() |> DateTime.to_unix()
+    fake_ts = curr_ts - 300
+
+    # Need to process extant: true/false sensibly/consistently
+    staging_tables0 = [
+      %TableSpec{
+	name:     "time_density_simple",
+	title:    "Placeholder time/density description",
+	resource: %ResourceSpec{ base: "density.csv", extant: true },
+	schema:   %ResourceSpec{ base: "density.ttl", extant: true } 
+      },
+      %TableSpec{
+	name:     "sampling",
+	title:    "Sentinel cages sampling: known-good test table",
+	resource: %ResourceSpec{ base: "cagedata-10.csv",             extant: true },
+	schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true }
+      }
+    ]
+
+    # … %JobSpec{} …
+    # defstruct [ :name, :title, :description,
+    # :type, :result_format, :result_stem,
+    # :scope_descriptive,   :scope_collected,  :scope_modelled,
+    # :errors_descriptive,  :errors_collected, :errors_modelled ]
+    #
+    # … %ScopeSpec{} …
+    #defstruct [ :variable_uri,  :variable_curie, :column,
+    #	      :resource_name, :resource_base ]
+    staging_jobs0 = [
+      %JobSpec{
+	name:          "job_example_time_density_simple",
+	title:         "Example job time_density_simple",
+	result_format: "json",
+	result_stem:   "result_density",
+	type:          "density",
+	scope_collected: [
+	  %ScopeSpec{
+	    column:         "TOTAL",
+	    resource_name:  "sampling",
+	    resource_base:  "cagedata-10.csv",
+	    variable_curie: "saved:lice_af_total",
+	    variable_uri:   "https://marine.gov.scot/metadata/saved/schema/lice_af_total"
+	  }
+	],
+	scope_modelled: [
+	  %ScopeSpec{
+	    column:         "time",
+	    resource_name:  "time_density_simple",
+	    resource_base:  "density.csv",
+	    variable_curie: "saved:time",
+	    variable_uri:   "https://marine.gov.scot/metadata/saved/schema/time"
+	  },
+	  %ScopeSpec{
+	    column:         "density",
+	    resource_name:  "time_density_simple",
+	    resource_base:  "density.csv",
+	    variable_curie: "saved:density",
+	    variable_uri:   "https://marine.gov.scot/metadata/saved/schema/density"
+	  }
+	]
+      }
+    ]
+    
+    target_results0 = [
+      %Result{
+	name:        "result_job_example_ignore",
+	title:       "Test result 0 (ignored)",
+	source_job:  "job_example_ignore",
+	type:        "ignore",
+	signal:      :ok,
+	contents:    "Dummy/ignored job"
+      },
+      %Result{
+	name:          "result_job_example_time_density_simple",
+	title:         "Test result 1 (density)",
+	source_job:    "job_example_time_density_simple",
+	type:          "density",
+	signal:        :working,
+	contents:      res0,
+	output_format: "json",
+	output_stem:   "density"
+      }
+    ]
+      
+    # compose_document(html_directory, rap_uri, style_sheet, time_zone, prep) -> %{uuid:_, contents:_}
+    desc_full0 = %Prepare{
+      uuid:                   uuid0,
+      data_source:            :gcp,
+      name:                   "LeafManifest",
+      title:                  "Fully-filled out manifest for testing",
+      description:            "Longer-form description",
+      start_time:             fake_ts,
+      end_time:               curr_ts,
+      manifest_pre_base_ttl:  "prepared_manifest1_pre.ttl", ## Not renamed as we're copying from source dir
+      manifest_pre_base_yaml: "prepared_manifest1_pre.yaml",
+      resource_bases:         target_resources0,
+      pre_signal:             :working,
+      producer_signal:        :working,
+      runner_signal:          :working,
+      result_bases:           "results_job_example_time_density_simple.json",
+      results:                target_results0,
+      staged_tables:          staging_tables0,
+      staged_jobs:            staging_jobs0
+    }
+    
+    
   end
 
 end
