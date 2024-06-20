@@ -100,14 +100,14 @@ defmodule RAP.Bakery.Compose do
     signal_full =
       case prepared.runner_signal do
 	:working      -> "All stages succeeded."
-	:job_errors   -> "Some jobs may have failed. See below."
+	:job_errors   -> "Some jobs have failed. See below."
 	:see_producer ->
 	  producer_signal_full =
 	    case prepared.producer_signal do
 	      :empty_manifest      -> "Name/IRI of manifest was malformed"
 	      :bad_manifest_tables -> "RDF graph was valid, but referenced tables were malformed"
 	      :bad_input_graph     -> "RDF graph was malformed and could not be load at all"
-	      :working             -> "Successfully loaded manifest"
+	      :working             -> "Passing loaded manifest to job runner stage failed"
 	      nil                  -> "Other error loading manifest: unspecified signal"
 	      error                -> "Other error loading manifest: #{error}"
 	    end
@@ -117,7 +117,7 @@ defmodule RAP.Bakery.Compose do
 	    case prepared.pre_signal do
 	      :empty_index -> "Index file was empty"
 	      :bad_index   -> "Index file was malformed"
-	      :working     -> "Successfully loaded index"
+	      :working     -> "Passing loaded index to job producer stage failed"
 	      nil          -> "Other error loading index: unspecified signal"
 	      error        -> "Other error loading index: #{error}"
 	    end

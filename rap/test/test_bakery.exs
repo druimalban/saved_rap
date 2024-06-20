@@ -393,21 +393,21 @@ defmodule RAP.Test.Bakery.Compose do
 
     # Simple all stages succeeded &c.
     lhs_full_working    = quick_lhs_inject.(0, :working,    "All stages succeeded.")
-    lhs_full_job_errors = quick_lhs_inject.(1, :job_errors, "Some jobs may have failed. See below.")
+    lhs_full_job_errors = quick_lhs_inject.(1, :job_errors, "Some jobs have failed. See below.")
 
     #  "Reading the manifest failed: <err>"
     
     lhs_up_to_producer0 = quick_lhs_inject.(2, :see_producer, "Name/IRI of manifest was malformed")
     lhs_up_to_producer1 = quick_lhs_inject.(3, :see_producer, "RDF graph was valid, but referenced tables were malformed")
     lhs_up_to_producer2 = quick_lhs_inject.(4, :see_producer, "RDF graph was malformed and could not be load at all")
-    lhs_up_to_producer3 = quick_lhs_inject.(5, :see_producer, "Successfully loaded manifest")
+    lhs_up_to_producer3 = quick_lhs_inject.(5, :see_producer, "Passing loaded manifest to job runner stage failed")
     lhs_up_to_producer4 = quick_lhs_inject.(6, :see_producer, "Other error loading manifest: unspecified signal")
     lhs_up_to_producer5 = quick_lhs_inject.(7, :see_producer, "Other error loading manifest: some_other_error")
 
     # "Reading the index file failed: <err>"
     lhs_up_to_pre0      = quick_lhs_inject.(8, :see_pre, "Index file was empty")
     lhs_up_to_pre1      = quick_lhs_inject.(9, :see_pre, "Index file was malformed")
-    lhs_up_to_pre2      = quick_lhs_inject.(10, :see_pre, "Successfully loaded index")
+    lhs_up_to_pre2      = quick_lhs_inject.(10, :see_pre, "Passing loaded index to job producer stage failed")
     lhs_up_to_pre3      = quick_lhs_inject.(11, :see_pre, "Other error loading index: unspecified signal")
     lhs_up_to_pre4      = quick_lhs_inject.(12, :see_pre, "Other error loading index: some_other_error")
 
@@ -446,13 +446,7 @@ defmodule RAP.Test.Bakery.Compose do
     side_by_index = side_by_side |> Enum.zip(1..13) |> Enum.map(fn {{a, b}, i} -> {a, b, i} end)
 
     for {lhs, rhs, i} <- side_by_index do
-      ii = case (to_string(i) |> String.last()) do
-	"1" -> "#{i}st"
-	"2" -> "#{i}nd"
-	"3" -> "#{i}rd"
-	_   -> "#{i}th"
-      end 
-      Logger.info "This is the #{ii} UUID"
+      Logger.info "Testing UUID ##{i}"
       Logger.info "LHS was #{inspect lhs}"
       Logger.info "RHS was #{inspect rhs}"
       assert lhs.runner_signal      == rhs.runner_signal
