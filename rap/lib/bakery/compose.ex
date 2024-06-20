@@ -9,9 +9,11 @@ defmodule RAP.Bakery.Compose do
   import EEx
   
   alias RAP.Application
-  alias RAP.Bakery.Prepare
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.Result
+  alias RAP.Bakery.{Prepare, Compose}
+
+  defstruct [ :uuid, :contents, :output_stem, :output_format, :signal ]
 
   def start_link(%Application{} = initial_state) do
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
@@ -30,7 +32,7 @@ defmodule RAP.Bakery.Compose do
     Logger.info "HTML document consumer received #{inspect events}"
     processed_events = events
     |> Enum.map(&compose_document(state.html_directory, state.rap_uri_prefix, state.rap_style_sheet, state.time_zone, &1))
-    |> Enum.map(&Prepare.write_result(&1.contents, state.bakery_directory, &1.uuid, "index", "html"))
+    |> Enum.map(&write_result(&1, state.bakery_directory))
     {:noreply, [], state}
   end
 
@@ -66,9 +68,12 @@ defmodule RAP.Bakery.Compose do
     |> results_info( html_directory, rap_uri, time_zone, prepared.uuid, prepared.results)
     |> body_lead_out()
     |> doc_lead_out()
-    %{
-      uuid:     prepared.uuid,
-      contents: html_contents
+    %Compose{
+      uuid:          prepared.uuid,
+      contents:      html_contents,
+      output_stem:   "index",
+      output_format: "html",
+      signal:        :working
     }
   end
 
@@ -79,8 +84,6 @@ defmodule RAP.Bakery.Compose do
     rap_uri,
     style_sheet,
     time_zone,
-    _result_stem,
-    _result_extension,
     %Prepare{ runner_signal: :see_producer } = prepared
   ) do
     potted_manifest = %{
@@ -97,9 +100,12 @@ defmodule RAP.Bakery.Compose do
     |> manifest_info(html_directory, rap_uri, time_zone, potted_manifest)
     |> body_lead_out()
     |> doc_lead_out()
-    %{
-      uuid:     prepared.uuid,
-      contents: html_contents
+    %Compose{
+      uuid:          prepared.uuid,
+      contents:      html_contents,
+      output_stem:   "index",
+      output_format: "html",
+      signal:        :see_producer
     }
   end
   
@@ -223,7 +229,7 @@ defmodule RAP.Bakery.Compose do
   # Call the base name of the output file contents_base since result text
   # contents are called `contents'
   def stage_result(html_directory, rap_uri, time_zone, uuid, %Result{} = result) do
-    target_base = "#{result.stem}_#{result.name}.#{result.extension}"
+    target_base = "#{result.output_stem}_#{result.name}.#{result.output_format}"
     target_uri  = "#{rap_uri}/#{uuid}/#{target_base}"
     result_extra = %{
       start_time_readable: format_time(result.start_time, time_zone),
@@ -246,22 +252,47 @@ defmodule RAP.Bakery.Compose do
     curr <> results_lead <> results_fragments
   end
 
-  defp format_time(unix_ts, time_zone) do
+  defp format_time(unix_ts, time_zone) do    
     weekdays = [ "Monday",  "Tuesday",  "Wednesday", "Thursday",
 		 "Friday",  "Saturday", "Sunday"   ]
     months =   [ "January", "February", "March",
 		 "April",   "May",      "June",
 		 "July",    "August",   "September",
 		 "October", "November", "December" ]
-    dt = unix_ts |> DateTime.from_unix!()  |> DateTime.shift_zone!(time_zone)
-
+    dt = unix_ts |> DateTime.from_unix!() |> DateTime.shift_zone!(time_zone)
+    
     # These range from 1-7, 1-12 but lists are zero-indexed
-    day_name      = weekdays  |> Enum.fetch!(Date.day_of_week dt - 1)
+    day_name      = weekdays  |> Enum.fetch!(Date.day_of_week(dt) - 1)
     month_name    = months    |> Enum.fetch!(dt.month - 1)
     
     padded_hour   = dt.hour   |> to_string |> String.pad_leading(2, "0")
     padded_minute = dt.minute |> to_string |> String.pad_leading(2, "0") 
     
     "#{day_name}, #{dt.day} #{month_name} #{dt.year}, #{padded_hour}:#{padded_minute} (GMT)"
+  end
+
+  @doc """
+  This is more or less identical to `Prepare.write_result/4'…
+  """
+  def write_result(%Compose{} = result, bakery_directory) do
+    target_base = "#{result.output_stem}.#{result.output_format}"
+    target_full = "#{bakery_directory}/#{result.uuid}/#{target_base}"
+      
+    Logger.info "Writing index file #{target_full}"
+    
+    with false <- File.exists?(target_full) && PreRun.dl_success?(
+                    result.contents, File.read!(target_full), opts: [:input_text]),
+         :ok   <- File.write(target_full, result.contents) do
+      
+      Logger.info "Wrote result of target #{inspect result.name} to fully-qualified path #{target_full}"
+      target_base
+    else
+      true ->
+	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
+	result.name
+      {:error, error} ->
+	Logger.info "Could not write to fully-qualified path #{target_full}: #{inspect error}"
+        {:error, error}
+    end
   end
 end

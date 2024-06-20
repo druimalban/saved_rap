@@ -54,7 +54,7 @@ defmodule RAP.Job.Result do
       description: spec.description,
       source_job:  spec.name,
       type:        "ignore",
-      signal:      :ok,
+      signal:      :ignored,
       contents:    "Dummy/ignored job"
     }
   end
