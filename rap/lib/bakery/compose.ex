@@ -46,66 +46,30 @@ defmodule RAP.Bakery.Compose do
     style_sheet,
     time_zone,
     %Prepare{} = prepared 
-  ) when prepared.runner_signal in [:working, :job_errors] do
+  ) do
     # %Prepare{} is effectively an annotated manifest struct, pass in a map
-    potted_manifest = %{
-      title:             prepared.title,
-      description:       prepared.description,
-      uuid:              prepared.uuid,
-      manifest_pre_ttl:  prepared.manifest_pre_base_ttl,
-      manifest_pre_yaml: prepared.manifest_pre_base_yaml,
-      start_time:        prepared.start_time,
-      end_time:          prepared.end_time
-    }
     html_contents = doc_lead_in()
     |> head_lead_in()
     |> preamble(html_directory, style_sheet, prepared.uuid)
     |> head_lead_out()
     |> body_lead_in()
-    |> manifest_info(html_directory, rap_uri, time_zone, potted_manifest)
+    |> manifest_info(html_directory, rap_uri, time_zone, prepared)
     |> tables_info(  html_directory, rap_uri, prepared.uuid, prepared.staged_tables)
     |> jobs_info(    html_directory, prepared.staged_jobs)
     |> results_info( html_directory, rap_uri, time_zone, prepared.uuid, prepared.results)
     |> body_lead_out()
     |> doc_lead_out()
+
+    compose_signal = case html_contents do
+		       nil -> :questionable
+		       _   -> :working
+		     end
     %Compose{
       uuid:          prepared.uuid,
       contents:      html_contents,
       output_stem:   "index",
       output_format: "html",
-      signal:        :working
-    }
-  end
-
-
-  ## FIXME
-  def compose_document(
-    html_directory,
-    rap_uri,
-    style_sheet,
-    time_zone,
-    %Prepare{ runner_signal: :see_producer } = prepared
-  ) do
-    potted_manifest = %{
-      manifest_pre_ttl:  prepared.manifest_pre_base_ttl,
-      manifest_pre_yaml: prepared.manifest_pre_base_yaml,
-      start_time:        prepared.start_time,
-      end_time:          prepared.end_time
-    }
-    html_contents = doc_lead_in()
-    |> head_lead_in()
-    |> preamble(html_directory, style_sheet, prepared.uuid)
-    |> head_lead_out()
-    |> body_lead_in()
-    |> manifest_info(html_directory, rap_uri, time_zone, potted_manifest)
-    |> body_lead_out()
-    |> doc_lead_out()
-    %Compose{
-      uuid:          prepared.uuid,
-      contents:      html_contents,
-      output_stem:   "index",
-      output_format: "html",
-      signal:        :see_producer
+      signal:        compose_signal
     }
   end
   
@@ -122,35 +86,58 @@ defmodule RAP.Bakery.Compose do
     curr <> preamble_fragment
   end
 
-  def manifest_info(curr, html_directory, rap_uri, time_zone, %{manifest_pre_ttl: nil} = manifest_spec) do
+  def manifest_info(
+    curr,
+    html_directory,
+    rap_uri,
+    time_zone,
+    %Prepare{} = prepared
+  ) do
+    ttl_full  = "#{rap_uri}/#{prepared.uuid}/#{prepared.manifest_pre_base_ttl}"
+    yaml_full = "#{rap_uri}/#{prepared.uuid}/#{prepared.manifest_pre_base_yaml}"
+
+    signal_full =
+      case prepared.runner_signal do
+	:working      -> "All stages succeeded."
+	:job_errors   -> "Some jobs may have failed. See below."
+	:see_producer ->
+	  producer_signal_full =
+	    case prepared.producer_signal do
+	      :empty_manifest      -> "Name/IRI of manifest was malformed"
+	      :bad_manifest_tables -> "RDF graph was valid, but referenced tables were malformed"
+	      :bad_input_graph     -> "RDF graph was malformed and could not be load at all"
+	      :working             -> "Successfully loaded manifest"
+	      nil                  -> "Other error loading manifest: unspecified"
+	      error                -> "Other error loading manifest: #{error}"
+	    end
+	  "Reading the manifest failed: #{producer_signal_full}"
+	:see_pre ->
+	  pre_full =
+	    case prepared.pre_signal do
+	      :empty_index -> "Index file was empty"
+	      :bad_index   -> "Index file was malformed"
+	      :working     -> "Successfully loaded index"
+	      nil          -> "Other error loading index: unspecified"
+	      error        -> "Other error loading index: #{error}"
+	    end
+	  "Reading the index file failed: #{pre_full}"
+	nil   -> "Other error running jobs: unspecified"
+	error -> "Other error running jobs: #{error}"
+      end
+
     info_extra = %{
-      manifest_uri_ttl:    nil,
-      manifest_uri_yaml:   nil,
-      start_time_readable: format_time(manifest_spec.start_time, time_zone),
-      end_time_readable:   format_time(manifest_spec.end_time,   time_zone)
-    }
-    info_input = manifest_spec |> Map.merge(info_extra) |> Map.to_list()
-
-    info_fragment = EEx.eval_file("#{html_directory}/manifest.html", info_input)
-    curr <> info_fragment
-  end
-  
-  def manifest_info(curr, html_directory, rap_uri, time_zone, %{} = manifest_spec) do
-    ttl_full  = "#{rap_uri}/#{manifest_spec.uuid}/#{manifest_spec.manifest_pre_ttl}"
-    yaml_full = "#{rap_uri}/#{manifest_spec.uuid}/#{manifest_spec.manifest_pre_yaml}"
-
-    info_extra = %{ 
       manifest_uri_ttl:    ttl_full,
       manifest_uri_yaml:   yaml_full,
-      start_time_readable: format_time(manifest_spec.start_time, time_zone),
-      end_time_readable:   format_time(manifest_spec.end_time,   time_zone)
+      start_time_readable: format_time(prepared.start_time, time_zone),
+      end_time_readable:   format_time(prepared.end_time,   time_zone),
+      signal_full:         signal_full
     }
-    info_input = manifest_spec |> Map.merge(info_extra) |> Map.to_list()
+    info_input = prepared |> Map.merge(info_extra) |> Map.to_list()
 
     info_fragment = EEx.eval_file("#{html_directory}/manifest.html", info_input)
     curr <> info_fragment
   end
-  
+
   # uuid not included in object
   # for the maps, we don't weave in current state of document
   def stage_table(html_directory, rap_uri, uuid,
@@ -173,6 +160,7 @@ defmodule RAP.Bakery.Compose do
     EEx.eval_file("#{html_directory}/table.html", table_input)
   end
 
+  def tables_info(curr, _html_dir, _uri, _uuid, nil), do: curr
   def tables_info(curr, html_directory, rap_uri, uuid, tables) do
     tables_lead     = "<h1>Specified tables</h1>\n"
     table_fragments = tables
@@ -187,7 +175,7 @@ defmodule RAP.Bakery.Compose do
       Map.to_list(scope_spec)
     )
   end
-
+  
   def stage_scope_list(_dir, nil, scope_type), do: nil
   def stage_scope_list(html_directory, scope_triples, scope_type) do
     scope_lead      = EEx.eval_string("<li>‘<%= type %>’ columns in scope:\n<ul>", type: scope_type)
@@ -196,7 +184,7 @@ defmodule RAP.Bakery.Compose do
     |> Enum.join("\n")
     scope_lead <> scope_fragments <> "</ul>\n"
   end
-  
+
   def stage_job(html_directory, %JobSpec{} = job_spec) do
     descriptive = stage_scope_list(html_directory, job_spec.scope_descriptive, "Descriptive")
     collected   = stage_scope_list(html_directory, job_spec.scope_collected,   "Collected")
@@ -213,7 +201,8 @@ defmodule RAP.Bakery.Compose do
     ]
     EEx.eval_file("#{html_directory}/job.html", job_input)
   end
-  
+
+  def jobs_info(curr, _html, nil), do: curr
   def jobs_info(curr, html_directory, jobs) do
     jobs_lead = "<h1>Specified jobs</h1>\n"
     job_fragments = jobs
@@ -243,7 +232,8 @@ defmodule RAP.Bakery.Compose do
     |> Map.to_list()
     EEx.eval_file("#{html_directory}/result.html", result_input)
   end
-  
+
+  def results_info(curr, _html, _uri, _tz, _uuid, nil), do: curr
   def results_info(curr, html_directory, rap_uri, time_zone, uuid, results) do
     results_lead = "<h1>Results</h1>\n"
     results_fragments = results
@@ -252,6 +242,7 @@ defmodule RAP.Bakery.Compose do
     curr <> results_lead <> results_fragments
   end
 
+  defp format_time(nil, _tz), do: nil
   defp format_time(unix_ts, time_zone) do    
     weekdays = [ "Monday",  "Tuesday",  "Wednesday", "Thursday",
 		 "Friday",  "Saturday", "Sunday"   ]

@@ -119,8 +119,8 @@ defmodule RAP.Test.Bakery.Compose do
     #              :staged_tables,
     #              :staged_jobs          ]
 
-    uuid0    = UUID.uuid4()
-    uuid1    = UUID.uuid4()
+    [uuid0, uuid1, uuid2, uuid3] = for _ <- 1..4, do: UUID.uuid4()
+    
     source0  = "test/manual_test/7a0c9260-19b8-11ef-bd35-86d813ecdcdd"
     cache0   = "test/data_cache/#{uuid0}"
     dest0    = "test/bakery/#{uuid0}"
@@ -295,7 +295,7 @@ defmodule RAP.Test.Bakery.Compose do
     desc_full_job_errors = %Prepare{
       uuid:                   uuid1,
       data_source:            :gcp,
-      name:                   "LeafManifest0",
+      name:                   "LeafManifest1",
       title:                  "Nominally fully filled out manifest for testing",
       description:            "Failure signal :job_errors",
       start_time:             fake_ts,
@@ -311,44 +311,60 @@ defmodule RAP.Test.Bakery.Compose do
       staged_tables:          staging_tables,
       staged_jobs:            staging_jobs_errors
     }
+    # As if we couldn't read the manifest file 
+    desc_up_to_producer = %Prepare{
+      uuid:                   uuid2,
+      data_source:            :gcp,
+      name:                   "LeafManifest2",
+      title:                  "Partially filled out manifest for testing",
+      description:            "Up to producer",
+      manifest_pre_base_ttl:  "prepared_manifest1_pre.ttl", ## Not renamed as we're copying from source dir
+      manifest_pre_base_yaml: "prepared_manifest1_pre.yaml",
+      resource_bases:         target_resources,
+      runner_signal:          :see_producer
+    }
+    # As if we couldn't read the index file pointing to the manifest
+    desc_up_to_pre = %Prepare{
+      uuid:                   uuid3,
+      data_source:            :gcp,
+      name:                   "LeafManifest3",
+      title:                  "Partially filled out manifest for testing",
+      description:            "Up to pre-producer",
+      producer_signal:        :see_pre
+    }
 
-    # Now, test results
-    # state.html_directory, state.rap_uri_prefix, state.rap_style_sheet
-    rap_uri_prefix  = "/saved/rap"
-    rap_style_sheet = "/saved/rap/assets/app.css"
-    html_directory  = "./html_fragments"
-    time_zone       = "GB-Eire"
+    quick_lhs_inject = fn uuid, signal ->
+      %Compose{
+	uuid:          uuid,
+	output_stem:   "index",
+	output_format: "html",
+	signal:        signal
+      }
+    end
+    quick_rhs_compose = fn desc ->
+      Compose.compose_document(
+	"./html_fragments",
+	"/saved/rap",
+	"/saved/rap/assets/app.css",
+	"GB-Eire",
+	desc
+      )
+    end
     
-    lhs_full_working = %Compose{
-      uuid:          uuid0,
-      output_stem:   "index",
-      output_format: "html",
-      signal:        :working
-    }
-    lhs_full_job_errors = %Compose{
-      uuid:          uuid1,
-      output_stem:   "index",
-      output_format: "html",
-      signal:        :working
-    }
-
-    rhs_full_working = Compose.compose_document(
-      html_directory,
-      rap_uri_prefix,
-      rap_style_sheet,
-      time_zone,
-      desc_full_working
-    )
-    rhs_full_job_errors = Compose.compose_document(
-      html_directory,
-      rap_uri_prefix,
-      rap_style_sheet,
-      time_zone,
-      desc_full_job_errors
-    )
+    lhs_full_working    = quick_lhs_inject.(uuid0, :working)
+    lhs_full_job_errors = quick_lhs_inject.(uuid1, :working)
+    lhs_up_to_producer  = quick_lhs_inject.(uuid2, :see_producer)
+    lhs_up_to_pre       = quick_lhs_inject.(uuid3, :see_pre)
+    
+    rhs_full_working    = quick_rhs_compose.(desc_full_working)
+    rhs_full_job_errors = quick_rhs_compose.(desc_full_job_errors)
+    rhs_up_to_producer  = quick_rhs_compose.(desc_up_to_producer)
+    rhs_up_to_pre       = quick_rhs_compose.(desc_up_to_pre)
     
     assert match?(lhs_full_working,    rhs_full_working)
     assert match?(lhs_full_job_errors, rhs_full_job_errors)
+    assert match?(lhs_up_to_producer,  rhs_up_to_producer)
+    assert match?(lhs_up_to_pre,       rhs_up_to_pre)
     
   end
 
