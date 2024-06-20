@@ -35,4 +35,10 @@ defmodule RAP.MixProject do
       # {:nx, "~> 0.7"}
     ]
   end
+
+  defp package do
+    [files: ["lib", "mix.exs", "README.md", "LICENSE", "config", "priv"],
+     maintainers: ["Duncan Guthrie"],
+     licenses: [" AGPL-3.0-or-later"]
+  end
 end

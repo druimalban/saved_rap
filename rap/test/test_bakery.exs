@@ -310,12 +310,12 @@ defmodule RAP.Test.Bakery.Compose do
       staged_tables:          staging_tables,
       staged_jobs:            staging_jobs_errors
     }
-
-    prep_up_to_producer = fn uuid, sig ->
+    
+    prep_up_to_producer = fn u, sig ->
        %Prepare{
-	 uuid:                   uuid,
+	 uuid:                   Enum.at(uuids, u),
 	 data_source:            :gcp,
-	 name:                   "LeafManifest2",
+	 name:                   "LeafManifest#{u}",
 	 title:                  "Partially filled out manifest for testing",
 	 description:            "Up to producer",
 	 manifest_pre_base_ttl:  "prepared_manifest1_pre.ttl", ## Not renamed as we're copying from source dir
@@ -327,12 +327,12 @@ defmodule RAP.Test.Bakery.Compose do
        }
     end
     
-    desc_up_to_producer0 = prep_up_to_producer.(Enum.at(uuids, 2), :empty_manifest)
-    desc_up_to_producer1 = prep_up_to_producer.(Enum.at(uuids, 3), :bad_manifest_tables)
-    desc_up_to_producer2 = prep_up_to_producer.(Enum.at(uuids, 4), :bad_input_graph)
-    desc_up_to_producer3 = prep_up_to_producer.(Enum.at(uuids, 5), :working) # weird state, treat as 'unspecified'?
-    desc_up_to_producer4 = prep_up_to_producer.(Enum.at(uuids, 6), nil)
-    desc_up_to_producer5 = prep_up_to_producer.(Enum.at(uuids, 7), :some_other_error)
+    desc_up_to_producer0 = prep_up_to_producer.(2, :empty_manifest)
+    desc_up_to_producer1 = prep_up_to_producer.(3, :bad_manifest_tables)
+    desc_up_to_producer2 = prep_up_to_producer.(4, :bad_input_graph)
+    desc_up_to_producer3 = prep_up_to_producer.(5, :working) # weird state, treat as 'unspecified'?
+    desc_up_to_producer4 = prep_up_to_producer.(6, nil)
+    desc_up_to_producer5 = prep_up_to_producer.(7, :some_other_error)
     
     prep_up_to_pre = fn u, sig ->
       %Prepare{
