@@ -1,6 +1,6 @@
 defmodule RAP.Test.Bakery.Prepare do
 
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   doctest RAP.Bakery.Prepare
 
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
@@ -102,6 +102,8 @@ defmodule RAP.Test.Bakery.Compose do
   alias RAP.Job.{Runner, Result}
   alias RAP.Bakery.{Prepare, Compose}
 
+  require Logger
+
   test "Test web page generation" do
     # Note ,this is fairly manual, as far as tests go, since we're primarily looking to see if the HTML document generation is successful. 
 
@@ -119,12 +121,9 @@ defmodule RAP.Test.Bakery.Compose do
     #              :staged_tables,
     #              :staged_jobs          ]
 
-    [uuid0, uuid1, uuid2, uuid3] = for _ <- 1..4, do: UUID.uuid4()
+    uuids = for _ <- 1..20, do: UUID.uuid4()
     
-    source0  = "test/manual_test/7a0c9260-19b8-11ef-bd35-86d813ecdcdd"
-    cache0   = "test/data_cache/#{uuid0}"
-    dest0    = "test/bakery/#{uuid0}"
-    res0     = "{ \"result\": \"test\" }"
+    res0 = "{ \"result\": \"test\" }"
 
     target_resources = [ "density.yaml", "density.ttl",
 		         "sentinel_cages_sampling.yaml", "sentinel_cages_sampling.ttl",
@@ -274,7 +273,7 @@ defmodule RAP.Test.Bakery.Compose do
       
     # compose_document(html_directory, rap_uri, style_sheet, time_zone, prep) -> %{uuid:_, contents:_}
     desc_full_working = %Prepare{
-      uuid:                   uuid0,
+      uuid:                   Enum.at(uuids, 0),
       data_source:            :gcp,
       name:                   "LeafManifest0",
       title:                  "Fully filled out manifest for testing",
@@ -293,7 +292,7 @@ defmodule RAP.Test.Bakery.Compose do
       staged_jobs:            staging_jobs_working
     }
     desc_full_job_errors = %Prepare{
-      uuid:                   uuid1,
+      uuid:                   Enum.at(uuids, 1),
       data_source:            :gcp,
       name:                   "LeafManifest1",
       title:                  "Nominally fully filled out manifest for testing",
@@ -311,35 +310,76 @@ defmodule RAP.Test.Bakery.Compose do
       staged_tables:          staging_tables,
       staged_jobs:            staging_jobs_errors
     }
-    # As if we couldn't read the manifest file 
-    desc_up_to_producer = %Prepare{
-      uuid:                   uuid2,
-      data_source:            :gcp,
-      name:                   "LeafManifest2",
-      title:                  "Partially filled out manifest for testing",
-      description:            "Up to producer",
-      manifest_pre_base_ttl:  "prepared_manifest1_pre.ttl", ## Not renamed as we're copying from source dir
-      manifest_pre_base_yaml: "prepared_manifest1_pre.yaml",
-      resource_bases:         target_resources,
-      runner_signal:          :see_producer
-    }
-    # As if we couldn't read the index file pointing to the manifest
-    desc_up_to_pre = %Prepare{
-      uuid:                   uuid3,
-      data_source:            :gcp,
-      name:                   "LeafManifest3",
-      title:                  "Partially filled out manifest for testing",
-      description:            "Up to pre-producer",
-      producer_signal:        :see_pre
-    }
 
-    quick_lhs_inject = fn uuid, signal ->
-      %Compose{
-	uuid:          uuid,
-	output_stem:   "index",
-	output_format: "html",
-	signal:        signal
+    prep_up_to_producer = fn uuid, sig ->
+       %Prepare{
+	 uuid:                   uuid,
+	 data_source:            :gcp,
+	 name:                   "LeafManifest2",
+	 title:                  "Partially filled out manifest for testing",
+	 description:            "Up to producer",
+	 manifest_pre_base_ttl:  "prepared_manifest1_pre.ttl", ## Not renamed as we're copying from source dir
+	 manifest_pre_base_yaml: "prepared_manifest1_pre.yaml",
+	 resource_bases:         target_resources,
+	 runner_signal:          :see_producer,
+	 producer_signal:        sig,
+	 pre_signal:             :working
+       }
+    end
+    
+    desc_up_to_producer0 = prep_up_to_producer.(Enum.at(uuids, 2), :empty_manifest)
+    desc_up_to_producer1 = prep_up_to_producer.(Enum.at(uuids, 3), :bad_manifest_tables)
+    desc_up_to_producer2 = prep_up_to_producer.(Enum.at(uuids, 4), :bad_input_graph)
+    desc_up_to_producer3 = prep_up_to_producer.(Enum.at(uuids, 5), :working) # weird state, treat as 'unspecified'?
+    desc_up_to_producer4 = prep_up_to_producer.(Enum.at(uuids, 6), nil)
+    desc_up_to_producer5 = prep_up_to_producer.(Enum.at(uuids, 7), :some_other_error)
+    
+    prep_up_to_pre = fn u, sig ->
+      %Prepare{
+	uuid:            Enum.at(uuids, u),
+	data_source:     :gcp,
+	name:            "LeafManifest3",
+	title:           "Partially filled out manifest for testing",
+	description:     "Up to pre-producer",
+	runner_signal:   :see_pre,
+	producer_signal: :see_pre,
+	pre_signal:      sig
       }
+    end
+
+    # As if we couldn't read the index file pointing to the manifest
+    desc_up_to_pre0 = prep_up_to_pre.(8,  :empty_index)
+    desc_up_to_pre1 = prep_up_to_pre.(9,  :bad_index)
+    desc_up_to_pre2 = prep_up_to_pre.(10, :working)
+    desc_up_to_pre3 = prep_up_to_pre.(11, nil)
+    desc_up_to_pre4 = prep_up_to_pre.(12, :some_other_error)
+    
+
+    quick_lhs_inject = fn
+      u, :see_producer, err ->
+	%Compose{
+	  uuid:               Enum.at(uuids, u),
+	  output_stem:        "index",
+	  output_format:      "html",
+	  runner_signal:      :see_producer,
+	  runner_signal_full: "Reading the manifest file failed: #{err}"
+        }
+      u, :see_pre, err ->
+	%Compose{
+	  uuid:               Enum.at(uuids, u),
+	  output_stem:        "index",
+	  output_format:      "html",
+	  runner_signal:      :see_pre,
+	  runner_signal_full: "Reading the index file failed: #{err}"
+        }
+      u, sig, fsig ->
+	%Compose{
+	  uuid:               Enum.at(uuids, u),
+	  output_stem:        "index",
+	  output_format:      "html",
+	  runner_signal:      sig,
+	  runner_signal_full: fsig
+        }
     end
     quick_rhs_compose = fn desc ->
       Compose.compose_document(
@@ -350,21 +390,74 @@ defmodule RAP.Test.Bakery.Compose do
 	desc
       )
     end
+
+    # Simple all stages succeeded &c.
+    lhs_full_working    = quick_lhs_inject.(0, :working,    "All stages succeeded.")
+    lhs_full_job_errors = quick_lhs_inject.(1, :job_errors, "Some jobs may have failed. See below.")
+
+    #  "Reading the manifest failed: <err>"
     
-    lhs_full_working    = quick_lhs_inject.(uuid0, :working)
-    lhs_full_job_errors = quick_lhs_inject.(uuid1, :working)
-    lhs_up_to_producer  = quick_lhs_inject.(uuid2, :see_producer)
-    lhs_up_to_pre       = quick_lhs_inject.(uuid3, :see_pre)
+    lhs_up_to_producer0 = quick_lhs_inject.(2, :see_producer, "Name/IRI of manifest was malformed")
+    lhs_up_to_producer1 = quick_lhs_inject.(3, :see_producer, "RDF graph was valid, but referenced tables were malformed")
+    lhs_up_to_producer2 = quick_lhs_inject.(4, :see_producer, "RDF graph was malformed and could not be load at all")
+    lhs_up_to_producer3 = quick_lhs_inject.(5, :see_producer, "Successfully loaded manifest")
+    lhs_up_to_producer4 = quick_lhs_inject.(6, :see_producer, "Other error loading manifest: unspecified signal")
+    lhs_up_to_producer5 = quick_lhs_inject.(7, :see_producer, "Other error loading manifest: some_other_error")
+
+    # "Reading the index file failed: <err>"
+    lhs_up_to_pre0      = quick_lhs_inject.(8, :see_pre, "Index file was empty")
+    lhs_up_to_pre1      = quick_lhs_inject.(9, :see_pre, "Index file was malformed")
+    lhs_up_to_pre2      = quick_lhs_inject.(10, :see_pre, "Successfully loaded index")
+    lhs_up_to_pre3      = quick_lhs_inject.(11, :see_pre, "Other error loading index: unspecified signal")
+    lhs_up_to_pre4      = quick_lhs_inject.(12, :see_pre, "Other error loading index: some_other_error")
+
+    lhs_to_test = [ lhs_full_working, lhs_full_job_errors,
+		    lhs_up_to_producer0, lhs_up_to_producer1,
+		    lhs_up_to_producer2, lhs_up_to_producer3,
+		    lhs_up_to_producer4, lhs_up_to_producer5,
+		    lhs_up_to_pre0, lhs_up_to_pre1,
+		    lhs_up_to_pre2, lhs_up_to_pre3,
+		    lhs_up_to_pre4 ]
     
     rhs_full_working    = quick_rhs_compose.(desc_full_working)
     rhs_full_job_errors = quick_rhs_compose.(desc_full_job_errors)
-    rhs_up_to_producer  = quick_rhs_compose.(desc_up_to_producer)
-    rhs_up_to_pre       = quick_rhs_compose.(desc_up_to_pre)
+    rhs_up_to_producer0 = quick_rhs_compose.(desc_up_to_producer0)
+    rhs_up_to_producer1 = quick_rhs_compose.(desc_up_to_producer1)
+    rhs_up_to_producer2 = quick_rhs_compose.(desc_up_to_producer2)
+    rhs_up_to_producer3 = quick_rhs_compose.(desc_up_to_producer3)
+    rhs_up_to_producer4 = quick_rhs_compose.(desc_up_to_producer4)
+    rhs_up_to_producer5 = quick_rhs_compose.(desc_up_to_producer5)
+    rhs_up_to_pre0      = quick_rhs_compose.(desc_up_to_pre0)
+    rhs_up_to_pre1      = quick_rhs_compose.(desc_up_to_pre1)
+    rhs_up_to_pre2      = quick_rhs_compose.(desc_up_to_pre2)
+    rhs_up_to_pre3      = quick_rhs_compose.(desc_up_to_pre3)
+    rhs_up_to_pre4      = quick_rhs_compose.(desc_up_to_pre4)
     
-    assert match?(lhs_full_working,    rhs_full_working)
-    assert match?(lhs_full_job_errors, rhs_full_job_errors)
-    assert match?(lhs_up_to_producer,  rhs_up_to_producer)
-    assert match?(lhs_up_to_pre,       rhs_up_to_pre)
+    rhs_to_test = [ rhs_full_working, rhs_full_job_errors,
+		    rhs_up_to_producer0, rhs_up_to_producer1,
+		    rhs_up_to_producer2, rhs_up_to_producer3,
+		    rhs_up_to_producer4, rhs_up_to_producer5,
+		    rhs_up_to_pre0, rhs_up_to_pre1,
+		    rhs_up_to_pre2, rhs_up_to_pre3,
+		    rhs_up_to_pre4 ]
+
+
+    side_by_side  = Enum.zip(lhs_to_test, rhs_to_test)
+    side_by_index = side_by_side |> Enum.zip(1..13) |> Enum.map(fn {{a, b}, i} -> {a, b, i} end)
+
+    for {lhs, rhs, i} <- side_by_index do
+      ii = case (to_string(i) |> String.last()) do
+	"1" -> "#{i}st"
+	"2" -> "#{i}nd"
+	"3" -> "#{i}rd"
+	_   -> "#{i}th"
+      end 
+      Logger.info "This is the #{ii} UUID"
+      Logger.info "LHS was #{inspect lhs}"
+      Logger.info "RHS was #{inspect rhs}"
+      assert lhs.runner_signal      == rhs.runner_signal
+      assert lhs.runner_signal_full == rhs.runner_signal_full
+    end
     
   end
 
