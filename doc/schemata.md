@@ -63,15 +63,29 @@ Consider the following set of prefixes:
 ```yaml
 prefixes:
   linkml: https://w3id.org/linkml/
-  xsd:    http://www.w3.org/2001/XMLSchema#
   saved:  https://marine.gov.scot/metadata/saved/schema/
   rap:    https://marine.gov.scot/metadata/saved/rap/
   mssamp: https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/
+  xsd:    http://www.w3.org/2001/XMLSchema#
 ```
 
-Identifiers are referenced using the form `<atom>:<resource name>`, and are expanded to `<prefix URI><resource name>`. The last character of the prefix URI is important because the expansion does not assume anything about it, e.g. both the `xsd` (which ends in a hash) and the other prefixes are valid. The expansion is very simple. The identifier `saved:lice_af_total` would expand to `https://marine.gov.scot/metadata/saved/schema/lice_af_total`.
+Identifiers are referenced using the form `<atom>:<resource name>`, and are expanded to `<prefix URI><resource name>`. The last character of the prefix URI is important because the expansion does not assume anything about it, e.g. both the [`xsd`](http://www.w3.org/2001/XMLSchema#) (which ends in a hash) and the other prefixes are valid. The expansion is very simple. The identifier [`saved:lice_af_total`](https://marine.gov.scot/metadata/saved/schema/lice_af_total/) would expand to `https://marine.gov.scot/metadata/saved/schema/lice_af_total`.
 
-**Imports** are a link to an external LinkML schema, from which items declared in the schema are imported.
+#### The default prefix
+
+The default prefix is a single reference to a prefix listed as above:
+
+```yaml
+default_prefix: mssamp
+```
+
+The function of the default prefix is to create unique identifiers for any element declared in the current schema file. For example, in the `Sampling.Note` example above, other documents could refer to this identifier using the URI `https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/Sampling.Note` (expanded from `mssamp:Sampling.Note`). Indeed, if they declared also some prefix (it could be `mssamp`, or `mssamp2`, as long as it maps to the same URI as `mssamp` does in this document), they could also refer to it using that prefix.
+
+The basic idea here, then, is that we need to declare a default prefix which is unique to this document, to identify elements in this document, both internally and externally.
+
+#### Imports
+
+**Imports** are a link to an external LinkML schema, from which items declared in the schema are imported. 
 
 Consider the following set of imports:
 
@@ -82,3 +96,33 @@ imports:
   saved:core
   saved:job
 ```
+
+There is an important distinction between referencing an identifier and importing it. For example, if [`saved:core`](https://marine.gov.scot/metadata/saved/schema/core.yaml) in the example above declared the type [`saved:LatLonType`](https://marine.gov.scot/metadata/saved/schema/LatLonType/), to use this as a range proper, we would need to import [`saved:core`](https://marine.gov.scot/metadata/saved/schema/core.yaml) in the `imports` directive above. That is, [`saved:LatLonType`](https://marine.gov.scot/metadata/saved/schema/LatLonType/) is effectively just a URI (it expands to `https://marine.gov.scot/metadata/saved/schema/LatLonType`), and isn't usable in a different LinkML schema file just by referencing it. Note that importing it would bring it into the top level, i.e. to use it as a range, we would simply use it as `LatLonRange`.
+
+#### The relation between prefixes and imports, or, what do I need to include?
+
+This hints at the importance of the prefixes and their relation to imports. 
+
+1. Any import must use both a valid prefix, and the resource in question must exist and be a valid LinkML schema file.
+2. To be a valid LinkML schema file, declare both the [`linkml`](https://w3id.org/linkml/) prefix and import [`linkml:types`](https://w3id.org/linkml/types)
+3. Our schema files are based on [our own data model/ontology](https://marine.gov.scot/metadata/saved/schema/), so, always declare the `saved` prefix and import [`saved:core`](https://marine.gov.scot/metadata/saved/schema/core.yaml)
+4. The schema file must declare a prefix unique to this document, to be set as the default prefix in the document.
+4. It is not necessary to import a schema file to reference anything related to the prefix, and in fact, this may cause problems. However, it is always necessary to add a prefix to the `prefixes` directive before referencing any identifier underneath it, as it will be impossible to expand the identifier into a URI.
+
+#### What is the difference between our data model/ontology, and schema files for data?
+
+You have probably noticed that both [SAVED data model/ontology](https://marine.gov.scot/metadata/saved/schema/) and the schema files which we are writing are based on LinkML. This partly derives [from the design of LinkML itself](https://linkml.io/linkml/faq/general.html#is-linkml-just-for-metadata), which "doesn't draw any hard and fast distinction between data and metadata, recognising that “metadata” is often defined in relative terms."
+
+There are several elements to the fish data utilities workflow:
+1. We write **schema** files for data, which are based on LinkML
+2. The `fisdat(1)` utility validates and appends metadata to the description manifest, which is a **data** file in YAML or RDF/TTL, the schema of which is the [`job.yaml` component of the data model](`https://marine.gov.scot/metadata/saved/schema/job.yaml`)
+3. The data description manifest can be edited to describe jobs to be run on the data
+4. Upon upload, the `upload(1)` utility:
+   1. Checks that the referenced data exists, and that the checksum matches
+   2. Converts the schema files from YAML to machine-readable RDF/TTL (which can be used independently of the LinkML Python libraries)
+   3. Converts the manifest files from YAML to machine-readable RDF/TTL (or vice versa, since we also support creating/editing the manifest in RDF/TTL)
+   4. Uploads the set of data files + schema files + manifest to an external storage hosting provider (such as, at the moment Google Cloud)
+   
+Here, it can be said that the schema files which we are writing describe data files, whereas the manifest files which the fish data utilities create are data files, which (usually) happen to be in the YAML format.
+
+A further point which is relevant to this section is that there are circumstances in which YAML schema files will be valid, despite prefixes being used but not declared, whereas they may fail conversion due to this issue. Make sure that all identifiers referenced use a prefix which has been declared.
