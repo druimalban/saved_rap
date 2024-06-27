@@ -31,10 +31,10 @@ YAML documents are made up of blocks, with indentation indicating membership of 
 slots:
   Sampling.Note:
     description: "Notes on issues with sampling"
-	range:       string
-	required:    false
-	exact_mappings:
-	  -  saved:date
+    range:       string
+    required:    false
+    exact_mappings:
+      -  saved:date
 ```
 
 Key things to keep in mind:
@@ -56,7 +56,7 @@ The exact distinction between these is not at first glance very clear. It can be
 ### Prefixes and imports
 #### Prefixes
 
-**Prefixes** are a collection of between an atom (text field with no spaces, only underscores) and a URI prefix. These mappings are prefixes because they are used to create unique identifiers from names, i.e. they prefix the name of a thing. Rather than type out the name of the URI every time, we use the short atom to refer to it.
+Prefixes are a collection of between an atom (text field with no spaces, only underscores) and a URI prefix. These mappings are prefixes because they are used to create unique identifiers from names, i.e. they prefix the name of a thing. Rather than type out the name of the URI every time, we use the short atom to refer to it.
 
 Consider the following set of prefixes:
 
@@ -79,13 +79,16 @@ The default prefix is a single reference to a prefix listed as above:
 default_prefix: mssamp
 ```
 
-The function of the default prefix is to create unique identifiers for any element declared in the current schema file. For example, in the `Sampling.Note` example above, other documents could refer to this identifier using the URI `https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/Sampling.Note` (expanded from `mssamp:Sampling.Note`). Indeed, if they declared also some prefix (it could be `mssamp`, or `mssamp2`, as long as it maps to the same URI as `mssamp` does in this document), they could also refer to it using that prefix.
+Some things to keep in mind:
+- The function of the default prefix is to create unique identifiers for any element declared in the current schema file. However, it is possible that tis prefix could be used across different schema files. Indeed, this is the approach taken for producing data models using LinkML schema files: they share a single prefix, and can import each other.
+- For example, in the `Sampling.Note` example above, other documents could refer to this identifier using the URI `https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/Sampling.Note` (expanded from `mssamp:Sampling.Note`).
+- Indeed, external schema files may also declare some prefix (it could be the same, `mssamp`; or, `mssamp2`, as long as it maps to the same URI as `mssamp` does in this document), they could also refer to it using that prefix.
 
-The basic idea here, then, is that we need to declare a default prefix which is unique to this document, to identify elements in this document, both internally and externally.
+The basic idea here, then, is that we need to declare a default prefix which is unique to this document, to identify elements in this document, both internally and externally. 
 
 #### Imports
 
-**Imports** are a link to an external LinkML schema, from which items declared in the schema are imported. 
+Imports are a link to an external LinkML schema, from which items declared in the schema are imported. 
 
 Consider the following set of imports:
 
@@ -112,17 +115,7 @@ This hints at the importance of the prefixes and their relation to imports.
 #### What is the difference between our data model/ontology, and schema files for data?
 
 You have probably noticed that both [SAVED data model/ontology](https://marine.gov.scot/metadata/saved/schema/) and the schema files which we are writing are based on LinkML. This partly derives [from the design of LinkML itself](https://linkml.io/linkml/faq/general.html#is-linkml-just-for-metadata), which "doesn't draw any hard and fast distinction between data and metadata, recognising that “metadata” is often defined in relative terms."
-
-There are several elements to the fish data utilities workflow:
-1. We write **schema** files for data, which are based on LinkML
-2. The `fisdat(1)` utility validates and appends metadata to the description manifest, which is a **data** file in YAML or RDF/TTL, the schema of which is the [`job.yaml` component of the data model](`https://marine.gov.scot/metadata/saved/schema/job.yaml`)
-3. The data description manifest can be edited to describe jobs to be run on the data
-4. Upon upload, the `upload(1)` utility:
-   1. Checks that the referenced data exists, and that the checksum matches
-   2. Converts the schema files from YAML to machine-readable RDF/TTL (which can be used independently of the LinkML Python libraries)
-   3. Converts the manifest files from YAML to machine-readable RDF/TTL (or vice versa, since we also support creating/editing the manifest in RDF/TTL)
-   4. Uploads the set of data files + schema files + manifest to an external storage hosting provider (such as, at the moment Google Cloud)
    
-Here, it can be said that the schema files which we are writing describe data files, whereas the manifest files which the fish data utilities create are data files, which (usually) happen to be in the YAML format.
+Here, it can be said that the **schema** files which we are writing describe data files, whereas the manifest files which the fish data utilities create are **data** files, which (usually) happen to be in the YAML format.
 
 A further point which is relevant to this section is that there are circumstances in which YAML schema files will be valid, despite prefixes being used but not declared, whereas they may fail conversion due to this issue. Make sure that all identifiers referenced use a prefix which has been declared.
