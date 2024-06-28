@@ -5,7 +5,7 @@
 As it stands, the fish data utilities work-flow can be summarised as follows:
 
 1. We write **schema** files for data, which are based on [LinkML](https://linkml.io/linkml/)
-2. The `fisdat(1)` utility validates and appends metadata to the description manifest, which is a **data** file in YAML or RDF/TTL, the schema of which is the [`job.yaml` component of the data model](`https://marine.gov.scot/metadata/saved/schema/job.yaml`)
+2. The `fisdat(1)` utility validates and appends metadata to the description manifest, which is a **data** file in YAML or RDF/TTL, the schema of which is the [`job` component of the data model](`https://marine.gov.scot/metadata/saved/schema/job.yaml`)
 3. The data description manifest can be edited to describe jobs to be run on the data
 4. Upon upload, the `fisup(1)` utility:
    1. Checks that the referenced data exists, and that the checksum matches
@@ -33,23 +33,23 @@ jobs:
 
 The design of this section is not specific to any job. The data model does not know anything about the structure of a job, or what it runs. All it knows about is the following attributes:
 
-1. `atomic_name`: This is an identifier for the job description. Recall that an 'atom' is a text string with no spaces, underscores are the only valid control characters. It must be unique, indeed, it gets transformed into the identifier for the job (a URI) in RDF/TTL.
-2. `job_type`: This is the "type" of the job and the data model has a notion of valid jobs. At the moment, these are "ignore" and "density".
-3. `title`: A free-text title of the job. Keep it relatively short like the `title` field in the YAML schemata. Longer descriptions should go in the `description` field.
+1. [`atomic_name`](https://marine.gov.scot/metadata/saved/schema/atomic_name/): This is an identifier for the job description. Recall that an 'atom' is a text string with no spaces, underscores are the only valid control characters. It must be unique, indeed, it gets transformed into the identifier for the job (a URI) in RDF/TTL.
+2. [`job_type`](https://marine.gov.scot/metadata/saved/schema/job_type/): This is the "type" of the job and the data model has a notion of valid jobs. At the moment, these are "ignore" and "density".
+3. [`title`](https://marine.gov.scot/metadata/saved/schema/title/): A free-text title of the job. Keep it relatively short like the `title` field in the YAML schemata. Longer descriptions should go in the [`description`](https://marine.gov.scot/metadata/saved/schema/description/) field.
 
 ### Additional attributes
 
 There are several other fields supported here:
 
-1. `description`: Longer free-text description of the job. Both this and title are a key part of the feedback at the end of the pipeline, and will be included in the generated results (web pages).
-2. `job_scope_descriptive`: A list of column mappings to bring into scope, the provenance of which is notionally that they describe data about the world (e.g. latitude, longitude, data sampling notes).
-3. `job_scope_collected`: A list of column mappings to bring into scope, the provenance of which is notionally that they describe data which has been collected, or sampled, from the environment.
-4. `job_scope_modelled`: A list of column mappings to bring into scope, the provenance of which is notionally that they describe data which has been mod, or simulated.
+1. [`description`](https://marine.gov.scot/metadata/saved/schema/description/): Longer free-text description of the job. Both this and title are a key part of the feedback at the end of the pipeline, and will be included in the generated results (web pages).
+2. [`job_scope_descriptive`](https://marine.gov.scot/metadata/saved/schema/job_scope_descriptive/): A list of column mappings to bring into scope, the provenance of which is notionally that they describe data about the world (e.g. latitude, longitude, data sampling notes).
+3. [`job_scope_collected`](https://marine.gov.scot/metadata/saved/schema/job_scope_collected/): A list of column mappings to bring into scope, the provenance of which is notionally that they describe data which has been collected, or sampled, from the environment.
+4. [`job_scope_modelled`](https://marine.gov.scot/metadata/saved/schema/job_scope_modelled/): A list of column mappings to bring into scope, the provenance of which is notionally that they describe data which has been mod, or simulated.
 
 Column mappings to bring into scope for the job are specified in the same way for each type, with the following fields necessary:
-1. `column`: The verbatim column name in the table/data file in question, e.g. `TOTAL`
-2. `table`: The name of the table object (specifically, the `atomic_name` field) in the manifest file which contains the column, e.g. `sampling`. It is likely that when comparing data, the source columns are included in different files.
-3. `variable`: The **underlying** variable in the SAVED data model, e.g. [`saved:lice_af_total`](https://marine.gov.scot/metadata/saved/schema/lice_af_total/). Making sure that this is the variable which the job in question is able to process is important, as it is how subsequent processing of the job proper is able to identify the variable to which the column actually refers.
+1. [`column`](https://marine.gov.scot/metadata/saved/schema/column/): The verbatim column name in the table/data file in question, e.g. `TOTAL`
+2. [`table`](https://marine.gov.scot/metadata/saved/schema/table/): The name of the table object (specifically, the `atomic_name` field) in the manifest file which contains the column, e.g. `sampling`. It is likely that when comparing data, the source columns are included in different files.
+3. [`variable`](https://marine.gov.scot/metadata/saved/schema/variable/): The **underlying** variable in the SAVED data model, e.g. [`saved:lice_af_total`](https://marine.gov.scot/metadata/saved/schema/lice_af_total/). Making sure that this is the variable which the job in question is able to process is important, as it is how subsequent processing of the job proper is able to identify the variable to which the column actually refers.
 
 In effect, what we are doing here is columns to data files, and to an underlying variable in the data model, which we have ostensibly agreed describes something across models. This lets us run jobs on generic data with arbitrary column names, which reflects quite well what we encounter in practice, particularly when sharing data. The neat thing about this approach is it really emerges naturally from the notion that we should link variables in data files to variables in the data model.
 
@@ -84,21 +84,21 @@ jobs:
       variable: saved:time
     - column: density
       table: time_density_simple
-      variable: saved:density
+      variable: saved:lice_density_modelled
 local_version: 0.5
 ```
-The manifest itself has an `atomic_name` identifier. This is by default `RootManifest`, and you should change this. What does this mean in practice?
+The manifest itself has an [`atomic_name`](https://marine.gov.scot/metadata/saved/schema/atomic_name/) identifier. This is by default `RootManifest`, and you should change this. What does this mean in practice?
 
 - Recall that when writing schema files for our data, we had to declare a prefix to be used for the schema.
 - When serialising manifests as RDF/TTL (with the `--manifest-format ttl`  option in `fisdat(1)`, and/or during the conversion upon upload), there is a so-called 'base' prefix which uses these identifiers. This is by default `https://marine.gov.scot/metadata/saved/rap/`.
-- Currently, there isn't a check on whether the expanded identifier, based on this `atomic_name` attribute and the 'base' prefix (the default would thus be `https://marine.gov.scot/metadata/saved/rap/RootManifest`) is already in use, but there could be in the future. 
+- Currently, there isn't a check on whether the expanded identifier, based on this [`atomic_name`](https://marine.gov.scot/metadata/saved/schema/atomic_name/) attribute and the 'base' prefix (the default would thus be `https://marine.gov.scot/metadata/saved/rap/RootManifest`) is already in use, but there could be in the future. 
 - Making the name of the serialised manifest, unique then, involves either changing the 'base' prefix to something else (e.g. `https://marine.gov.scot/metadata/saved/rap/job_20240627/`, using the `--base-prefix <some_prefix>` CLI option), varying the name of the manifest in this file (e.g. to `Manifest20240627`), or some combination of the two. 
 - Since the aim is to link data together, including results, it's worth thinking about this carefully. Varying the 'base' prefix is desirable in the sense that not everyone is Marine Scotland, so would have a different place to eventually put generated results.
 
 Other things to consider:
 
-- The `tables` and `jobs` sections are lists. Note the dash before the start of a new element in the list, where indentation indicates that these list items are part of the same block.
-- In general, do not edit the `tables` section, since these are created by the `fisdat(1)` tool. It is easy to make mistakes, and then the upload with `fisup(1)` may fail. In both these lists, what makes elements unique is the `atomic_name` identifier.
+- The [`tables`](https://marine.gov.scot/metadata/saved/schema/tables/) and [`jobs`](https://marine.gov.scot/metadata/saved/schema/jobs/) sections are lists. Note the dash before the start of a new element in the list, where indentation indicates that these list items are part of the same block.
+- In general, do not edit the [`tables`](https://marine.gov.scot/metadata/saved/schema/tables/) section, since these are created by the `fisdat(1)` tool, and upload/subsequent job processing may fail if this section is invalid. In both these lists, what makes elements unique is the [`atomic_name`](https://marine.gov.scot/metadata/saved/schema/atomic_name/) identifier.
 - There is a single job declared here, but more than one job could be requested in a single manifest file. Whether to create multiple manifests for multiple jobs may depend on the cost of uploading data, which may be large.
 
 

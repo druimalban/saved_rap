@@ -80,7 +80,7 @@ default_prefix: mssamp
 ```
 
 Some things to keep in mind:
-- The function of the default prefix is to create unique identifiers for any element declared in the current schema file. However, it is possible that tis prefix could be used across different schema files. Indeed, this is the approach taken for producing data models using LinkML schema files: they share a single prefix, and can import each other.
+- The purpose of the default prefix is to create unique identifiers for any element declared in the current schema file. However, it is possible that this prefix could be used across different schema files. Indeed, this is the approach taken for producing data models using LinkML schema files: they share a single prefix, and can import each other.
 - For example, in the `Sampling.Note` example above, other documents could refer to this identifier using the URI `https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/Sampling.Note` (expanded from `mssamp:Sampling.Note`).
 - Indeed, external schema files may also declare some prefix (it could be the same, `mssamp`; or, `mssamp2`, as long as it maps to the same URI as `mssamp` does in this document), they could also refer to it using that prefix.
 
@@ -119,3 +119,83 @@ You have probably noticed that both [SAVED data model/ontology](https://marine.g
 Here, it can be said that the **schema** files which we are writing describe data files, whereas the manifest files which the fish data utilities create are **data** files, which (usually) happen to be in the YAML format.
 
 A further point which is relevant to this section is that there are circumstances in which YAML schema files will be valid, despite prefixes being used but not declared, whereas they may fail conversion due to this issue. Make sure that all identifiers referenced use a prefix which has been declared.
+
+## Describing data files
+
+### Classes, slots, and types
+
+The LinkML has three related concepts:
+1. Classes, which are effectively a way to describe *things* with attributes
+2. Slots, which are attributes, and correspond closely to the columns in our data files
+3. Types, which extend basic types (such as numbers or text strings)
+
+For validation, at minimum, `fisdat(1)` expects a couple of things:
+1. Declaration of a simple class `TableSchema`, which is used by the programs to actually load the schema files
+2. A set of slots referenced in the schema, corresponding to the columns of the data file in question, which are included as attributes of the `TableSchema` class
+
+The following is a shortened example `TableSchema` object from the sentinel cages (sampling information) example:
+
+```yaml
+slots:
+  Cage.Number:
+    description:    A unique identifier for each cage which links back to station information. Not necessarily a number.
+    any_of:
+      - range:      integer
+      - range:      string
+    is_a:           column_descriptive
+    exact_mappings: saved:cage_id
+    implements:     linkml:elements
+    required:       true
+	
+  Deployment.date:
+    description:    Date cage was stocked with fish
+    range:          string
+    is_a:           column_descriptive
+    exact_mappings:
+      - saved:date
+      - saved:deployment_date
+    implements:     linkml:elements
+    required:       true
+	
+  Fish.Weight.g:
+    description:    Weight of fish expressed in grams
+    range:          float
+    is_a:           column_collected
+    exact_mappings: saved:fish_mass
+    implements:     linkml:elements
+    required:       false
+
+  TOTAL:
+    description:    Total number of lice on the fish
+    range:          integer
+    is_a:           column_collected
+    exact_mappings: saved:lice_af_total
+    implements:     linkml:elements
+    required:       false
+
+classes:
+  TableSchema:
+    implements:
+      - linkml:TwoDimensionalArray
+      - linkml:ColumnOrderedArray
+    slots:
+      - Deployment.date
+      - Sampling.Note
+      - Fish.Weight.g
+      - TOTAL
+```
+
+Slots are declared in their own section at the top level of the YAML schema file, and then referenced in the table schema class object. This is because the LinkML schema files support a notion of slot *reuse*: by declaring them in this slots section, they are available to multiple classes in the same LinkML schema file (for instance, if we had another class, called `TableSchemaAlt`), as well as to other schema files (either a link to the URI of the slot object, or by importing the schema file to access its objects directly).
+
+For example, in this example schema, you will note that there is a slot not used in the `TableSchema` object (`Cage.Number`), and there is a slot referenced in the `TableSchema` object which is not declared in the `slots` section (`Sampling.Note`). The former is valid (the `Cage.Number` slot just won't be included as an attribute of the `TableSchema` object), whereas the latter is invalid, because this slot does not (yet) exist.
+
+A typical slot declaration has the following properties:
+- The top-level *name* of the slot, for example `TOTAL`. For the purposes of validation, this should be the exact label used in the data file which is to be validated against this schema file.
+- [`description`](https://linkml.io/linkml-model/latest/docs/description/): Free text description of the column, while not required, strongly advisable to be included
+- [`range`](https://linkml.io/linkml-model/latest/docs/range/): The underlying data type of the column. Valid base types are `boolean`, `integer`, `float` (or `double`), or `string`. This can be inadequate when the column is a mixture of text and numeric data, e.g. consider the `Cage.Number` example. In these cases, specify [`any_of`](https://linkml.io/linkml-model/latest/docs/any_of/) with a list of `range` directives, as in the `Cage.Number` example above.
+- [`exact_mappings`](https://linkml.io/linkml-model/latest/docs/exact_mappings/): Link/map columns to equivalents in the ontology/data model, or in other schema files. For example, the `TOTAL` column/slot above directly maps to values like [`saved:lice_af_total`](https://marine.gov.scot/metadata/saved/schema/lice_af_total/). There are further notions of mappings, since there are a number of situations in which there isn't an exact mapping: you can use [`broad_mappings`](https://linkml.io/linkml-model/latest/docs/broad_mappings/), [`narrow_mappings`](https://linkml.io/linkml-model/latest/docs/narrow_mappings/), [`close_mappings`](https://linkml.io/linkml-model/latest/docs/close_mappings/) and [`related_mappings`](https://linkml.io/linkml-model/latest/docs/related_mappings/)
+- [`implements`](https://linkml.io/linkml-model/latest/docs/implements/): External slot definition which the column slot implements. We are validating these with LinkML, so at least semantically, it is important to include [`linkml:elements`](https://linkml.io/linkml-model/latest/docs/elements/) at minimum. If the slot implements any other slot definition, turn it into a list with `linkml:elements` and additional definitions as separate list elements.
+- [`required`]: Set as true/false depending on whether the data included have missing values. See the section "Dealing with missing data" in the troubleshooting/debugging section for more information on this and validation.
+
+Further note the inclusion of the [`implements`](https://linkml.io/linkml-model/latest/docs/implements/) directive in the `TableSchema` class definition. Including this was based on LinkML's [documentation prior to version 1.7.0](https://linkml.io/linkml/howtos/multidimensional-arrays.html). They have since added support for arrays, so including this is not strictly necessary, especially given the suggested class URIs do not actually resolve.
+
