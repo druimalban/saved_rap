@@ -53,7 +53,7 @@ Column mappings to bring into scope for the job are specified in the same way fo
 
 In effect, what we are doing here is columns to data files, and to an underlying variable in the data model, which we have ostensibly agreed describes something across models. This lets us run jobs on generic data with arbitrary column names, which reflects quite well what we encounter in practice, particularly when sharing data. The neat thing about this approach is it really emerges naturally from the notion that we should link variables in data files to variables in the data model.
 
-#### Density example
+### Density example
 
 ```yaml
 atomic_name: RootManifest
@@ -87,18 +87,18 @@ jobs:
       variable: saved:density
 local_version: 0.5
 ```
-The manifest itself has an `atomic_name` identifier. This is by default `RootManifest`, and you can change this. What does this mean in practice?
+The manifest itself has an `atomic_name` identifier. This is by default `RootManifest`, and you should change this. What does this mean in practice?
 
 - Recall that when writing schema files for our data, we had to declare a prefix to be used for the schema.
 - When serialising manifests as RDF/TTL (with the `--manifest-format ttl`  option in `fisdat(1)`, and/or during the conversion upon upload), there is a so-called 'base' prefix which uses these identifiers. This is by default `https://marine.gov.scot/metadata/saved/rap/`.
-- Currently, there isn't a check on whether the expanded identifier (the default would thus be `https://marine.gov.scot/metadata/saved/rap/RootManifest`) is already in use, but there could be in the future. 
-- Making the name of the serialised manifest, unique then, involves either changing the base prefix to something else (e.g. `https://marine.gov.scot/metadata/saved/rap/job_20240627/`, using the `--base-prefix <some_prefix>` CLI option), varying the name of the manifest in this file (e.g. to `Manifest20240627`), or some combination of the two. 
-- Since the aim is to link data together, including results, it's worth thinking about this carefully. Varying the base prefix is desirable in the sense that not everyone is Marine Scotland, so would have a different place to put results.
+- Currently, there isn't a check on whether the expanded identifier, based on this `atomic_name` attribute and the 'base' prefix (the default would thus be `https://marine.gov.scot/metadata/saved/rap/RootManifest`) is already in use, but there could be in the future. 
+- Making the name of the serialised manifest, unique then, involves either changing the 'base' prefix to something else (e.g. `https://marine.gov.scot/metadata/saved/rap/job_20240627/`, using the `--base-prefix <some_prefix>` CLI option), varying the name of the manifest in this file (e.g. to `Manifest20240627`), or some combination of the two. 
+- Since the aim is to link data together, including results, it's worth thinking about this carefully. Varying the 'base' prefix is desirable in the sense that not everyone is Marine Scotland, so would have a different place to eventually put generated results.
 
 Other things to consider:
 
 - The `tables` and `jobs` sections are lists. Note the dash before the start of a new element in the list, where indentation indicates that these list items are part of the same block.
 - In general, do not edit the `tables` section, since these are created by the `fisdat(1)` tool. It is easy to make mistakes, and then the upload with `fisup(1)` may fail. In both these lists, what makes elements unique is the `atomic_name` identifier.
-- There is a single job declared here, but more than one job could be requested in a single manifest file, just like there . Whether to create multiple manifests for multiple jobs may depend on the cost of uploading data, which may be large.
+- There is a single job declared here, but more than one job could be requested in a single manifest file. Whether to create multiple manifests for multiple jobs may depend on the cost of uploading data, which may be large.
 
 
