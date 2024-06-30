@@ -14,11 +14,14 @@ As it stands, the fish data utilities work-flow can be summarised as follows:
    4. Uploads the set of data files + schema files + manifest to an external storage hosting provider (such as, at the moment Google Cloud)
 
 One might generate a schema in the `examples/sentinel_cages` directory as follows:
+
 ```sh
 % fisdat sentinel_cages_site.yaml Sentinel_cage_station_info_6.csv  my_manifest.yaml
 % fisdat sentinel_cages_sampling.yaml sentinel_cages_cleaned.csv  my_manifest.yaml
 % fisup my_manifest.yaml
 ```
+
+The main difference between the schema files and the YAML files, then, is that the schema files *describe* data, and are valid LinkML schema files, whereas the manifest files are *data* files which happen to be in YAML format. Editing the files is similar (the syntax is still YAML), but these are not standalone schema files and only a few of the fields valid in LinkML schema files are valid. Simply put, the basic workflow is to generate the manifest files with `fisdat(1)`, perhaps edit the manifest file, then upload the manifest file using `fisup(1)`.
 
 ## Declaring jobs
 ### The generated example job
@@ -101,4 +104,12 @@ Other things to consider:
 - In general, do not edit the [`tables`](https://marine.gov.scot/metadata/saved/schema/tables/) section, since these are created by the `fisdat(1)` tool, and upload/subsequent job processing may fail if this section is invalid. In both these lists, what makes elements unique is the [`atomic_name`](https://marine.gov.scot/metadata/saved/schema/atomic_name/) identifier.
 - There is a single job declared here, but more than one job could be requested in a single manifest file. Whether to create multiple manifests for multiple jobs may depend on the cost of uploading data, which may be large.
 
+## YAML vs RDF/TTL
 
+By default, the `fisdat(1)` tool appends to manifest files in the YAML format, and the `fisup(1)` program, prior to upload, converts these to RDF/TTL upon upload. It is possible, using the `--manifest-format` (`-f` for short) option, to instead specify "ttl" as the format, each time one runs `fisdat(1)`. When using this option, and using it with `fisup(1)`, the conversion upon upload is to YAML, so that both formats are available to whatever does the subsequent processing.
+
+There is a further option to debug the conversion between YAML and the equivalent RDF/TTL representation of the manifest, which is the `fisjob(1)` program. This takes a manifest file in RDF/TTL, and converts it to YAML (using the `from-manifest` option) or takes a manifest file in YAML, and converts it (using the `from-template` option). This largely serves to convert the manifest itself, whereas running `fisup(1)` with the `--no-upload` option largely performs the same thing, albeit also converts the schema files from LinkML YAML schema files to RDF/TTL.
+
+For the schema files, these are also in YAML format, but they are standalone schema files *using the LinkML data model*, whereas the manifest files are *data* files processed by LinkML. The conversion from the fields in the YAML data files to an RDF graph is more or less 1:1. In contrast, the RDF/TTL equivalent of the LinkML schema files are very complicated, using identifiers from a number of ontologies / data models (such as FOAF, SKOS and Dublin Core). Therefore, there is no way to write an RDF/TTL equivalent of these LinkML YAML schema files by hand, even if the RDF/TTL equivalent is largely readable. Therefore, schema files are always in YAML format and are converted to RDF/TTL by `fisup(1)` alone, and the `fisjob(1)` program does not touch these.
+
+The command line interface is largely similar for all three tools, e.g. the `fisjob(1)` program still requires a 'base' prefix (with the same default `https://marine.gov.scot/metadata/saved/rap/` as default)
