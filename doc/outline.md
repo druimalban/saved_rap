@@ -12,14 +12,6 @@ The second component of the pipeline is a collection of local Python programs (`
 
 The third component of the pipeline is subsequent processing of our data. This is a computer program which monitors some location for data uploaded, runs jobs described by the data, then 'bakes' the data into a package describing input, jobs specified, and output. A job is typically associated with some computer program run by the pipeline, and the package produced by the pipeline includes a static web page describing results, including any descriptive statistics or visualisations which can be generated. This is pushed to a well-known location, allowing results to be retrieved using a web browser.
 
-## Technical aspects of the pipeline program
-
-Notably, this processing of data is distinctly decoupled from the place to which data are submitted, in the sense that this is a computer program monitoring multiple locations on the net to which data may be submitted. This may be 'cloud' storage services like Amazon Web Services or Google Cloud Platform (GCP), another computer program implementing an object store not unlike these services, or some directory local to the computer program. The current implementation monitors a 'bucket' on the Google Cloud Storage service.
-
-The computer program in question is written in the Elixir programming language (which runs on the Erlang/OTP platform) due to the extensive library support for 'stages' (GenStage) as well as Elixir and Erlang/OTP's common concurrency and fault-tolerant properties. This should allow the RAP program to scale (including across multiple computers), which is especially important if we use the thing extensively, or which components we run on different machines. 
-
-While something like Python may be more widely used, the tooling for writing a data ingestion pipeline like ours is somewhat limited, as is Python's concurrency support and support for functional programming. Therefore, even if Python had been selected, there would have been a number of technical issues to solve or be re-implemented.
-
 ## The pipeline step-by-step
 
 | *Step* | *Operation*                                        | *Location*                                                |
@@ -33,3 +25,11 @@ While something like Python may be more widely used, the tooling for writing a d
 | 5      | Run job(s)                                         | RAP service                                               |
 | 6      | Cache result(s) and/or data-set                    | RAP service                                               |
 | 7      | Generate HTML results including reporting any errors + any descriptive statistics/visualisations applicable | RAP service and/or external web server |
+
+## Technical aspects of the pipeline program
+
+Notably, this processing of data is distinctly decoupled from the place to which data are submitted, in the sense that this is a computer program monitoring multiple locations on the net to which data may be submitted. This may be 'cloud' storage services like Amazon Web Services or Google Cloud Platform (GCP), another computer program implementing an object store not unlike these services, or some directory local to the computer program. The current implementation monitors a 'bucket' on the Google Cloud Storage service.
+
+The computer program in question is written in the Elixir programming language (which runs on the Erlang/OTP platform) due to the extensive library support for 'stages' (GenStage) as well as Elixir and Erlang/OTP's common concurrency and fault-tolerant properties. This should allow the RAP program to scale (including across multiple computers), which is especially important if we use the thing extensively, or if there are a number of components which we run on different machines (e.g. cache, web server, data submission).
+
+While something like Python may be more widely used, the tooling for writing a data ingestion pipeline like ours is somewhat limited, as is Python's concurrency support and support for functional programming. Therefore, even if Python had been selected, there would have been a number of technical issues to solve or be re-implemented.

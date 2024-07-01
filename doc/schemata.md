@@ -156,7 +156,7 @@ For validation, at minimum, `fisdat(1)` expects a couple of things:
 1. Declaration of a simple class `TableSchema`, which is used by the programs to actually load the schema files
 2. A set of slots referenced in the schema, corresponding to the columns of the data file in question, which are included as attributes of the `TableSchema` class
 
-The following is a shortened example `TableSchema` object from the sentinel cages (sampling information) example:
+The following is a shortened example `TableSchema` object from the sentinel cages (sampling information) example. We can think of `TableSchema` as a class which has column attributes.
 
 ```yaml
 slots:
