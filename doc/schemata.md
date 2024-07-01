@@ -6,7 +6,7 @@ Each data file has a schema, which we use both to validate and describe data. Th
 1. Metadata about the schema file. These declare certain fields essential for validation of the schema (e.g. a unique identifier and name for the schema), as well as extra, optional data such as its license, or when it was last updated.
 2. Fields which describe the structure of data files to be validated against the schema. These associate the names columns with a description, a data type (e.g. text field, or number), a provenance (e.g. modelled, or simulated), and with a variable described in the data model (e.g. [`saved:lice_af_total`](https://marine.gov.scot/metadata/saved/schema/lice_af_total/)).
 
-Top-level fields of a typical schema are summarised as follows:
+Top-level fields of a typical schema are summarised as follows, including what is strictly necessary for a schema file to be valid a LinkML schema file, what is necessary for validation, as well as a few other fields which you may want to include. This summary is not exhaustive, in fact, any fields in the LinkML model should be valid. The example schema files included with the fish data utilities were originally devised based on the JSON/CSVW schema files which we were writing before, as well as from following [the LinkML tutorial](https://linkml.io/linkml/intro/tutorial.html). You can choose to enrich your schema file with additional fields beyond what is needed just for validation, then.
 
 | Field             | Description                                                                            | Do I need this? | Example  |
 | ----------------- | -------------------------------------------------------------------------------------- | --------------- |-------------------------------------------------------------------------------------- |
@@ -41,6 +41,7 @@ Key things to keep in mind:
 1. YAML is a machine-readable language, and indentation matters. In the above example, if `range` was indented two spaces fewer, it would not be considered to be part of the `Sampling.Note` block.
 2. It is not necessary to quote the majority of text fields (even free text), except if the text includes control characters used by YAML, such as colons (which mark key/value pairs), dashes (which designate lists), or hashes (which designate comments).
 3. If a text field is multi-line (sometimes useful for descriptions), you need to use `>-` and indent the text in question below. The end of the indentation, here, rather than quotes, marks the end of the text field.
+4. The order of fields does not strictly matter, but at least in terms of writing schema files for LinkML, it makes good sense to follow the split described above (metadata describing the schema; fields describing structure of data) and the order effectively described in this document, and indicated in the examples.
 
 ## Metadata about the schema file
 
@@ -49,9 +50,20 @@ Key things to keep in mind:
 The exact distinction between these is not at first glance very clear. It can be summarised as follows:
 
 1. The identifier (`id`) is a unique resource where the schema file may (perhaps should) live in the future. The examples use the "rap" directory under the SAVED prefix hosted on the Marine Scotland namespace. If you are not Marine Scotland, it is preferable to choose a URI which you control and could host something there. In any case, this field is necessary for a schema to be valid and to validate data files.
-2. The name field is the a unique name for the schema. This is an "atom" with no spaces, only underscores. It is likely easiest just to use the end of the identifier above, e.g. for the ID `https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling`, one might choose the name `sentinel_cages_sampling`.
+2. The name field is the a unique name for the schema. This is an "atom" with no spaces, only underscores. It is likely easiest just to use the end of the identifier above, e.g. for the ID `https://marine.gov.scot/metadata/saved/rap/sentinel_cages_site`, one might choose the name `sentinel_cages_site`.
 3. The title of the resource is a free text field. Keep it relatively short as this will make the generated output (web pages) clearer.
 4. The description is a longer free text field. Whereas the identifier, name and title fields are mandatory, this description is not. This is the place to put longer descriptions of the data, rather than the title field, although they both allow free text.
+
+```yaml
+id: http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/
+name:  sentinel_cages_site
+title: Sentinel cages station information schema
+description: >-
+  This is an example for the purposes of testing fisdat(1) and fisup(1)
+  This is a multi-line text field, the start of which is the `>-' section,
+  with the end indicated by change in indentation
+
+```
 
 ### Prefixes and imports
 #### Prefixes
@@ -65,6 +77,7 @@ prefixes:
   linkml: https://w3id.org/linkml/
   saved:  https://marine.gov.scot/metadata/saved/schema/
   rap:    https://marine.gov.scot/metadata/saved/rap/
+  mssite: https://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/
   mssamp: https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/
   xsd:    http://www.w3.org/2001/XMLSchema#
 ```
@@ -82,7 +95,8 @@ default_prefix: mssamp
 Some things to keep in mind:
 - The purpose of the default prefix is to create unique identifiers for any element declared in the current schema file. However, it is possible that this prefix could be used across different schema files. Indeed, this is the approach taken for producing data models using LinkML schema files: they share a single prefix, and can import each other.
 - For example, in the `Sampling.Note` example above, other documents could refer to this identifier using the URI `https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/Sampling.Note` (expanded from `mssamp:Sampling.Note`).
-- Indeed, external schema files may also declare some prefix (it could be the same, `mssamp`; or, `mssamp2`, as long as it maps to the same URI as `mssamp` does in this document), they could also refer to it using that prefix.
+- Indeed, external schema files may also declare some prefix (it could be the same, `mssamp`; or e.g. `mssamp_alt`, as long as it maps to the same URI as `mssamp` does in this document), they could also refer to it using that prefix.
+- When declaring prefixes, although they are arbitrary, there tends to be conventions for certain well-known prefixes, a sample list of which is [summarised here](https://bioregistry.io/registry/).
 
 The basic idea here, then, is that we need to declare a default prefix which is unique to this document, to identify elements in this document, both internally and externally. 
 
@@ -125,7 +139,7 @@ This hints at the importance of the prefixes and their relation to imports.
 
 You have probably noticed that both [SAVED data model/ontology](https://marine.gov.scot/metadata/saved/schema/) and the schema files which we are writing are based on LinkML. This partly derives [from the design of LinkML itself](https://linkml.io/linkml/faq/general.html#is-linkml-just-for-metadata), which "doesn't draw any hard and fast distinction between data and metadata, recognising that “metadata” is often defined in relative terms."
    
-Here, it can be said that the **schema** files which we are writing describe data files, whereas the manifest files which the fish data utilities create are **data** files, which (usually) happen to be in the YAML format.
+Here, it can be said that the **schema** files which we are writing describe data files, whereas the manifest files which the fish data utilities create are **data** files, which are (usually) in the YAML format.
 
 A further point which is relevant to this section is that there are circumstances in which YAML schema files will be valid, despite prefixes being used but not declared, whereas they may fail conversion due to this issue. Make sure that all identifiers referenced use a prefix which has been declared.
 
@@ -155,7 +169,7 @@ slots:
     exact_mappings: saved:cage_id
     implements:     linkml:elements
     required:       true
-	
+
   Deployment.date:
     description:    Date cage was stocked with fish
     range:          string
@@ -165,7 +179,7 @@ slots:
       - saved:deployment_date
     implements:     linkml:elements
     required:       true
-	
+
   Fish.Weight.g:
     description:    Weight of fish expressed in grams
     range:          float
