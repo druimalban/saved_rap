@@ -9,6 +9,7 @@ defmodule RAP.Bakery.Compose do
   import EEx
   
   alias RAP.Application
+  alias RAP.Storage.PreRun
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.Result
   alias RAP.Bakery.{Prepare, Compose}
@@ -33,7 +34,7 @@ defmodule RAP.Bakery.Compose do
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "HTML document consumer received #{inspect events}"
     processed_events = events
-    |> Enum.map(&compose_document(state.html_directory, state.rap_uri_prefix, state.rap_style_sheet, state.time_zone, &1))
+    |> Enum.map(&compose_document(state, &1))
     |> Enum.map(&write_result(&1, state.bakery_directory))
     {:noreply, [], state}
   end
@@ -42,24 +43,25 @@ defmodule RAP.Bakery.Compose do
   # struct, since there's no way to guarantee these are constant across
   # runs, i.e. we could start the program with different parameters,
   # and then past generated HTML pages may break
-  def compose_document(
-    html_directory,
-    rap_uri,
-    style_sheet,
-    time_zone,
-    %Prepare{} = prepared 
-  ) do
+  #def compose_document(
+  #  html_directory,
+  #  rap_uri,
+  #  style_sheet,
+  #  time_zone,
+  #  %Prepare{} = prepared 
+  #) do
+  def compose_document(%Application{} = state, %Prepare{} = prepared) do
     # %Prepare{} is effectively an annotated manifest struct, pass in a map
     {html_contents, manifest_signal} =
       doc_lead_in()
       |> head_lead_in()
-      |> preamble(html_directory, style_sheet, prepared.uuid)
+      |> preamble(state.html_directory, state.rap_style_sheet, prepared.uuid)
       |> head_lead_out()
       |> body_lead_in()
-      |> manifest_info(html_directory, rap_uri, time_zone, prepared)
-      |> tables_info(  html_directory, rap_uri, prepared.uuid, prepared.staged_tables)
-      |> jobs_info(    html_directory, prepared.staged_jobs)
-      |> results_info( html_directory, rap_uri, time_zone, prepared.uuid, prepared.results)
+      |> manifest_info(state.html_directory, state.rap_uri_prefix, state.time_zone, prepared)
+      |> tables_info(  state.html_directory, state.rap_uri_prefix, prepared.uuid, prepared.staged_tables)
+      |> jobs_info(    state.html_directory, prepared.staged_jobs)
+      |> results_info( state.html_directory, state.rap_uri_prefix, state.rap_js_lib_d3, state.rap_js_lib_plotly, state.time_zone, prepared.uuid, prepared.results)
       |> body_lead_out()
       |> doc_lead_out()
 
@@ -131,7 +133,7 @@ defmodule RAP.Bakery.Compose do
       manifest_uri_yaml:   yaml_full,
       start_time_readable: format_time(prepared.start_time, time_zone),
       end_time_readable:   format_time(prepared.end_time,   time_zone),
-      signal_full:         signal_full
+      runner_signal_full:  signal_full
     }
     info_input = prepared |> Map.merge(info_extra) |> Map.to_list()
 
@@ -215,13 +217,25 @@ defmodule RAP.Bakery.Compose do
     {curr, sig}
   end
 
-  def plot_result(html_directory, contents_uri, %Result{type: "density", signal: :working} = result) do
-    result_extra = result
-    |> Map.put_new(:contents_uri, contents_uri)
+  def plot_result(
+    html_directory,
+    lib_d3,
+    lib_plotly,
+    target_uri,
+    %Result{type: "density", signal: :working} = result) do
+    
+    plot_extra = %{
+      contents_uri:   target_uri,
+      lib_d3:         lib_d3,
+      lib_plotly:     lib_plotly,
+      plot_div_style: "width:600px;height:400px;"
+    }
+    plot_input = result
+    |> Map.merge(plot_extra)
     |> Map.to_list()
-    EEx.eval_file("#{html_directory}/plot_density.html", result_extra)
+    EEx.eval_file("#{html_directory}/plot_density.html", plot_input)
   end
-  def plot_result(_fragments, _uri, _res), do: ""
+  def plot_result(_fragments, _uri, _d3, _plotly, _res), do: ""
   
   # Assumption is that we have a notion of a completed job, (see named
   # RAP.Job.Result struct), annotated with the base name of the output file
@@ -229,10 +243,10 @@ defmodule RAP.Bakery.Compose do
   # bunch of information.
   # Call the base name of the output file contents_base since result text
   # contents are called `contents'
-  def stage_result(html_directory, rap_uri, time_zone, uuid, %Result{} = result) do
+  def stage_result(html_directory, rap_uri, lib_d3, lib_plotly, time_zone, uuid, %Result{} = result) do
     target_base = "#{result.output_stem}_#{result.name}.#{result.output_format}"
     target_uri  = "#{rap_uri}/#{uuid}/#{target_base}"
-    plotted     = plot_result(html_directory, target_uri, result)
+    plotted     = plot_result(html_directory, lib_d3, lib_plotly, target_uri, result)
 
     result_extra = %{
       start_time_readable: format_time(result.start_time, time_zone),
@@ -243,16 +257,17 @@ defmodule RAP.Bakery.Compose do
     result_input = result
     |> Map.merge(result_extra)
     |> Map.to_list()
+
     result_main = EEx.eval_file("#{html_directory}/result.html", result_input)
 
-    result_main <> plotted
+    result_main <> "\n" <> plotted
   end
 
-  def results_info({curr, sig}, _html, _uri, _tz, _uuid, nil), do: {curr, sig}
-  def results_info({curr, sig}, html_directory, rap_uri, time_zone, uuid, results) do
+  def results_info({curr, sig}, _html, _uri, _d3, _plotly, _tz, _uuid, nil), do: {curr, sig}
+  def results_info({curr, sig}, html_directory, rap_uri, lib_d3, lib_plotly, time_zone, uuid, results) do
     results_lead = "<h1>Results</h1>\n"
     results_fragments = results
-    |> Enum.map(&stage_result(html_directory, rap_uri, time_zone, uuid, &1))
+    |> Enum.map(&stage_result(html_directory, rap_uri, lib_d3, lib_plotly, time_zone, uuid, &1))
     |> Enum.join("\n")
     working_contents = curr <> results_lead <> results_fragments
     {working_contents, sig}
@@ -288,10 +303,10 @@ defmodule RAP.Bakery.Compose do
     Logger.info "Writing index file #{target_full}"
     
     with false <- File.exists?(target_full) && PreRun.dl_success?(
-                    result.contents, File.read!(target_full), opts: [:input_text]),
+                    result.contents, File.read!(target_full), opts: [input_md5: false]),
          :ok   <- File.write(target_full, result.contents) do
       
-      Logger.info "Wrote result of target #{inspect result.name} to fully-qualified path #{target_full}"
+      Logger.info "Wrote result to fully-qualified path #{target_full}"
       target_base
     else
       true ->

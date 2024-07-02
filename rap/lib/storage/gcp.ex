@@ -112,24 +112,24 @@ defmodule RAP.Storage.GCP do
   def coalesce_job(cache_dir, index_base, %PreRun{} = job) do
     target_dir = "#{cache_dir}/#{job.uuid}"
     index_full = "#{target_dir}/#{index_base}"
-    with {:ok, uuid, file_bases} <- fetch_job_deps(cache_dir, job),
-         {:ok, index_contents}   <- File.read(index_full),
-         [manifest_yaml, manifest_ttl, manifest_iri] <- String.split(index_contents, "\n")
+    with {:ok, uuid, file_bases}       <- fetch_job_deps(cache_dir, job),
+         {:ok, index_contents}         <- File.read(index_full),
+         [m_yaml, m_ttl, _base, m_uri] <- String.split(index_contents, "\n")
     do
       Logger.info "Index file is #{inspect index_base}"      
       
       non_manifest_bases = file_bases
-      |> List.delete(manifest_yaml)
-      |> List.delete(manifest_ttl)
+      |> List.delete(m_yaml)
+      |> List.delete(m_ttl)
       |> List.delete(index_base)
       Logger.info "Non-manifest files are #{inspect non_manifest_bases}"      
 
       %MidRun{ uuid:          uuid,
 	       signal:        :working,
 	       data_source:   :gcp,
-	       manifest_iri:  RDF.iri(manifest_iri),
-	       manifest_yaml: manifest_yaml,
-	       manifest_ttl:  manifest_ttl,
+	       manifest_iri:  RDF.iri(m_uri),
+	       manifest_yaml: m_yaml,
+	       manifest_ttl:  m_ttl,
 	       resources:     non_manifest_bases }
     else
       {:error, uuid, errors} -> {:error, uuid, errors}

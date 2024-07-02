@@ -98,6 +98,7 @@ defmodule RAP.Test.Bakery.Compose do
   use ExUnit.Case, async: false
   doctest RAP.Bakery.Compose
 
+  alias RAP.Application
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.{Runner, Result}
   alias RAP.Bakery.{Prepare, Compose}
@@ -381,14 +382,21 @@ defmodule RAP.Test.Bakery.Compose do
 	  runner_signal_full: fsig
         }
     end
+    
+    
     quick_rhs_compose = fn desc ->
-      Compose.compose_document(
-	"./html_fragments",
-	"/saved/rap",
-	"/saved/rap/assets/app.css",
-	"GB-Eire",
-	desc
-      )
+      fake_state = %Application{
+        local_directory:   "/var/db/saved",
+	cache_directory:   "./data_cache",
+	bakery_directory:  "./bakery",
+	time_zone:         "GB-Eire",
+	rap_uri_prefix:    "/saved/rap",
+	rap_style_sheet:   "/saved/rap/assets/app.css",
+	rap_js_lib_plotly: "/saved/rap/assets/plotly-2.32.0.min.js",
+	rap_js_lib_d3:     "/saved/rap/assets/d3.v7.min.js",
+	html_directory:    "./html_fragments"
+      }
+      Compose.compose_document(fake_state, desc)
     end
 
     # Simple all stages succeeded &c.
@@ -454,5 +462,5 @@ defmodule RAP.Test.Bakery.Compose do
     end
     
   end
-
+  
 end

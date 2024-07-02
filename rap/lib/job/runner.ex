@@ -222,7 +222,7 @@ defmodule RAP.Job.Runner do
 
     # Do need to have a notion of different signals
     overall_signal =
-      if Enum.any(result_contents, &(&1 == :working)) do
+      if Enum.any?(result_contents, &(&1.signal == :working)) do
 	:working
       else
 	:job_errors

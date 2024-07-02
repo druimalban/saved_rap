@@ -1,7 +1,7 @@
-<script src="plotly-2.32.0.min.js"></script>
-<script src="d3.v7.min.js"></script>
+<script src="<%= lib_plotly %>"></script>
+<script src="<%= lib_d3 %>"></script>
 <div id="preamble_<%= name %>"></div>
-<div id="plot_<%= name %>"></div>
+<div id="plot_<%= name %>" style="<%= plot_div_style %>"></div>
 <script>
   function gen_preamble(ref, test, dec=4) {
       var k_inf_res  = (ref.k_inf).toFixed(dec);

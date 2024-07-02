@@ -234,7 +234,7 @@ defmodule RAP.Bakery.Prepare do
     Logger.info "Writing results file #{target_full}"
     
     with false <- File.exists?(target_full) && PreRun.dl_success?(
-                    result.contents, File.read!(target_full), opts: [:input_text]),
+                    result.contents, File.read!(target_full), opts: [input_md5: false]),
          :ok   <- File.write(target_full, result.contents) do
       
       Logger.info "Wrote result of target #{inspect result.name} to fully-qualified path #{target_full}"
