@@ -215,6 +215,14 @@ defmodule RAP.Bakery.Compose do
     {curr, sig}
   end
 
+  def plot_result(html_directory, contents_uri, %Result{type: "density", signal: :working} = result) do
+    result_extra = result
+    |> Map.put_new(:contents_uri, contents_uri)
+    |> Map.to_list()
+    EEx.eval_file("#{html_directory}/plot_density.html", result_extra)
+  end
+  def plot_result(_fragments, _uri, _res), do: ""
+  
   # Assumption is that we have a notion of a completed job, (see named
   # RAP.Job.Result struct), annotated with the base name of the output file
   # As opposed to the final RAP.Bakery.Prepare struct which chucks away a
@@ -224,17 +232,20 @@ defmodule RAP.Bakery.Compose do
   def stage_result(html_directory, rap_uri, time_zone, uuid, %Result{} = result) do
     target_base = "#{result.output_stem}_#{result.name}.#{result.output_format}"
     target_uri  = "#{rap_uri}/#{uuid}/#{target_base}"
+    plotted     = plot_result(html_directory, target_uri, result)
+
     result_extra = %{
       start_time_readable: format_time(result.start_time, time_zone),
       end_time_readable:   format_time(result.end_time,   time_zone),
       contents_base:       target_base,
-      contents_uri:        target_uri,
-      generated_results:   nil
+      contents_uri:        target_uri
     }
     result_input = result
     |> Map.merge(result_extra)
     |> Map.to_list()
-    EEx.eval_file("#{html_directory}/result.html", result_input)
+    result_main = EEx.eval_file("#{html_directory}/result.html", result_input)
+
+    result_main <> plotted
   end
 
   def results_info({curr, sig}, _html, _uri, _tz, _uuid, nil), do: {curr, sig}

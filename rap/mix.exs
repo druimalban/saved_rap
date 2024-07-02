@@ -37,8 +37,10 @@ defmodule RAP.MixProject do
   end
 
   defp package do
-    [files: ["lib", "mix.exs", "README.md", "LICENSE", "config", "priv"],
-     maintainers: ["Duncan Guthrie"],
-     licenses: [" AGPL-3.0-or-later"]
+    [
+      files:       ["lib", "mix.exs", "README.md", "LICENSE", "config", "priv"],
+      maintainers: ["Duncan Guthrie"],
+      licenses:    [" AGPL-3.0-or-later"]
+    ]
   end
 end

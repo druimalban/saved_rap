@@ -1,0 +1,59 @@
+<script src="plotly-2.32.0.min.js"></script>
+<script src="d3.v7.min.js"></script>
+<div id="preamble_<%= name %>"></div>
+<div id="plot_<%= name %>"></div>
+<script>
+  function gen_preamble(ref, test, dec=4) {
+      var k_inf_res  = (ref.k_inf).toFixed(dec);
+      var k_inf_test = (test.k_inf).toFixed(dec);
+      var acc_res    = (ref.acc).toFixed(dec);
+      var acc_test   = (test.acc).toFixed(dec);
+      var dist_res   = (ref.dist).toFixed(dec);
+      var dist_test  = (test.dist).toFixed(dec);
+      var str = `
+                <table>
+                  <tr>
+                    <th>Distribution</th>
+                    <th>Rate const.</th>
+                    <th>Acc. factor</th>
+                    <th>EMD</th>
+                  </tr>
+                  <tr>
+                    <td>Reference</td>
+                    <td>${k_inf_res}</td>
+                    <td>${acc_res}</td>
+                    <td>${dist_res}</td>
+                  </tr>
+                  <tr>
+                    <td>Test</td>
+                    <td>${k_inf_test}</td>
+                    <td>${acc_test}</td>
+                    <td>${dist_test}</td>
+                  </tr>
+                </table>
+                `;
+      return(str);
+  }
+  
+  d3.json("<%= contents_uri %>").then(
+      res => {
+          var desc_ref = {
+              type: 'bar',
+              y: Object.values(res.ref.totals),
+              name: 'Reference'
+          };
+          var desc_test = {
+              type: 'bar',
+              y: Object.values(res.test.totals),
+              name: 'Test'
+          };
+          var desc_grouped = [desc_ref, desc_test];
+          var div_preamble = document.getElementById('preamble_<%= name %>')
+          var div_grouped = document.getElementById('plot_<%= name %>');
+          var layout = {barmode: 'group'};
+
+          div_preamble.innerHTML = gen_preamble(res.ref, res.test);
+          Plotly.newPlot(div_grouped, desc_grouped, layout)
+      }
+  )
+</script>
