@@ -9,10 +9,12 @@ defmodule RAP.Bakery.Compose do
   import EEx
   
   alias RAP.Application
+  alias RAP.Miscelllaneous, as: Misc
   alias RAP.Storage.PreRun
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.Result
   alias RAP.Bakery.{Prepare, Compose}
+
 
   defstruct [ :uuid,          :contents,
 	      :output_stem,   :output_format,
@@ -131,8 +133,8 @@ defmodule RAP.Bakery.Compose do
     info_extra = %{
       manifest_uri_ttl:    ttl_full,
       manifest_uri_yaml:   yaml_full,
-      start_time_readable: format_time(prepared.start_time, time_zone),
-      end_time_readable:   format_time(prepared.end_time,   time_zone),
+      start_time_readable: Misc.format_time(prepared.start_time, time_zone),
+      end_time_readable:   Misc.format_time(prepared.end_time,   time_zone),
       runner_signal_full:  signal_full
     }
     info_input = prepared |> Map.merge(info_extra) |> Map.to_list()
@@ -249,8 +251,8 @@ defmodule RAP.Bakery.Compose do
     plotted     = plot_result(html_directory, lib_d3, lib_plotly, target_uri, result)
 
     result_extra = %{
-      start_time_readable: format_time(result.start_time, time_zone),
-      end_time_readable:   format_time(result.end_time,   time_zone),
+      start_time_readable: Misc.format_time(result.start_time, time_zone),
+      end_time_readable:   Misc.format_time(result.end_time,   time_zone),
       contents_base:       target_base,
       contents_uri:        target_uri
     }
@@ -271,26 +273,6 @@ defmodule RAP.Bakery.Compose do
     |> Enum.join("\n")
     working_contents = curr <> results_lead <> results_fragments
     {working_contents, sig}
-  end
-
-  defp format_time(nil, _tz), do: nil
-  defp format_time(unix_ts, time_zone) do    
-    weekdays = [ "Monday",  "Tuesday",  "Wednesday", "Thursday",
-		 "Friday",  "Saturday", "Sunday"   ]
-    months =   [ "January", "February", "March",
-		 "April",   "May",      "June",
-		 "July",    "August",   "September",
-		 "October", "November", "December" ]
-    dt = unix_ts |> DateTime.from_unix!() |> DateTime.shift_zone!(time_zone)
-    
-    # These range from 1-7, 1-12 but lists are zero-indexed
-    day_name      = weekdays  |> Enum.fetch!(Date.day_of_week(dt) - 1)
-    month_name    = months    |> Enum.fetch!(dt.month - 1)
-    
-    padded_hour   = dt.hour   |> to_string |> String.pad_leading(2, "0")
-    padded_minute = dt.minute |> to_string |> String.pad_leading(2, "0") 
-    
-    "#{day_name}, #{dt.day} #{month_name} #{dt.year}, #{padded_hour}:#{padded_minute} (GMT)"
   end
 
   @doc """

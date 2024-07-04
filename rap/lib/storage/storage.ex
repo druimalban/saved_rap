@@ -3,21 +3,21 @@ defmodule RAP.Storage do
 
   Original %RAP.Bakery.Prepare module named struct:
       defstruct [ :uuid, :data_source,
-	      :name, :title, :description,
-	      :start_time, :end_time,
-	      :manifest_pre_base_ttl,
-	      :manifest_pre_base_yaml,
-	      :resource_bases,
-	      :pre_signal,
-	      :producer_signal,
-	      :runner_signal,
-	      :result_bases,
-	      :results,
-	      :staged_tables,
-	      :staged_jobs          ]
+                  :name, :title, :description,
+	          :start_time, :end_time,
+	          :manifest_pre_base_ttl,
+	          :manifest_pre_base_yaml,
+	          :resource_bases,
+	          :pre_signal,
+	          :producer_signal,
+	          :runner_signal,
+	          :result_bases,
+	          :results,
+	          :staged_tables,
+	          :staged_jobs          ]
   """
   use Amnesia
-
+  
   defdatabase DB do
     deftable Manifest, [
       :uuid, :data_source,
@@ -117,13 +117,15 @@ end
 
 defmodule RAP.Storage.PostRun do
 
+  # Need to require Exquisite to actually use Amnesia.Selection
   require Amnesia
   require Amnesia.Helper
+  require Exquisite
   require Logger
-
-  #require RAP.Storage.DB.Job,      as: JobTable
+  
   require RAP.Storage.DB.Manifest, as: ManifestTable
 
+  alias RAP.Miscellaneous, as: Misc
   alias RAP.Job.{Result, Runner}
   alias RAP.Bakery.Prepare
 
@@ -189,4 +191,30 @@ defmodule RAP.Storage.PostRun do
     end
   end
 
+  def retrieve_manifest(uuid) do
+    Logger.info "Attempt to retrieve prepared manifest information from mnesia DB `Manifest' table"
+    
+    try do
+      res = Amnesia.transaction do
+	test = ManifestTable.read(uuid)
+      end
+      case res do
+	nil -> nil
+	pre -> %{ Map.new(pre) | __struct__: Prepare }
+      end
+    rescue
+      ArgumentError -> nil
+    end
+  end
+
+  def yield_manifests(invoked_after \\ -1, time_zone, owner \\ :any) do
+    date_proper = invoked_after |> Misc.format_time(time_zone)
+    Logger.info "Retrieve all prepared manifests after #{date_proper}"
+    
+    Amnesia.transaction do
+      ManifestTable.where(start_time > invoked_after)
+      |> Amnesia.Selection.values()
+    end
+  end
+  
 end

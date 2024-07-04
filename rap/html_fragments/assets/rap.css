@@ -1,0 +1,14 @@
+@import("/saved/assets/fira.css");
+body {
+    font-family: 'Fira Sans', sans-serif;
+    font-size:   12pt;
+    background-color: #fffff8
+}
+tt {
+    font-family: 'Fira Mono', monospace;
+    font-size:   11pt;
+}
+code {
+    font-family: 'Fira Mono', monospace;
+    font-size:   11pt;
+}

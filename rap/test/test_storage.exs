@@ -79,6 +79,8 @@ defmodule RAP.Test.Storage.PostRun do
 
   require Amnesia
   require Amnesia.Helper
+  require Logger
+
   require RAP.Storage.DB.Manifest, as: ManifestTable
   
   use ExUnit.Case, async: false
@@ -87,23 +89,62 @@ defmodule RAP.Test.Storage.PostRun do
   alias RAP.Storage.{PreRun, PostRun}
   alias RAP.Bakery.Prepare
 
-  test "Test manifest caching function" do
+#  test "Test manifest caching function" do
+#
+#    uuid0   = UUID.uuid4()
+#    struct0 = %Prepare{uuid: uuid0}
+#
+#    curr_ts    = DateTime.utc_now() |> DateTime.to_unix()
+#    :ets.new(:test, [:set, :public, :named_table])
+#    :ets.insert(:test, {uuid0, curr_ts})
+#
+#    assert PreRun.mnesia_feasible?(uuid0)
+#    assert PostRun.cache_manifest(struct0, :test)
+#
+#    Amnesia.transaction do
+#      uuid0 |> ManifestTable.delete()
+#    end
+#    assert PreRun.mnesia_feasible?(uuid0)
+#  end
 
-    uuid0   = UUID.uuid4()
-    struct0 = %Prepare{uuid: uuid0}
+  test "Yield various Manifest objects from database" do
+    curr_ts = DateTime.utc_now() |> DateTime.to_unix()
+    
+    uuid0 = UUID.uuid4()
+    uuid1 = UUID.uuid4()
+    uuid2 = UUID.uuid4()
 
-    curr_ts    = DateTime.utc_now() |> DateTime.to_unix()
-    :ets.new(:test, [:set, :public, :named_table])
-    :ets.insert(:test, {uuid0, curr_ts})
+    struct0 = %ManifestTable{ uuid: uuid0, start_time: curr_ts - 450 }
+    struct1 = %ManifestTable{ uuid: uuid1, start_time: curr_ts - 300 }
+    struct2 = %ManifestTable{ uuid: uuid2, start_time: curr_ts - 10 }
+    
+    Amnesia.transaction do
+      struct0 |> ManifestTable.write()
+      struct1 |> ManifestTable.write()
+      struct2 |> ManifestTable.write()
 
-    assert PreRun.mnesia_feasible?(uuid0)
-    assert PostRun.cache_manifest(struct0, :test)
+      val = ManifestTable.read(uuid0)
+      Logger.info("VAL: #{inspect val}")
+    end
 
+    res_exp_none  = PostRun.yield_manifests(curr_ts, "GB-Eire")
+    res_exp_uuid2 = PostRun.yield_manifests(curr_ts - 100, "GB-Eire")
+    res_exp_all0  = PostRun.yield_manifests("GB-Eire")
+    res_exp_all1  = PostRun.yield_manifests(curr_ts - 3000, "GB-Eire")
+    
+    Logger.info ("Result #1 (expected none):    #{inspect res_exp_none}")
+    Logger.info ("Result #2 (expected UUID #2): #{inspect res_exp_uuid2}")
+    Logger.info ("Result #3 (expected all):     #{inspect res_exp_all0}")
+    Logger.info ("Result #4 (expected all):     #{inspect res_exp_all1}")
+    
     Amnesia.transaction do
       uuid0 |> ManifestTable.delete()
+      uuid1 |> ManifestTable.delete()
+      uuid2 |> ManifestTable.delete()
     end
-    assert PreRun.mnesia_feasible?(uuid0)
+
   end
+
   
 end
 

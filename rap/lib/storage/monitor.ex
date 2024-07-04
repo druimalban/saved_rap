@@ -242,7 +242,6 @@ defmodule RAP.Storage.Monitor do
       GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
       new_time_stamp = GenStage.call(__MODULE__, :update_last_poll)
       monitor_gcp(session, bucket, index_file, interval, new_time_stamp)
-      
     else
       false ->
 	monitor_gcp(session, bucket, index_file, interval, last_poll)

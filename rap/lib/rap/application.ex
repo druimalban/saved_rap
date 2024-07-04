@@ -13,15 +13,15 @@ defmodule RAP.Application do
   @index_file         ".index"
   @index_fall_back    "manifest.ttl"
   @gcp_bucket         "saved-rap-test"
-  @local_directory    "/var/db/saved"  # Monitor this like GCP
+  @local_directory    "/var/db/saved"         # Monitor this like GCP
   @cache_directory    "./data_cache"
-  @bakery_directory   "./bakery"       # The place to output results
+  @bakery_directory   "./bakery"              # Place to output results
   @linked_result_stem "manifest_post"
   @time_zone          "GB-Eire"
   @rap_uri_prefix     "/saved/rap"
-  @rap_style_sheet    "/saved/rap/assets/app.css"
-  @rap_js_lib_plotly  "/saved/rap/assets/plotly-2.32.0.min.js"
-  @rap_js_lib_d3      "/saved/rap/assets/d3.v7.min.js"
+  @rap_style_sheet    "/saved/assets/rap.css" # Imports fira.css
+  @rap_js_lib_plotly  "/saved/assets/plotly-2.32.0.min.js"
+  @rap_js_lib_d3      "/saved/assets/d3.v7.min.js"
   @html_directory     "./html_fragments"
   
   use Application
