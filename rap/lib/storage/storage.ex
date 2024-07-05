@@ -193,19 +193,13 @@ defmodule RAP.Storage.PostRun do
 
   def retrieve_manifest(uuid) do
     Logger.info "Attempt to retrieve prepared manifest information from mnesia DB `Manifest' table"
-    
-    try do
-      res = Amnesia.transaction do
-	test = ManifestTable.read(uuid)
-      end
-      case res do
-	nil -> nil
-	pre -> %{ Map.new(pre) | __struct__: Prepare }
-      end
-    rescue
-      ArgumentError -> nil
+    Amnesia.transaction do
+      ManifestTable.read(uuid) |> Map.new() |> inject_manifest()
     end
   end
+
+  defp inject_manifest(nil), do: nil
+  defp inject_manifest(pre), do: %{ pre | __struct__: Prepare }
 
   def yield_manifests(invoked_after \\ -1, time_zone, owner \\ :any) do
     date_proper = invoked_after |> Misc.format_time(time_zone)
@@ -214,6 +208,7 @@ defmodule RAP.Storage.PostRun do
     Amnesia.transaction do
       ManifestTable.where(start_time > invoked_after)
       |> Amnesia.Selection.values()
+      |> Enum.map(&inject_manifest/1)
     end
   end
   

@@ -119,28 +119,34 @@ defmodule RAP.Test.Storage.PostRun do
     struct2 = %ManifestTable{ uuid: uuid2, start_time: curr_ts - 10 }
     
     Amnesia.transaction do
+      Logger.info "DB initially has the following keys: #{inspect(ManifestTable.keys())}"
       struct0 |> ManifestTable.write()
       struct1 |> ManifestTable.write()
       struct2 |> ManifestTable.write()
-
-      val = ManifestTable.read(uuid0)
-      Logger.info("VAL: #{inspect val}")
+      Logger.info "Added #{inspect(ManifestTable.keys())} to the manifest table"
     end
 
     res_exp_none  = PostRun.yield_manifests(curr_ts, "GB-Eire")
     res_exp_uuid2 = PostRun.yield_manifests(curr_ts - 100, "GB-Eire")
     res_exp_all0  = PostRun.yield_manifests("GB-Eire")
     res_exp_all1  = PostRun.yield_manifests(curr_ts - 3000, "GB-Eire")
-    
+
     Logger.info ("Result #1 (expected none):    #{inspect res_exp_none}")
     Logger.info ("Result #2 (expected UUID #2): #{inspect res_exp_uuid2}")
     Logger.info ("Result #3 (expected all):     #{inspect res_exp_all0}")
     Logger.info ("Result #4 (expected all):     #{inspect res_exp_all1}")
     
+    assert match?([],                          res_exp_none)
+    assert match?([res_exp_uuid2],             res_exp_uuid2)
+    assert match?([struct0, struct1, struct2], res_exp_all0)
+    assert match?([struct0, struct1, struct2], res_exp_all1)
+    
     Amnesia.transaction do
       uuid0 |> ManifestTable.delete()
       uuid1 |> ManifestTable.delete()
       uuid2 |> ManifestTable.delete()
+      keys = ManifestTable.keys()
+      Logger.info "DB finally has the following keys: #{inspect(ManifestTable.keys())}"
     end
 
   end
