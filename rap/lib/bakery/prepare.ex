@@ -36,9 +36,9 @@ defmodule RAP.Bakery.Prepare do
   require Logger
 
   alias RAP.Application
+  alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.{PreRun, PostRun}
   alias RAP.Job.{Result, Runner}
-  alias RAP.Bakery.Prepare
 
   # Note naming of manifest_pre_base
   # Manifest signal is simple "are all the tables valid"?
@@ -73,6 +73,27 @@ defmodule RAP.Bakery.Prepare do
     processed_events = events
     |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.linked_result_stem, :uuid))
     {:noreply, processed_events, state}
+  end
+
+  def handle_demand(demand, state) do
+    Logger.info "Bakery.Prepare: Received demand for #{inspect demand} events"
+    yielded   = state.staging_objects |> Enum.take(demand)
+    remaining = state.staging_objects |> Enum.drop(demand)
+    pretty    = yielded |> Enum.map(&Misc.pretty_print_object/1)
+    new_state = state   |> Map.put(:staging_objects, staging)
+    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state: #{inspect pretty}"
+    {:noreply, yielded, new_state}
+  end
+
+  # Very similar to Storage.Monitor :stage_objects cast
+  def handle_cast({:trigger_rebuild, after_ts}, %Application{staging_objects: extant} = state) do
+    with prepared  <- PostRun.yield_manifests(after_ts, state.time_zone),
+         [qh | qt] <- extant ++ prepared do
+      new_state = state |> Map.put(:staging_objects, queue_tail)
+      {:noreply, [queue_head], new_state}
+    else
+      [] -> {:noreply, [], state}
+    end    
   end
 
   @doc """
@@ -135,7 +156,7 @@ defmodule RAP.Bakery.Prepare do
 
     # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
     #end_time = DateTime.utc_now() |> DateTime.to_unix()
-    semi_final_data = %Prepare{
+    semi_final_data = %__MODULE__{
       uuid:                   processed.uuid,
       data_source:            processed.data_source,
       name:                   processed.name,
@@ -183,7 +204,7 @@ defmodule RAP.Bakery.Prepare do
 
     # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
     #end_time = DateTime.utc_now() |> DateTime.to_unix()
-    semi_final_data = %Prepare{
+    semi_final_data = %__MODULE__{
       uuid:                   processed.uuid,
       data_source:            processed.data_source,
       name:                   processed.name,
@@ -201,7 +222,7 @@ defmodule RAP.Bakery.Prepare do
   # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
   def bake_data(%Runner{signal: :see_pre} = processed, _cache, _bakery, _ln, ets_table) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_pre'"
-    semi_final_data = %Prepare{
+    semi_final_data = %__MODULE__{
       uuid:            processed.uuid,
       data_source:     processed.data_source,
       pre_signal:      processed.pre_signal,

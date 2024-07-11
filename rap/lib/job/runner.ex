@@ -7,7 +7,6 @@ defmodule RAP.Job.Result do
   require Logger
 
   alias RAP.Manifest.TableDesc
-  alias RAP.Job.Result
   alias RAP.Job.{ScopeSpec, JobSpec, TableSpec, ManifestSpec}
   
   defstruct [ :name, :title, :description,
@@ -48,7 +47,7 @@ defmodule RAP.Job.Result do
   end
   
   def run_job(_uuid, _cache_dir, %JobSpec{type: "ignore"} = spec) do
-    %Result{
+    %__MODULE__{
       name:        spec.name,
       title:       spec.title,
       description: spec.description,
@@ -110,68 +109,61 @@ defmodule RAP.Job.Result do
 	{:run_success, _sig, py_result} ->
 	  Logger.info "Call to external command/executable density_count_ode succeeded:"
 	  Logger.info(inspect py_result)
- 	  %Result{ name: spec.name, title: spec.title,
-		   description:   spec.description,
-		   type:          "density",
-		   output_format: spec.result_format,
-		   output_stem:   spec.result_stem,
-		   source_job:    spec.name,
-		   start_time:    start_ts,  end_time: end_ts,
-		   signal:        :working,
-		   contents:      py_result }
+ 	  %__MODULE__{
+	    name: spec.name, title: spec.title,
+	    description:   spec.description,
+	    type:          "density",
+	    output_format: spec.result_format,
+	    output_stem:   spec.result_stem,
+	    source_job:    spec.name,
+	    start_time:    start_ts,  end_time: end_ts,
+	    signal:        :working,
+	    contents:      py_result
+	  }
 		   
 	{:run_error, _sig, py_result} ->
 	  Logger.info "Call to external command/executable density_count_ode: non-zero exit status:"
 	  Logger.info(inspect py_result)
- 	  %Result{ name: spec.name, title: spec.title,
-		   description:   spec.description,
-		   type:          "density",
-		   output_format: spec.result_format,
-		   output_stem:   spec.result_stem,
-		   source_job:    spec.name,
-		   start_time:    start_ts,      end_time: end_ts,
-		   signal:        :job_failure,
-		   contents:      py_result }
+ 	  %__MODULE__{
+	    name: spec.name, title: spec.title,
+	    description:   spec.description,
+	    type:          "density",
+	    output_format: spec.result_format,
+	    output_stem:   spec.result_stem,
+	    source_job:    spec.name,
+	    start_time:    start_ts,      end_time: end_ts,
+	    signal:        :job_failure,
+	    contents:      py_result
+	  }
 	  
 	{:call_error, py_error, py_result} ->
 	  Logger.info "Call to Python interpreter failed or system is locked up"
- 	  %Result{ name: spec.name, title: spec.title,
-		   description:   spec.description,
-		   type:          "density",
-		   output_format: spec.result_format,
-		   output_stem:   spec.result_stem,
-		   source_job:    spec.name,
-		   start_time:    start_ts,  end_time:   end_ts,
-		   signal:        :python_error,
-		   contents:      py_result }
+ 	  %__MODULE__{
+	    name: spec.name, title: spec.title,
+	    description:   spec.description,
+	    type:          "density",
+	    output_format: spec.result_format,
+	    output_stem:   spec.result_stem,
+	    source_job:    spec.name,
+	    start_time:    start_ts,  end_time:   end_ts,
+	    signal:        :python_error,
+	    contents:      py_result
+	  }
        end
      end
     
   end
 
   def run_job(_uuid, _cache_dir, %JobSpec{} = bad_spec) do
-    %Result{ name:          bad_spec.name,
-	     title:         bad_spec.title,
-	     description:   bad_spec.description,
-	     type:          bad_spec.type,
-	     source_job:    bad_spec.name,
-	     signal:        :bad_job_spec,
-	     contents:      "Unrecognised job spec" }
-  end
-  
-  defp mae col0, col1 do
-    Logger.info "Called Job.Spec.mae (col0 = #{inspect col0} ,col1 = #{inspect col1})"
-    Enum.zip(col0, col1)
-    |> Enum.map( fn{y, x} -> abs(y - x) end)
-    |> Math.Enum.mean()
-  end
-
-  defp rmsd col0, col1 do
-    Logger.info "Called Job.Spec.rmsd (col0 = #{inspect col0} ,col1 = #{inspect col1})"
-    Enum.zip(col0, col1)
-    |> Enum.map( fn{x, y} -> Math.pow(x-y, 2) end)
-    |> Math.Enum.mean()
-    |> Math.sqrt()
+    %__MODULE__{
+      name:          bad_spec.name,
+      title:         bad_spec.title,
+      description:   bad_spec.description,
+      type:          bad_spec.type,
+      source_job:    bad_spec.name,
+      signal:        :bad_job_spec,
+      contents:      "Unrecognised job spec"
+    }
   end
   
 end
@@ -181,7 +173,7 @@ defmodule RAP.Job.Runner do
   use GenStage
   require Logger
 
-  alias RAP.Job.{Producer, Result, Runner}
+  alias RAP.Job.{Producer, Result}
   alias RAP.Job.ManifestSpec
 
   defstruct [
@@ -228,25 +220,27 @@ defmodule RAP.Job.Runner do
 	:job_errors
       end
       
-    %Runner{ uuid:               spec.uuid,
-	     data_source:        spec.data_source,
-	     local_version:      spec.local_version,
-	     name:               spec.name,
-	     title:              spec.title,
-	     description:        spec.description,
-	     manifest_base_ttl:  spec.manifest_base_ttl,
-	     manifest_base_yaml: spec.manifest_base_yaml,
-	     resource_bases:     spec.resource_bases,
-	     staging_tables:     spec.staging_tables,
-	     staging_jobs:       spec.staging_jobs,
-	     pre_signal:         spec.pre_signal,
-	     producer_signal:    spec.signal,
-	     signal:             overall_signal,
-	     results:            result_contents    }
+    %__MODULE__{
+      uuid:               spec.uuid,
+      data_source:        spec.data_source,
+      local_version:      spec.local_version,
+      name:               spec.name,
+      title:              spec.title,
+      description:        spec.description,
+      manifest_base_ttl:  spec.manifest_base_ttl,
+      manifest_base_yaml: spec.manifest_base_yaml,
+      resource_bases:     spec.resource_bases,
+      staging_tables:     spec.staging_tables,
+      staging_jobs:       spec.staging_jobs,
+      pre_signal:         spec.pre_signal,
+      producer_signal:    spec.signal,
+      signal:             overall_signal,
+      results:            result_contents
+    }
   end
 
   def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache) do
-    %Runner{
+    %__MODULE__{
       uuid:            spec.uuid,
       data_source:     spec.data_source,
       pre_signal:      spec.pre_signal,
@@ -270,14 +264,16 @@ defmodule RAP.Job.Runner do
   end
   """
   def process_jobs(%ManifestSpec{} = spec, _cache) do
-    %Runner{ name:               spec.name,
-	     uuid:               spec.uuid,
-	     data_source:        spec.data_source,
-	     pre_signal:         spec.pre_signal,
-	     producer_signal:    spec.signal,
-	     signal:             :see_producer,
-	     manifest_base_ttl:  spec.manifest_base_ttl,
-	     manifest_base_yaml: spec.manifest_base_yaml,
-	     resource_bases:     spec.resource_bases    }
+    %__MODULE__{
+      name:               spec.name,
+      uuid:               spec.uuid,
+      data_source:        spec.data_source,
+      pre_signal:         spec.pre_signal,
+      producer_signal:    spec.signal,
+      signal:             :see_producer,
+      manifest_base_ttl:  spec.manifest_base_ttl,
+      manifest_base_yaml: spec.manifest_base_yaml,
+      resource_bases:     spec.resource_bases
+    }
   end
 end

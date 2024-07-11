@@ -13,7 +13,7 @@ defmodule RAP.Bakery.Compose do
   alias RAP.Storage.PreRun
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.Result
-  alias RAP.Bakery.{Prepare, Compose}
+  alias RAP.Bakery.Prepare
 
 
   defstruct [ :uuid,          :contents,
@@ -67,7 +67,7 @@ defmodule RAP.Bakery.Compose do
       |> body_lead_out()
       |> doc_lead_out()
 
-    %Compose{
+    %__MODULE__{
       uuid:                 prepared.uuid,
       contents:             html_contents,
       output_stem:          "index",
@@ -278,7 +278,7 @@ defmodule RAP.Bakery.Compose do
   @doc """
   This is more or less identical to `Prepare.write_result/4'…
   """
-  def write_result(%Compose{} = result, bakery_directory) do
+  def write_result(%__MODULE__{} = result, bakery_directory) do
     target_base = "#{result.output_stem}.#{result.output_format}"
     target_full = "#{bakery_directory}/#{result.uuid}/#{target_base}"
       

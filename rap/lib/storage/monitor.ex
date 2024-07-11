@@ -23,6 +23,7 @@ defmodule RAP.Storage.Monitor do
   alias GoogleApi.Storage.V1.Api.Objects,   as: GCPReqObjs
 
   alias RAP.Application
+  alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.Monitor
 
   alias RAP.Storage.PreRun
@@ -128,7 +129,7 @@ defmodule RAP.Storage.Monitor do
     Logger.info "Storage.Monitor: Received demand for #{inspect demand} event"
     yielded   = state.staging_objects |> Enum.take(demand)
     remaining = state.staging_objects |> Enum.drop(demand)
-    pretty    = yielded |> Enum.map(&pretty_print_object/1)
+    pretty    = yielded |> Enum.map(&Misc.pretty_print_object/1)
     new_state = state |> Map.put(:staging_objects, remaining)
     Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state: #{inspect pretty}"
     {:noreply, yielded, new_state}
@@ -142,13 +143,13 @@ defmodule RAP.Storage.Monitor do
     target_files = grouped_objects |> Map.get(uuid)
     find_index   = fn(k) -> k.path == index_file end
 
-    with %Monitor{} = index <- Enum.find(target_files, find_index),
+    with %__MODULE__{} = index <- Enum.find(target_files, find_index),
          resources <- List.delete(target_files, index) do
       curr = DateTime.utc_now() |> DateTime.to_unix()
       :ets.insert(:uuid, {uuid, curr})
       ds = %PreRun{uuid: uuid, index: index, resources: resources}
       Logger.info("Inserted #{uuid} and current UNIX time stamp #{inspect curr} into Erlang term storage (:ets)")
-      Logger.info("UUID/content map: #{pretty_print_object ds}")
+      Logger.info("UUID/content map: #{Misc.pretty_print_object ds}")
       ds
     else
       nil ->
@@ -156,13 +157,6 @@ defmodule RAP.Storage.Monitor do
 	nil
     end
   end
-
-  def pretty_print_object(%Monitor{path: fp}), do: fp
-  def pretty_print_object(%PreRun{uuid: uuid, resources: res}) do
-    pretty_resources = res |> Enum.map(&pretty_print_object/1)
-    "%{UUID: #{uuid}, resources: #{inspect pretty_resources}}"
-  end
-  def pretty_print_object(n), do: inspect n
 
   @doc """
   This function monitors the GCP objects every five minutes (or whatever
@@ -304,7 +298,7 @@ defmodule RAP.Storage.Monitor do
     with {:ok, re} <- Regex.compile(full_pattern),
 	 true      <- Regex.match?(re, nom),
          [owner, _date, uuid, fp] <- String.split(nom, "/") do
-      %Monitor{
+      %__MODULE__{
 	owner:      owner,
 	uuid:       uuid,
 	path:       fp,
