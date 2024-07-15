@@ -13,11 +13,12 @@
 
 @prefix : <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/> .
 @prefix manpre:    <:manifest_pre#> .
+@prefix manpost:   <:manifest_post#>
 @prefix jobinst:   <:manifest_post#job_> .
 @prefix stageinst: <:manifest_post#stage_> .
 @prefix result:    <:manifest_post#result_> .
 
-:RootManifestResults a saved:ResultsManifest ;
+manpost:RootManifestResults a saved:ResultsManifest, prov:Entity ;
     rdfs:label "results_manifest" ;
     dcterms:title "Results manifest description for example RootManifest"@en ;
     dcterms:description: "This is an example results description, post processing by the SAVED RAP service/job runner" ;
@@ -26,8 +27,7 @@
     pav:createdOn "20240714T105900Z" ;
     pav:version "1" ;
     pav:createdAt <:manifest_results_v1.ttl> ;
-    pav:createdWith service:application ;
-    pav:derivedFrom manpre:RootManifest ;
+    # pav:derivedFrom manpre:RootManifest ;
 
     dcat:downloadURL <:RootManifestResults.ttl> ;
     dcat:mediaType "text/csv" ;
@@ -148,21 +148,47 @@ result:example_time_density_simple a saved:ResultDesc ;
 
 
 # Agents (to be moved into separate vocabulary)
+service:application a saved:RAPInstance, prov:SoftwareAgent ;
+    rdfs:label "RAP" .    
 
-stage:monitor_gcp a prov:SoftwareAgent ;
-    rdfs:label "RAP.Storage.Monitor" .
+manpost:application_invocation a saved:RAPInvocation, prov:Activity ;
+    rdr:software "saved_rap" ;
+    saved:beam_application "RAP" ;
+    saved:beam_node "nonode" ;
+    saved:beam_host "nohost" ;
+    saved:beam_module "Elixir.RAP" ;
+    saved:otp_version "27",
+    saved:elixir_version "1.16.2",
+    saved:rap_interval 300 ;
+    saved:rap_index_file ".index" ;
+    saved:gcp_bucket "saved_rap_test" ;
+    saved:rap_local_directory "./data_cache" ;
+    saved:rap_bakery_directory "./bakery" ;
+    saved:linked_result_stem "manifest_post" ;
+    saved:rap_html_directory "./html_fragments" ;
+    pav:version "0.3" ;
+    prov:wasAssociatedWith service:application ;
+    prov:startedAtTime "20240714T105000Z" .
+   # prov:generated manpost:RootManifestResults .
+    
 
-stage:fetch_gcp a prov:SoftwareAgent ;
-    rdfs:label "RAP.Storage.GCP" .
+stage:monitor_gcp a saved:RAPStage, prov:SoftwareAgent ;
+    rdfs:label "Elixir.RAP.Storage.Monitor" .
 
-stage:job_producer a prov:SoftwareAgent ;
-    rdfs:label "RAP.Job.Producer" .
+stage:fetch_gcp a saved:RAPStage, prov:SoftwareAgent ;
+    rdfs:label "Elixir.RAP.Storage.GCP" .
 
-stage:job_runner a prov:SoftwareAgent ;
-    rdfs:label "RAP.Job.Runner" .
+stage:job_producer a saved:RAPStage, prov:SoftwareAgent ;
+    rdfs:label "Elixir.RAP.Job.Producer" .
 
-ext:density_count_ode a prov:SoftwareAgent, saved:ExtCall ;
-    rdfs:label "Python.density_count_ode" ;
+stage:job_runner a saved:RAPStage, prov:SoftwareAgent ;
+    rdfs:label "Elixir.RAP.Job.Runner" .
+
+stage:bakery_prep a saved:RAPStage, prov:SoftwareAgent ;
+    rdfs:label "Elixir.RAP.Bakery.Prepare"
+
+ext:density_count_ode a saved:ExtCall, prov:SoftwareAgent ;
+    rdfs:label "Contrib.Python.DensityCountOde" ;
     saved:exec_python true ;
     saved:exec_versions "3.9", "3.10", "3.11", "3.12" ;
     saved:exec_name "density_count_ode.py" .
@@ -210,7 +236,7 @@ stageinst:job_producer_invocation a saved:RAPStageInvocation, prov:Activity ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
     pav:version "0.3" ;
     prov:startedAtTime "20240714T105900Z" ;
-    prov:used stage:job_producer .
+    prov:wasAssociatedWith stage:job_producer .
 
 stageinst:job_runner_invocation a saved:RAPStageInvocation, prov:Activity ;
     rdr:software "saved_rap" ;
@@ -227,42 +253,79 @@ stageinst:job_runner_invocation a saved:RAPStageInvocation, prov:Activity ;
     prov:startedAtTime "20240714T105900Z" ;
     prov:wasAssociatedWith stage:job_runner .
 
+stageinst:bakery_prep_invocation a saved:RAPStageInvocation, prov:Activity ;
+    rdr:software "saved_rap" ;
+    saved:mix_profile "dev" ;
+    saved:beam_application "Elixir.RAP" ;
+    saved:beam_node "nonode" ;
+    saved:beam_host "nohost" ;
+    saved:beam_module "Elixir.RAP.Bakery.Prepare" ;
+    saved:gen_stage_type "producer_consumer" ;
+    saved:gen_stage_subscriptions "Elixir.RAP.Job.Runner" ;
+    saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
+    pav:version "0.3" ;
+    prov:startedAtTime "20240714T105900Z" ;
+    prov:wasAssociatedWith stage:bakery_prep .
+
 
 ## Monitor stage
 ##' Note that the initial entity is not derived from any previous empty as the monitor process generates it.
 stageinst:monitor_gcp_process_job0 a saved:RAPStageOutput, prov:Activity ;
     prov:startedAtTime "20240714T110000Z" ;
     prov:endedAtTime   "20240714T110100Z" ;
+    prov:wasAssociatedWith stage:monitor_gcp ;
     prov:generated stageinst:monitor_gcp_output_job0 .
     
-stageinst:monitor_gcp_output_job0 a saved:RAPStageOutput, prov:Entity .
+stageinst:monitor_gcp_output_job0 a saved:RAPStageIntermediary, prov:Entity .
 
 ## Object fetching stage
 stageinst:fetch_gcp_process_job0 a saved:RAPStageResponse, prov:Activity ;
     prov:startedAtTime "20240714T110200Z" ;
     prov:endedAtTime   "20240714T110300Z" ;
+    prov:wasAssociatedWith stage:fetch_gcp ;
     prov:used stageinst:monitor_gcp_output_job0 ;
     prov:generated stageinst:fetch_gcp_output_job0 .
     
-stageinst:fetch_gcp_output_job0 a saved:RAPStageOutput, prov:Entity ;
+stageinst:fetch_gcp_output_job0 a saved:RAPStageIntermediary, prov:Entity ;
     prov:wasDerivedFrom stageinst:monitor_gcp_output_job0 .
 
 ## Job producer stage
 stageinst:job_producer_process_job0 a saved:RAPStageResponse, prov:Activity ;
     prov:startedAtTime "20240714T110300Z" ;
     prov:endedAtTime   "20240714T110400Z" ;
+    prov:wasAssociatedWith stage:job_producer ;
     prov:used stageinst:fetch_gcp_output_job0 ;
     prov:generated stageinst:job_producer_output_job0 .
     
-stageinst:job_producer_output_job0 a saved:RAPStageOutput, prov:Entity ;
+stageinst:job_producer_output_job0 a saved:RAPStageIntermediary, prov:Entity ;
     prov:wasDerivedFrom stageinst:fetch_gcp_output_job0 .
 
 ## Job runner stage
 stageinst:job_runner_process_job0 a saved:RAPStageResponse, prov:Activity ;
     prov:startedAtTime "20240714T110300Z" ;
     prov:endedAtTime   "20240714T110400Z" ;
+    prov:wasAssociatedWith stage:job_runner ;
     prov:used stageinst:job_producer_output_job0 ;
     prov:generated stageinst:job_runner_output_job0 .
-stageinst:job_runner_output_job0 a saved:RAPStageOutput, prov:Entity ;
+    
+stageinst:job_runner_output_job0 a saved:RAPStageIntermediary, prov:Entity ;
     prov:wasDerivedFrom stageinst:job_producer_output_job0 .
+    
+## Bakery 'prepare' stage
+##' This is the stage which actually generates output.
+##' There are quite a few things which this puts in the target directory:
+##' 1. Move input data to the directory
+##' 2. Serialise results as text
+##' 3. Serialise linked post-processing manifest
+##'' but NOT HTML documentation generation, which is invoked in the
+##'' subsequent stage but can be serialised again just from the local
+##'' mnesia cache. Don't consider this for now as this is something we
+##'' can regenerate, in contrast to the linked data which is a receipt of
+##'' a given pass through the pipeline.
+stageinst:bakery_prep_process_job0 a saved:RAPStageResponse, prov:Activity ;
+    prov:startedAtTime "20240714T110400Z" ;
+    prov:endedAtTime   "20240714T110500Z" ;
+    prov:wasAssociatedWith stage:bakery_prep ;
+    prov:used stageinst:job_runner_output_job0 ;
+    prov:generated manpost:RootManifestResults, <:density.csv>, <:cagedata-10.csv>, result:example_time_density_simple .
     
