@@ -2,18 +2,20 @@
 @prefix pav: <http://purl.org/pav/> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix rdr: <http://www.re3data.org/schema/3-0> .
-@prefix prov: <https://www.w3.org/TR/prov-o/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <https://www.w3.org/2000/01/rdf-schema#> .
 
 @prefix saved: <https://marine.gov.scot/metadata/saved/schema/> .
 @prefix job: <https://marine.gov.scot/metadata/saved/schema/job_> .
+@prefix ext: <https://marine.gov.scot/metadata/saved/schema/ext_> .
 @prefix service: <https://marine.gov.scot/metadata/saved/rap/> .
 @prefix stage: <https://marine.gov.scot/metadata/saved/rap/stage_> .
 
 @prefix : <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/> .
-@prefix manpre: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_pre#> .
-@prefix jobinst: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/job_> .
-@prefix result: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/result_> .
+@prefix manpre:    <:manifest_pre#> .
+@prefix jobinst:   <:manifest_post#job_> .
+@prefix stageinst: <:manifest_post#stage_> .
+@prefix result:    <:manifest_post#result_> .
 
 :RootManifestResults a saved:ResultsManifest ;
     rdfs:label "results_manifest" ;
@@ -43,8 +45,8 @@
     rdr:dataAccessType "open" ;
     rdr:dataUploadType "restricted" ;
     rdr:remarks "For now, all data are considered open-access, with appropriate license" ;
-    rdr:missionStatementUrl <https://marine.gov.scot/metadata/saved/> .
-    
+    rdr:missionStatementUrl <https://marine.gov.scot/metadata/saved/> ;
+        
     saved:tables :sampling, :time_density_simple ;
     saved:jobs jobinst:example_time_density_simple ;
     saved:stages stage:monitor_gcp, stage:fetch_gcp, stage:job_producer, stage:job_runner, stage:bakery_prep, stage:bakery_comp;
@@ -56,7 +58,7 @@
 # ideally shouldn't be repeated. However, these may have to be declared
 # here, given we may be substituting the canonical URIs where they
 # referred to local files before
-<service:density.csv> a dcat:DataSet ;
+<:density.csv> a dcat:DataSet ;
     pav:createdWith <https://www.r-project.org/> ;
     pav:createdOn "19700101T000000Z" ;
     dcat:title "Example time/density file" ;
@@ -66,7 +68,7 @@
     dcat:mediaType "text/csv" ;
     dcat:format "text/csv" .
 
-<service:cagedata-10.csv> a dcat:DataSet ;
+<:cagedata-10.csv> a dcat:DataSet ;
     pav:createdWith <https://www.r-project.org/> ;
     pav:createdOn "19700101T000000Z" ;
     dcat:title "Example cage data file" ;
@@ -77,7 +79,8 @@
     dcat:format "text/csv" .
 
 jobinst:example_time_density_simple a saved:JobDesc ;
-    # pav:derivedFrom pre:job_example_time_density_simple ;
+# pav:derivedFrom pre:job_example_time_density_simple ;
+    rdfs:label "job0" ; # to be added by fisdat/fisup
     pav:createdWith service:fisdat, service:fisup ;
     dcterms:title "Example job time_density_simple" ;
     job:scope_collected [ a saved:ScopeDesc ;
@@ -144,7 +147,30 @@ result:example_time_density_simple a saved:ResultDesc ;
 # Then, there would be an Activity recorded for each job invoked.)
 
 
-stage:monitor_gcp a saved:RAPStageInvocation ;
+# Agents (to be moved into separate vocabulary)
+
+stage:monitor_gcp a prov:SoftwareAgent ;
+    rdfs:label "RAP.Storage.Monitor" .
+
+stage:fetch_gcp a prov:SoftwareAgent ;
+    rdfs:label "RAP.Storage.GCP" .
+
+stage:job_producer a prov:SoftwareAgent ;
+    rdfs:label "RAP.Job.Producer" .
+
+stage:job_runner a prov:SoftwareAgent ;
+    rdfs:label "RAP.Job.Runner" .
+
+ext:density_count_ode a prov:SoftwareAgent, saved:ExtCall ;
+    rdfs:label "Python.density_count_ode" ;
+    saved:exec_python true ;
+    saved:exec_versions "3.9", "3.10", "3.11", "3.12" ;
+    saved:exec_name "density_count_ode.py" .
+
+# Activities and generated/used entities
+## Invocation of the stages, time stamps may be very different to the job depending on when the RAP service / pipeline program was started
+
+stageinst:monitor_gcp_invocation a saved:RAPStageInvocation, prov:Activity ;
     rdr:software "saved_rap" ;
     saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
@@ -154,9 +180,11 @@ stage:monitor_gcp a saved:RAPStageInvocation ;
     saved:gen_stage_type "producer" ;
     saved:gen_stage_subscriptions "nil" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
-    pav:version "0.3" .
-    
-stage:fetch_gcp a saved:RAPStageInvocation ;
+    pav:version "0.3" ;
+    prov:startedAtTime "20240714T105900Z" ;
+    prov:wasAssociatedWith stage:monitor_gcp .
+
+stageinst:fetch_gcp_invocation a saved:RAPStageInvocation, prov:Activity ;
     rdr:software "saved_rap" ;
     saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
@@ -166,9 +194,11 @@ stage:fetch_gcp a saved:RAPStageInvocation ;
     saved:gen_stage_type "producer_consumer" ;
     saved:gen_stage_subscriptions "Elixir.RAP.Storage.Monitor" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
-    pav:version "0.3" .
+    pav:version "0.3" ;
+    prov:startedAtTime "20240714T105900Z" ;
+    prov:wasAssociatedWith stage:fetch_gcp .
 
-stage:job_producer a saved:RAPStageInvocation ;
+stageinst:job_producer_invocation a saved:RAPStageInvocation, prov:Activity ;
     rdr:software "saved_rap" ;
     saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
@@ -178,9 +208,11 @@ stage:job_producer a saved:RAPStageInvocation ;
     saved:gen_stage_type "producer_consumer" ;
     saved:gen_stage_subscriptions "Elixir.RAP.Storage.GCP" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
-    pav:version "0.3" .
+    pav:version "0.3" ;
+    prov:startedAtTime "20240714T105900Z" ;
+    prov:used stage:job_producer .
 
-stage:job_runner a saved:RAPStageInvocation ;
+stageinst:job_runner_invocation a saved:RAPStageInvocation, prov:Activity ;
     rdr:software "saved_rap" ;
     saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
@@ -190,29 +222,47 @@ stage:job_runner a saved:RAPStageInvocation ;
     saved:gen_stage_type "producer_consumer" ;
     saved:gen_stage_subscriptions "Elixir.RAP.Job.Producer" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
-    saved:invoked_job job:density ;
-    pav:version "0.3" .
-    
-stage:bakery_prep a saved:RAPStageInvocation ;
-    rdr:software "saved_rap" ;
-    saved:mix_profile "dev" ;
-    saved:beam_application "Elixir.RAP" ;
-    saved:beam_node "nonode" ;
-    saved:beam_host "nohost" ;
-    saved:beam_module "Elixir.RAP.Bakery.Prepare" ;
-    saved:gen_stage_type "producer_consumer" ;
-    saved:gen_stage_subscriptions "Elixir.RAP.Job.Runner" ;
-    saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
-    pav:version "0.3" .
+    saved:invoked_call ext:density_count_ode ;
+    pav:version "0.3" ;
+    prov:startedAtTime "20240714T105900Z" ;
+    prov:wasAssociatedWith stage:job_runner .
 
-stage:bakery_comp a saved:RAPStageInvocation ;
-    rdr:software "saved_rap" ;
-    saved:mix_profile "dev" ;
-    saved:beam_application "Elixir.RAP" ;
-    saved:beam_node "nonode" ;
-    saved:beam_host "nohost" ;
-    saved:beam_module "Elixir.RAP.Bakery.Compose" ;
-    saved:gen_stage_type "consumer" ;
-    saved:gen_stage_subscriptions "Elixir.RAP.Bakery.Prepare" ;
-    saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
-    pav:version "0.3" .
+
+## Monitor stage
+##' Note that the initial entity is not derived from any previous empty as the monitor process generates it.
+stageinst:monitor_gcp_process_job0 a saved:RAPStageOutput, prov:Activity ;
+    prov:startedAtTime "20240714T110000Z" ;
+    prov:endedAtTime   "20240714T110100Z" ;
+    prov:generated stageinst:monitor_gcp_output_job0 .
+    
+stageinst:monitor_gcp_output_job0 a saved:RAPStageOutput, prov:Entity .
+
+## Object fetching stage
+stageinst:fetch_gcp_process_job0 a saved:RAPStageResponse, prov:Activity ;
+    prov:startedAtTime "20240714T110200Z" ;
+    prov:endedAtTime   "20240714T110300Z" ;
+    prov:used stageinst:monitor_gcp_output_job0 ;
+    prov:generated stageinst:fetch_gcp_output_job0 .
+    
+stageinst:fetch_gcp_output_job0 a saved:RAPStageOutput, prov:Entity ;
+    prov:wasDerivedFrom stageinst:monitor_gcp_output_job0 .
+
+## Job producer stage
+stageinst:job_producer_process_job0 a saved:RAPStageResponse, prov:Activity ;
+    prov:startedAtTime "20240714T110300Z" ;
+    prov:endedAtTime   "20240714T110400Z" ;
+    prov:used stageinst:fetch_gcp_output_job0 ;
+    prov:generated stageinst:job_producer_output_job0 .
+    
+stageinst:job_producer_output_job0 a saved:RAPStageOutput, prov:Entity ;
+    prov:wasDerivedFrom stageinst:fetch_gcp_output_job0 .
+
+## Job runner stage
+stageinst:job_runner_process_job0 a saved:RAPStageResponse, prov:Activity ;
+    prov:startedAtTime "20240714T110300Z" ;
+    prov:endedAtTime   "20240714T110400Z" ;
+    prov:used stageinst:job_producer_output_job0 ;
+    prov:generated stageinst:job_runner_output_job0 .
+stageinst:job_runner_output_job0 a saved:RAPStageOutput, prov:Entity ;
+    prov:wasDerivedFrom stageinst:job_producer_output_job0 .
+    
