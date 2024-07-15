@@ -11,7 +11,7 @@
 @prefix stage: <https://marine.gov.scot/metadata/saved/rap/stage_> .
 
 @prefix : <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/> .
-@prefix pre: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_pre#> .
+@prefix manpre: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_pre#> .
 @prefix jobinst: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/job_> .
 @prefix result: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/result_> .
 
@@ -25,7 +25,7 @@
     pav:version "1" ;
     pav:createdAt <:manifest_results_v1.ttl> ;
     pav:createdWith service:application ;
-    pav:derivedFrom pre:RootManifest ;
+    pav:derivedFrom manpre:RootManifest ;
 
     dcat:downloadURL <:RootManifestResults.ttl> ;
     dcat:mediaType "text/csv" ;
@@ -46,7 +46,7 @@
     rdr:missionStatementUrl <https://marine.gov.scot/metadata/saved/> .
     
     saved:tables :sampling, :time_density_simple ;
-    saved:jobs :job_example_time_density_simple ;
+    saved:jobs jobinst:example_time_density_simple ;
     saved:stages stage:monitor_gcp, stage:fetch_gcp, stage:job_producer, stage:job_runner, stage:bakery_prep, stage:bakery_comp;
     saved:results result:example_time_density_simple .
 
@@ -102,7 +102,23 @@ result:example_time_density_simple a saved:ResultDesc ;
     dcat:downloadURL <:result_example_time_density_simple.json> ;
     dcat:mediaType "text/json" ;
     dcat:format "text/json" .
-    
+
+
+# The RAP stages have three elements to them which effectively map to the PROV-O ontology:
+
+# 1. A given job event which is to be processed: prov:Entity
+# 2. The processing proper of the job event:     prov:Activity
+# 3. The stage which processes the job event:    prov:Agent
+
+# Rough idea:
+# 
+# First, the BEAM runs our OTP application, which is based on gen_stage. The stages themselves are processes like gen_server which are started and respond to messages, with gen_stage handling backpressure for us. So, the stages are themselves an Entity. I guess the relevant Activity which we want to express here is when the stages were started. The RAP program itself is probably also an Entity, as well.
+# Second, the stages themselves do some kind of processing, on a given job event. This post-processing manifest concerns itself with *one* job event per job description.
+# Finally, there is a link between the different activities and the different stages, in terms of stages subscribing to each other. There may be other relations which we should record, namely there are certain stages which occur in parallel, but can be exchanged for each other. For instance, monitoring local storage occurs at the same time as monitoring e.g. GCP or some local object store, so we might use something like prov:alternateOf. The aspect of this which we're primarily recording is which stages are associated with a given job event, and this may be the way to do it.
+# 
+# So, let's say there's two jobs declared per manifest submitted. At minimum, we record the invocation of stages. For now, assume that the jobs are going through  more or less the same stages, i.e. the stages aren't being started dynamically, because starting stages dynamically would probably involve ConsumerSupervisor and recording the link between this and the other stages may be non-trivial. (I was mostly interested in doing this for the very last stage with ConsumerSupervisor, to re-generate HTML documentation efficiently. Then, there would be an Activity recorded for each job invoked.)
+
+
 stage:monitor_gcp a saved:RAPStageInvocation ;
     rdr:software: "saved_rap" ;
     saved:beam_application "Elixir.RAP" ;
