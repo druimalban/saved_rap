@@ -112,53 +112,82 @@ result:example_time_density_simple a saved:ResultDesc ;
 
 # Rough idea:
 # 
-# First, the BEAM runs our OTP application, which is based on gen_stage. The stages themselves are processes like gen_server which are started and respond to messages, with gen_stage handling backpressure for us. So, the stages are themselves an Entity. I guess the relevant Activity which we want to express here is when the stages were started. The RAP program itself is probably also an Entity, as well.
-# Second, the stages themselves do some kind of processing, on a given job event. This post-processing manifest concerns itself with *one* job event per job description.
-# Finally, there is a link between the different activities and the different stages, in terms of stages subscribing to each other. There may be other relations which we should record, namely there are certain stages which occur in parallel, but can be exchanged for each other. For instance, monitoring local storage occurs at the same time as monitoring e.g. GCP or some local object store, so we might use something like prov:alternateOf. The aspect of this which we're primarily recording is which stages are associated with a given job event, and this may be the way to do it.
+# First, the BEAM runs our OTP application, which is based on gen_stage.
+# The stages themselves are processes like gen_server which are started,
+# and respond to messages, with gen_stage handling backpressure for us.
+# So, the stages are themselves an Entity. I guess the relevant Activity
+# which we want to express here is when the stages were started.
+# The RAP program itself is probably also an Entity, as well.
+#
+# Second, the stages themselves do some kind of processing, on a given
+# job event. This post-processing manifest concerns itself with *one* job
+# event per job description.
+#
+# Finally, there is a link between the different activities and the
+# different stages, in terms of stages subscribing to each other. There
+# may be other relations which we should record, namely there are certain
+# stages which occur in parallel, but can be exchanged for each other.
+# For instance, monitoring local storage occurs at the same time as
+# monitoring e.g. GCP or some local object store, so we might use
+# something like prov:alternateOf. The aspect of this which we're
+# primarily recording is which stages are associated with a given job
+# event, and this may be the way to do it.
 # 
-# So, let's say there's two jobs declared per manifest submitted. At minimum, we record the invocation of stages. For now, assume that the jobs are going through  more or less the same stages, i.e. the stages aren't being started dynamically, because starting stages dynamically would probably involve ConsumerSupervisor and recording the link between this and the other stages may be non-trivial. (I was mostly interested in doing this for the very last stage with ConsumerSupervisor, to re-generate HTML documentation efficiently. Then, there would be an Activity recorded for each job invoked.)
+# So, let's say there's two jobs declared per manifest submitted.
+# At minimum, we record the invocation of stages. For now, assume that
+# the jobs are going through  more or less the same stages, i.e. the
+# stages aren't being started dynamically, because starting stages
+# dynamically would probably involve ConsumerSupervisor and recording the
+# link between this and the other stages may be non-trivial.
+# (I was mostly interested in doing this for the very last stage with
+# ConsumerSupervisor, to re-generate HTML documentation efficiently.
+# Then, there would be an Activity recorded for each job invoked.)
 
 
 stage:monitor_gcp a saved:RAPStageInvocation ;
-    rdr:software: "saved_rap" ;
+    rdr:software "saved_rap" ;
+    saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
     saved:beam_node "nonode" ;
     saved:beam_host "nohost" ;
     saved:beam_module "Elixir.RAP.Storage.Monitor" ;
-    saved:gen_stage_type "Producer" ;
+    saved:gen_stage_type "producer" ;
     saved:gen_stage_subscriptions "nil" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
     pav:version "0.3" .
     
 stage:fetch_gcp a saved:RAPStageInvocation ;
     rdr:software "saved_rap" ;
+    saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
     saved:beam_node "nonode" ;
     saved:beam_host "nohost" ;
     saved:beam_module "Elixir.RAP.Storage.GCP" ;
-    saved:gen_stage_type "ProducerConsumer" ;
+    saved:gen_stage_type "producer_consumer" ;
     saved:gen_stage_subscriptions "Elixir.RAP.Storage.Monitor" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
     pav:version "0.3" .
 
 stage:job_producer a saved:RAPStageInvocation ;
     rdr:software "saved_rap" ;
+    saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
     saved:beam_node "nonode" ;
     saved:beam_host "nohost" ;
     saved:beam_module "Elixir.RAP.Job.Producer" ;
-    saved:gen_stage_type "ProducerConsumer" ;
+    saved:gen_stage_type "producer_consumer" ;
     saved:gen_stage_subscriptions "Elixir.RAP.Storage.GCP" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
     pav:version "0.3" .
 
 stage:job_runner a saved:RAPStageInvocation ;
     rdr:software "saved_rap" ;
+    saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
     saved:beam_node "nonode" ;
     saved:beam_host "nohost" ;
     saved:beam_module "Elixir.RAP.Job.Runner" ;
-    saved:gen_stage_type "ProducerConsumer" ;
+    saved:gen_stage_type "producer_consumer" ;
     saved:gen_stage_subscriptions "Elixir.RAP.Job.Producer" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
     saved:invoked_job job:density ;
@@ -166,22 +195,24 @@ stage:job_runner a saved:RAPStageInvocation ;
     
 stage:bakery_prep a saved:RAPStageInvocation ;
     rdr:software "saved_rap" ;
+    saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
     saved:beam_node "nonode" ;
     saved:beam_host "nohost" ;
     saved:beam_module "Elixir.RAP.Bakery.Prepare" ;
-    saved:gen_stage_type "ProducerConsumer" ;
+    saved:gen_stage_type "producer_consumer" ;
     saved:gen_stage_subscriptions "Elixir.RAP.Job.Runner" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
     pav:version "0.3" .
 
 stage:bakery_comp a saved:RAPStageInvocation ;
     rdr:software "saved_rap" ;
+    saved:mix_profile "dev" ;
     saved:beam_application "Elixir.RAP" ;
     saved:beam_node "nonode" ;
     saved:beam_host "nohost" ;
     saved:beam_module "Elixir.RAP.Bakery.Compose" ;
-    saved:gen_stage_type "Consumer" ;
+    saved:gen_stage_type "consumer" ;
     saved:gen_stage_subscriptions "Elixir.RAP.Bakery.Prepare" ;
     saved:gen_stage_dispatcher "Elixir.BroadcastDispatcher" ;
     pav:version "0.3" .
