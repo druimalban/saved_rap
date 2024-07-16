@@ -9,7 +9,7 @@ defmodule RAP.Bakery.Compose do
   import EEx
   
   alias RAP.Application
-  alias RAP.Miscelllaneous, as: Misc
+  alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.PreRun
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.Result

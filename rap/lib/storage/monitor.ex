@@ -54,13 +54,12 @@ defmodule RAP.Storage.Monitor do
     with {:ok, initial_session} <- new_connection()
       do
       state = initial_state |> Map.put(:gcp_session, initial_session)
-      Task.start(fn() ->
+      Task.start_link(fn() ->
 	monitor_gcp(
 	  state.gcp_session,
 	  state.gcp_bucket,
 	  state.index_file,
-	  state.interval_seconds,
-	  state.last_poll
+	  state.interval_seconds * 1000
 	)
       end)
       {:producer, state}
@@ -77,16 +76,6 @@ defmodule RAP.Storage.Monitor do
     new_session = new_connection()
     new_state   = state |> Map.put(:gcp_session, new_session)
     {:reply, new_session, [], new_state}
-  end
-
-  @doc """
-  Update last poll state from our recursive `monitor_gcp/4' function
-  """
-  def handle_call(:update_last_poll, _from, %Application{} = state) do
-    Logger.info "Received call :update_last_poll"
-    new_time_stamp = DateTime.utc_now() |> DateTime.to_unix()
-    new_state      = state |> Map.put(:last_poll, new_time_stamp)
-    {:reply, new_time_stamp, [], new_state}
   end
   
   @doc """
@@ -203,15 +192,10 @@ defmodule RAP.Storage.Monitor do
   other files into this index file is unneccesary because the manifest
   describes these.
   """
-  defp monitor_gcp(session, bucket, index_file, interval, last_poll) do
-    invocation_ts = DateTime.utc_now() |> DateTime.to_unix()
-    elapsed = invocation_ts - last_poll
-
-    with true           <- elapsed > interval,
-	 {:ok, objects} <- wrap_gcp_request(session, bucket) do
+  defp monitor_gcp(session, bucket, index_file, interval_ms) do
+    with {:ok, objects} <- wrap_gcp_request(session, bucket) do
+      Logger.info "Called RAP.Storage.Monitor.monitor_gcp/4 with interval #{interval_ms} milliseconds"
       
-      Logger.info "Time elapsed (#{inspect elapsed}s) is greater than interval (#{inspect interval}s)"
-
       normalised_objects = objects
       |> Enum.map(&uuid_helper/1)
       |> Enum.reject(&is_nil/1)
@@ -232,18 +216,16 @@ defmodule RAP.Storage.Monitor do
       |> Enum.map(&prep_job(&1, grouped_objects, index_file))
       |> Enum.reject(&is_nil/1)
 
-      Logger.info "Casting staged objects"
+      Logger.info "RAP.Storage.Monitor.monitor_gcp/4: casting staged objects and sleeping for #{interval_ms} milliseconds"
       GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
-      new_time_stamp = GenStage.call(__MODULE__, :update_last_poll)
-      monitor_gcp(session, bucket, index_file, interval, new_time_stamp)
+      :timer.sleep(interval_ms)
+      monitor_gcp(session, bucket, index_file, interval_ms)
     else
-      false ->
-	monitor_gcp(session, bucket, index_file, interval, last_poll)
       {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
         {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
 	Logger.info "Call to seek new session returned #{inspect new_session}"
-	monitor_gcp(new_session, bucket, index_file, interval, last_poll)
+	monitor_gcp(new_session, bucket, index_file, interval_ms)
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}

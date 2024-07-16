@@ -9,6 +9,8 @@ defmodule RAP.Application do
   # filesystem which we monitor for changes, rather than a place to *put*
   # things monitored locally.
   #
+  @local_name         "RAP"
+  @local_version      "0.1"
   @interval_seconds   300
   @index_file         ".index"
   @index_fall_back    "manifest.ttl"
@@ -26,6 +28,16 @@ defmodule RAP.Application do
   
   use Application
 
+  use RDF
+  alias RDF.NS.RDFS
+  alias RAP.Vocabulary.{PAV, PROV, SAVED}
+
+  def gen_invocation_activity(iri) do
+    RDF.Description.new(iri)
+    |> RDFS.label("RAP application invocation description")
+    |> PAV.version(@local_version)
+  end
+  
   @doc
   """
   Initial / global pipeline state

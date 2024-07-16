@@ -1,4 +1,4 @@
-@import("/saved/assets/fira.css");
+@import url("/saved/assets/fira.css");
 body {
     font-family: 'Fira Sans', sans-serif;
     font-size:   12pt;
