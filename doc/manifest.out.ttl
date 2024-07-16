@@ -11,9 +11,10 @@
 @prefix service:   <https://marine.gov.scot/metadata/saved/rap/> .
 @prefix stage:     <https://marine.gov.scot/metadata/saved/rap/stage_> .
 
-@prefix :          <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/> .
+@base          <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/> .
 @prefix pre:       <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_pre#> .
 @prefix post:      <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_post#> .
+@prefix tableinst: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_post#table_> .
 @prefix jobinst:   <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_post#job_> .
 @prefix stageinst: <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_post#stage_> .
 @prefix result:    <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/manifest_post#result_> .
@@ -45,7 +46,7 @@ post:RootManifest a saved:ResultsManifest, prov:Entity ;
     rdr:remarks "For now, all data are considered open-access, with appropriate license" ;
     rdr:missionStatementUrl <https://marine.gov.scot/metadata/saved/> ;
         
-    saved:tables :sampling, :time_density_simple ;
+    saved:tables tableinst:sampling, tableinst:time_density_simple ;
     saved:jobs jobinst:example_time_density_simple ;
     saved:stages stage:monitor_gcp, stage:fetch_gcp, stage:job_producer, stage:job_runner, stage:bakery_prep, stage:bakery_comp;
     saved:results result:example_time_density_simple .
@@ -57,7 +58,7 @@ post:RootManifest a saved:ResultsManifest, prov:Entity ;
 # here, given we may be substituting the canonical URIs where they
 # referred to local files before:
 
-:density-csv a dcat:DataSet ;
+<density.csv> a dcat:DataSet ;
     rdfs:label "CSV data file containing sample densities" ;
     pav:createdWith <https://www.r-project.org/> ;
     pav:createdOn "19700101T000000Z" ;
@@ -68,7 +69,7 @@ post:RootManifest a saved:ResultsManifest, prov:Entity ;
     dcat:mediaType "text/csv" ;
     dcat:format "text/csv" .
     
-:cagedata-10-csv a dcat:DataSet ;
+<cagedata-10.csv> a dcat:DataSet ;
     rdfs:label "CSV data file containing adult female lice counts and time information" ;
     pav:createdWith <https://www.r-project.org/> ;
     pav:createdOn "19700101T000000Z" ;
@@ -78,7 +79,7 @@ post:RootManifest a saved:ResultsManifest, prov:Entity ;
     dcat:downloadURL <https://marine.gov.scot/metadata/saved/rap_service_v0.3/66f1b101-7c04-4413-9258-48ae938cf260/cagedata-10.csv> ;
     dcat:mediaType "text/csv" ;
     dcat:format "text/csv" .
-
+    
 jobinst:example_time_density_simple a saved:JobDesc ;
 # pav:derivedFrom pre:job_example_time_density_simple ;
     rdfs:label "Invocation of example time/density ODE model job" ; # to be added by fisdat/fisup
@@ -86,15 +87,15 @@ jobinst:example_time_density_simple a saved:JobDesc ;
     dcterms:title "Example job time_density_simple" ;
     job:scope_collected [ a saved:ScopeDesc ;
             saved:column "TOTAL" ;
-            saved:table :cagedata-10-csv ;
+            saved:table <cagedata-10.csv> ;
             saved:variable saved:lice_af_total ] ;
     job:scope_modelled [ a saved:ScopeDesc ;
             saved:column "time" ;
-            saved:table :density-csv ;
+            saved:table <density.csv> ;
             saved:variable saved:time ],
         [ a saved:ScopeDesc ;
             saved:column "density" ;
-            saved:table :density-csv ;
+            saved:table <density.csv> ;
             saved:variable saved:density ] ;
     job:type "density" .
     
@@ -149,7 +150,13 @@ result:example_time_density_simple a saved:ResultDesc ;
 
 # Agents (to be moved into separate vocabulary)
 service:application a saved:RAPInstance, prov:SoftwareAgent ;
-    rdfs:label "RAP application description" .    
+    rdfs:label "RAP application description" .
+
+service:fisdat a saved:LocalUtilitiesInstance, prov:SoftwareAgent ;
+    rdfs:label "fisdat(1) validation and manifest preparation program description" .
+
+service:fisup a saved:LocalUtilitiesInstance, prov:SoftwareAgent ;
+    rdfs:label "fisup(1) data conversion/upload program description" .
 
 post:application_invocation a saved:RAPInvocation, prov:Activity ;
     rdfs:label "RAP application invocation description" ;
@@ -342,5 +349,5 @@ stageinst:bakery_prep_process_job0 a saved:RAPStageResponse, prov:Activity ;
     prov:endedAtTime   "20240714T110500Z" ;
     prov:wasAssociatedWith stage:bakery_prep ;
     prov:used stageinst:job_runner_output_job0 ;
-    prov:generated post:RootManifest, :density-csv, :cagedata-10-csv, result:example_time_density_simple .
+    prov:generated post:RootManifest, <density.csv>, <cagedata-10.csv>, result:example_time_density_simple .
     

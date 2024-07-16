@@ -89,8 +89,8 @@ defmodule RAP.Bakery.Prepare do
   def handle_cast({:trigger_rebuild, after_ts}, %Application{staging_objects: extant} = state) do
     with prepared  <- PostRun.yield_manifests(after_ts, state.time_zone),
          [qh | qt] <- extant ++ prepared do
-      new_state = state |> Map.put(:staging_objects, queue_tail)
-      {:noreply, [queue_head], new_state}
+      new_state = state |> Map.put(:staging_objects, qt)
+      {:noreply, [qh], new_state}
     else
       [] -> {:noreply, [], state}
     end    

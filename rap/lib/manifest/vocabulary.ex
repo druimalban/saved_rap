@@ -6,6 +6,15 @@ defmodule RAP.TermHandler do
 
 end
 
+
+# @prefix dcterms:   <http://purl.org/dc/terms/> .
+# @prefix pav:       <http://purl.org/pav/> .
+# @prefix dcat:      <http://www.w3.org/ns/dcat#> .
+# @prefix rdr:       <http://www.re3data.org/schema/3-0> .
+# @prefix prov:      <http://www.w3.org/ns/prov#> .
+# @prefix rdfs:      <https://www.w3.org/2000/01/rdf-schema#> .
+
+
 defmodule RAP.Vocabulary do
   @moduledoc """
   A collection of RDF namespaces
@@ -42,6 +51,16 @@ defmodule RAP.Vocabulary do
     case_violations: :fail
 
   @vocabdoc """
+  The W3C PROVenance vocabulary.
+
+  See <http://www.w3.org/TR/prov-o/>
+  """
+  defvocab PROV,
+    base_iri: "http://www.w3.org/ns/prov#",
+    file: "prov.nt",
+    case_violations: :fail
+
+  @vocabdoc """
   The Dublin Core Metadata Element Set, Version 1.1 vocabulary.
 
   See <http://purl.org/dc/elements/1.1/>
@@ -63,6 +82,16 @@ defmodule RAP.Vocabulary do
     file: "schema.nt",
     case_violations: :ignore
 
+  @vocabdoc """
+  The Provenance, Authoring and Versioning (PAV) Version 2.3.1 vocabulary
+
+  See <http://purl.org/pav/2.3/>
+  """
+  defvocab PAV,
+    base_iri: "http://purl.org/pav/",
+    file: "pav.nt",
+    case_violations: :ignore
+  
   @vocabdoc """
   The LinkML meta-model
 
