@@ -84,7 +84,7 @@ defmodule RAP.Job.Result do
     if resource_density != resource_time do
       end_ts = DateTime.utc_now() |> DateTime.to_unix()
       res = "Density and time not derived from same data file"
-      %Result{ title:  spec.title, description: spec.description,
+      %__MODULE__{ title:  spec.title, description: spec.description,
 	       type:   "density",  signal:      :failure_prereq,
 	       contents: res, start_time: start_ts, end_time: end_ts }
     else

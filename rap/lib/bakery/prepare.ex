@@ -75,15 +75,15 @@ defmodule RAP.Bakery.Prepare do
     {:noreply, processed_events, state}
   end
 
-  def handle_demand(demand, state) do
-    Logger.info "Bakery.Prepare: Received demand for #{inspect demand} events"
-    yielded   = state.staging_objects |> Enum.take(demand)
-    remaining = state.staging_objects |> Enum.drop(demand)
-    pretty    = yielded |> Enum.map(&Misc.pretty_print_object/1)
-    new_state = state   |> Map.put(:staging_objects, staging)
-    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state: #{inspect pretty}"
-    {:noreply, yielded, new_state}
-  end
+  #  def handle_demand(demand, state) do
+  #    Logger.info "Bakery.Prepare: Received demand for #{inspect demand} events"
+  #    yielded   = state.staging_objects |> Enum.take(demand)
+  #    remaining = state.staging_objects |> Enum.drop(demand)
+  #    pretty    = yielded |> Enum.map(&Misc.pretty_print_object/1)
+  #    new_state = state   |> Map.put(:staging_objects, staging)
+  #    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state: #{inspect pretty}"
+  #    {:noreply, yielded, new_state}
+  #  end
 
   # Very similar to Storage.Monitor :stage_objects cast
   def handle_cast({:trigger_rebuild, after_ts}, %Application{staging_objects: extant} = state) do

@@ -1,9 +1,12 @@
 defmodule RAP.TermHandler do
   
-  def sub_special(_type, term, _variant) do
+  def sub_separators(_type, term, _variant) do
     {:ok, String.replace(term, ~r"[-|%20]", "_")}
   end
 
+  def sub_dots(_type, term, _variant) do
+    {:ok, String.replace(term, ~r"\.", "_")}
+  end
 end
 
 
@@ -89,8 +92,9 @@ defmodule RAP.Vocabulary do
   """
   defvocab PAV,
     base_iri: "http://purl.org/pav/",
-    file: "pav.nt",
-    case_violations: :ignore
+    file: "pav-no-import.ttl",
+    case_violations: :ignore,
+    ignore: ~w[provenance.ttl 2.1 2.2 2.3]
   
   @vocabdoc """
   The LinkML meta-model
@@ -140,7 +144,7 @@ defmodule RAP.Vocabulary do
     base_iri: "https://marine.gov.scot/metadata/saved/schema/",
     file: "saved.nt",
     case_violations: :ignore,
-    terms: {RAP.TermHandler, :sub_special, [:variant1]},
+    terms: {RAP.TermHandler, :sub_separators, [:variant1]},
     strict: true
 
   @vocabdoc """
