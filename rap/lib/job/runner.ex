@@ -46,7 +46,7 @@ defmodule RAP.Job.Result do
     end
   end
   
-  def run_job(_uuid, _cache_dir, %JobSpec{type: "ignore"} = spec) do
+  def run_job(_uuid, _cache_dir, _interpreter, %JobSpec{type: "ignore"} = spec) do
     %__MODULE__{
       name:        spec.name,
       title:       spec.title,
@@ -59,7 +59,7 @@ defmodule RAP.Job.Result do
   end
 
   def run_job(
-    uuid, cache_directory,
+    uuid, cache_directory, python_call,
     
     %JobSpec{
       type:            "density",
@@ -102,7 +102,7 @@ defmodule RAP.Job.Result do
       # b) Guarantees about dependencies
       # We're after good reporting, and this information should certainly be part of that.
       py_result = 
- 	cmd_wrapper("python3.12", "contrib/density_count_ode.py", [
+ 	cmd_wrapper(python_call, "contrib/density_count_ode.py", [
  	            file_path_count,   label_count,
  	            file_path_density, label_time,  label_density])
       case py_result do
@@ -154,7 +154,7 @@ defmodule RAP.Job.Result do
     
   end
 
-  def run_job(_uuid, _cache_dir, %JobSpec{} = bad_spec) do
+  def run_job(_uuid, _cache_dir, _interpreter, %JobSpec{} = bad_spec) do
     %__MODULE__{
       name:          bad_spec.name,
       title:         bad_spec.title,
@@ -202,15 +202,15 @@ defmodule RAP.Job.Runner do
     is = inspect state
     Logger.info "Called Job.Runner.handle_events (events = #{ie}, _, state = #{is})"
     
-    target_events = events |> Enum.map(&process_jobs(&1, state.cache_directory))
+    target_events = events |> Enum.map(&process_jobs(&1, state.cache_directory, state.python_call))
     { :noreply, target_events, state }
   end
   
-  def process_jobs(%ManifestSpec{signal: :working, staging_jobs: staging} = spec, cache_directory) do  
+  def process_jobs(%ManifestSpec{signal: :working, staging_jobs: staging} = spec, cache_directory, python_call) do  
     Logger.info "Staging jobs: #{inspect staging}"
     
     result_contents = staging
-    |> Enum.map(&Result.run_job(spec.uuid, cache_directory, &1))
+    |> Enum.map(&Result.run_job(spec.uuid, cache_directory, python_call, &1))
 
     # Do need to have a notion of different signals
     overall_signal =

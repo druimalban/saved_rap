@@ -24,6 +24,7 @@ defmodule RAP.Application do
   @rap_style_sheet    "/saved/assets/rap.css" # Imports fira.css
   @rap_js_lib_plotly  "/saved/assets/plotly-2.32.0.min.js"
   @rap_js_lib_d3      "/saved/assets/d3.v7.min.js"
+  @python_call        "/opt/local/bin/python3.12"
   @html_directory     "./html_fragments"
   
   use Application
@@ -69,6 +70,7 @@ defmodule RAP.Application do
 	      rap_js_lib_plotly:  @rap_js_lib_plotly,
 	      rap_js_lib_d3:      @rap_js_lib_d3,
 	      html_directory:     @html_directory,
+	      python_call:        @python_call,
 	      staging_objects:    []               ]
   
   @impl true
