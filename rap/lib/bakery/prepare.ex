@@ -191,7 +191,6 @@ defmodule RAP.Bakery.Prepare do
   """
   def bake_data(%Runner{signal: :see_producer} = processed, cache_dir, bakery_dir, _linked_stem, ets_table) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_producer'"
-    
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
     
     moved_manifest_ttl = processed.manifest_base_ttl
@@ -222,6 +221,7 @@ defmodule RAP.Bakery.Prepare do
   # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
   def bake_data(%Runner{signal: :see_pre} = processed, _cache, _bakery, _ln, ets_table) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_pre'"
+    File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
     semi_final_data = %__MODULE__{
       uuid:            processed.uuid,
       data_source:     processed.data_source,
@@ -235,6 +235,7 @@ defmodule RAP.Bakery.Prepare do
 
   def bake_data(%Runner{signal: signal}, _cache, _bakery, _ln, _ets) do
     Logger.info "Called Prepare.bake_data/5 with signal #{signal}, not doing anything"
+    File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
   end
   
   @doc """
