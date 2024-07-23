@@ -219,7 +219,7 @@ defmodule RAP.Bakery.Prepare do
   end
 
   # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
-  def bake_data(%Runner{signal: :see_pre} = processed, _cache, _bakery, _ln, ets_table) do
+  def bake_data(%Runner{signal: :see_pre} = processed, _cache, bakery_dir, _ln, ets_table) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_pre'"
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
     semi_final_data = %__MODULE__{
