@@ -239,7 +239,7 @@ defmodule RAP.Job.Runner do
     }
   end
 
-  def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache) do
+  def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache, _interpreter) do
     %__MODULE__{
       uuid:            spec.uuid,
       data_source:     spec.data_source,

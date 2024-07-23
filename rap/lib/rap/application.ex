@@ -14,7 +14,7 @@ defmodule RAP.Application do
   @interval_seconds   300
   @index_file         ".index"
   @index_fall_back    "manifest.ttl"
-  @gcp_bucket         "saved-rap-test"
+  @gcp_bucket         "saved-fisdat"
   @local_directory    "/var/db/saved"         # Monitor this like GCP
   @cache_directory    "./data_cache"
   @bakery_directory   "./bakery"              # Place to output results
