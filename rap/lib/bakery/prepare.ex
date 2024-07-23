@@ -235,7 +235,7 @@ defmodule RAP.Bakery.Prepare do
 
   def bake_data(%Runner{signal: signal}, _cache, _bakery, _ln, _ets) do
     Logger.info "Called Prepare.bake_data/5 with signal #{signal}, not doing anything"
-    File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
+    #File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
   end
   
   @doc """
