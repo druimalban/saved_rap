@@ -244,7 +244,7 @@ defmodule RAP.Bakery.Compose do
   # As opposed to the final RAP.Bakery.Prepare struct which chucks away a
   # bunch of information.
   # Call the base name of the output file contents_base since result text
-  # contents are called `contents'
+  # contents are called `contents'  
   def stage_result(html_directory, rap_uri, lib_d3, lib_plotly, time_zone, uuid, %Result{} = result) do
     target_base = "#{result.output_stem}_#{result.name}.#{result.output_format}"
     target_uri  = "#{rap_uri}/#{uuid}/#{target_base}"
@@ -260,8 +260,12 @@ defmodule RAP.Bakery.Compose do
     |> Map.merge(result_extra)
     |> Map.to_list()
 
-    result_main = EEx.eval_file("#{html_directory}/result.html", result_input)
-
+    result_main =
+      case result.signal do
+	:bad_job_spec -> EEx.eval_file("#{html_directory}/nonresult.html", result_input)
+	:ignored      -> EEx.eval_file("#{html_directory}/nonresult.html", result_input)
+	_             -> EEx.eval_file("#{html_directory}/result.html", result_input)
+      end
     result_main <> "\n" <> plotted
   end
 

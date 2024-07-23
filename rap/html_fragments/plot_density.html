@@ -37,6 +37,11 @@
   
   d3.json("<%= contents_uri %>").then(
       res => {
+	  var desc_obs = {
+	      type: 'bar',
+	      y: Object.values(res.obs.probs),
+	      name: 'Observed'
+	  }
           var desc_ref = {
               type: 'bar',
               y: Object.values(res.ref.totals),
@@ -47,11 +52,13 @@
               y: Object.values(res.test.totals),
               name: 'Test'
           };
-          var desc_grouped = [desc_ref, desc_test];
-          var div_preamble = document.getElementById('preamble_<%= name %>')
+          var div_preamble = document.getElementById('preamble_<%= name %>');
+          var desc_grouped = [desc_obs, desc_ref, desc_test];
           var div_grouped = document.getElementById('plot_<%= name %>');
-          var layout = {barmode: 'group'};
-
+          var layout = {barmode: 'group',
+			xaxis: {title: "lice count" },
+			yaxis: {title: "probability" }
+		       };
           div_preamble.innerHTML = gen_preamble(res.ref, res.test);
           Plotly.newPlot(div_grouped, desc_grouped, layout)
       }

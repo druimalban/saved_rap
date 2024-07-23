@@ -89,6 +89,7 @@ defmodule RAP.Job.Producer do
   resource available, given it's highly specific to the given manifest
   file.
   """
+  def extract_uri(nil), do: nil
   def extract_uri(%URI{path: path, scheme: nil, userinfo: nil,
 		       host: nil,  port:   nil, query:    nil,
 		       fragment: nil}), do: path
@@ -98,6 +99,7 @@ defmodule RAP.Job.Producer do
     |> String.split("/")
     |> Enum.at(-1)
   end
+  def extract_id(nil), do: nil
   def extract_id(id) do
     id
     |> RDF.IRI.to_string()
@@ -106,17 +108,26 @@ defmodule RAP.Job.Producer do
     |> Enum.at(-1)
   end
 
+  @doc """
+  This function only checks the validity of the TTL conversion of LinkML
+  YAML schema files, as these YAML files are not usable outside of
+  LinkML, i.e. they only serve as input data, just as we don't validate
+  anything about any input YAML manifest files.
+  """
   def check_table(%TableDesc{} = desc, resources) do
 
     table_name  = extract_id(desc.__id__)
     table_title = desc.title
     Logger.info "Checking table #{inspect table_name}, in resources #{inspect resources}"
     
-    inject = fn fp -> 
-      %ResourceSpec{ base: fp, extant: fp in resources }
+    inject = fn fp ->
+      test = fp in resources and not is_nil(fp)
+      %ResourceSpec{
+	base: fp, extant: test
+      }
     end
     data_validity   = desc.resource_path   |> extract_uri() |> then(inject)
-    schema_validity = desc.schema_path_ttl |> extract_uri() |> then(inject) ## TO-DO: ADD YAML
+    schema_validity = desc.schema_path_ttl |> extract_uri() |> then(inject)
     
     %TableSpec{ name:     table_name,    title:  table_title,
 		resource: data_validity, schema: schema_validity }

@@ -272,7 +272,7 @@ defmodule RAP.Bakery.Prepare do
   def write_result(%Result{signal: signal} = result, _bakery, _uuid) when signal in [:job_failure, :python_error] do
     Logger.info "Job exited with error: Not writing result to file"
   end
-  def write_result(%Result{signal: :ignore}, _bakery, _uuid) do
+  def write_result(%Result{signal: :ignored}, _bakery, _uuid) do
     Logger.info "Ignored/fake job: Not writing result to file"
   end
   def write_result(%Result{}, _bakery, _uuid) do

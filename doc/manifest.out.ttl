@@ -283,18 +283,18 @@ stageinst:bakery_prep_invocation a saved:RAPStageInvocation, prov:Activity ;
 
 ## Monitor stage
 ##' Note that the initial entity is not derived from any previous empty as the monitor process generates it.
-stageinst:monitor_gcp_process_job0 a saved:RAPStageOutput, prov:Activity ;
+stageinst:monitor_gcp_process_job0 a saved:RAPStageProcessing, prov:Activity ;
     rdfs:label "Elixir.RAP.Storage.Monitor stage event-processing activity" ;
     prov:startedAtTime "20240714T110000Z" ;
     prov:endedAtTime   "20240714T110100Z" ;
     prov:wasAssociatedWith stage:monitor_gcp ;
     prov:generated stageinst:monitor_gcp_output_job0 .
     
-stageinst:monitor_gcp_output_job0 a saved:RAPStageIntermediary, prov:Entity ;
+stageinst:monitor_gcp_output_job0 a saved:RAPStageResponse, prov:Entity ;
     rdfs:label "Elixir.RAP.Storage.Monitor intermediate output entity" .
 
 ## Object fetching stage
-stageinst:fetch_gcp_process_job0 a saved:RAPStageResponse, prov:Activity ;
+stageinst:fetch_gcp_process_job0 a saved:RAPStageProcessing, prov:Activity ;
     rdfs:label "Elixir.RAP.Storage.GCP stage event-processing activity" ;
     prov:startedAtTime "20240714T110200Z" ;
     prov:endedAtTime   "20240714T110300Z" ;
@@ -302,12 +302,12 @@ stageinst:fetch_gcp_process_job0 a saved:RAPStageResponse, prov:Activity ;
     prov:used stageinst:monitor_gcp_output_job0 ;
     prov:generated stageinst:fetch_gcp_output_job0 .
     
-stageinst:fetch_gcp_output_job0 a saved:RAPStageIntermediary, prov:Entity ;
+stageinst:fetch_gcp_output_job0 a saved:RAPStageResponse, prov:Entity ;
     rdfs:label "Elixir.RAP.Storage.GCP intermediate output entity" ;
     prov:wasDerivedFrom stageinst:monitor_gcp_output_job0 .
 
 ## Job producer stage
-stageinst:job_producer_process_job0 a saved:RAPStageResponse, prov:Activity ;
+stageinst:job_producer_process_job0 a saved:RAPStageProcessing, prov:Activity ;
     rdfs:label "Elixir.RAP.Job.Producer stage event-processing activity" ;
     prov:startedAtTime "20240714T110300Z" ;
     prov:endedAtTime   "20240714T110400Z" ;
@@ -315,12 +315,12 @@ stageinst:job_producer_process_job0 a saved:RAPStageResponse, prov:Activity ;
     prov:used stageinst:fetch_gcp_output_job0 ;
     prov:generated stageinst:job_producer_output_job0 .
     
-stageinst:job_producer_output_job0 a saved:RAPStageIntermediary, prov:Entity ;
+stageinst:job_producer_output_job0 a saved:RAPStageResponse, prov:Entity ;
     rdfs:label "Elixir.RAP.Job.Producer intermediate output entity" ;
     prov:wasDerivedFrom stageinst:fetch_gcp_output_job0 .
 
 ## Job runner stage
-stageinst:job_runner_process_job0 a saved:RAPStageResponse, prov:Activity ;
+stageinst:job_runner_process_job0 a saved:RAPStageProcessing, prov:Activity ;
     rdfs:label "Elixir.RAP.Job.Runner stage event-processing activity" ;
     prov:startedAtTime "20240714T110300Z" ;
     prov:endedAtTime   "20240714T110400Z" ;
@@ -328,7 +328,7 @@ stageinst:job_runner_process_job0 a saved:RAPStageResponse, prov:Activity ;
     prov:used stageinst:job_producer_output_job0 ;
     prov:generated stageinst:job_runner_output_job0 .
     
-stageinst:job_runner_output_job0 a saved:RAPStageIntermediary, prov:Entity ;
+stageinst:job_runner_output_job0 a saved:RAPStageResponse, prov:Entity ;
     rdfs:label "Elixir.RAP.Job.Runner intermediate output entity" ;
     prov:wasDerivedFrom stageinst:job_producer_output_job0 .
     
@@ -343,7 +343,7 @@ stageinst:job_runner_output_job0 a saved:RAPStageIntermediary, prov:Entity ;
 ##'' mnesia cache. Don't consider this for now as this is something we
 ##'' can regenerate, in contrast to the linked data which is a receipt of
 ##'' a given pass through the pipeline.
-stageinst:bakery_prep_process_job0 a saved:RAPStageResponse, prov:Activity ;
+stageinst:bakery_prep_process_job0 a saved:RAPStageProcessing, prov:Activity ;
     rdfs:label "Elixir.RAP.Bakery.Prepare stage event-processing activity" ;
     prov:startedAtTime "20240714T110400Z" ;
     prov:endedAtTime   "20240714T110500Z" ;
