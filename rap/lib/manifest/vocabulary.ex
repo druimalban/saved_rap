@@ -92,7 +92,7 @@ defmodule RAP.Vocabulary do
   """
   defvocab PAV,
     base_iri: "http://purl.org/pav/",
-    file: "pav-no-import.ttl",
+    file: "pav-no-import.nt",
     case_violations: :ignore,
     ignore: ~w[provenance.ttl 2.1 2.2 2.3]
   
