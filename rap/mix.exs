@@ -27,6 +27,7 @@ defmodule RAP.MixProject do
       { :google_api_storage, "~> 0.37"  },
       { :goth,               "~> 1.4"   },
       { :grax,               "~> 0.4"   },
+      { :hackney,            "~> 1.20"  },
       { :math,               "~> 0.7"   },
       { :rdf,                "~> 1.2"   },
       { :uuid,               "~> 1.1.8" },

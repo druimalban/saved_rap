@@ -68,6 +68,7 @@ defmodule RAP.Storage.GCP do
     with false <- File.exists?(target_full) && PreRun.dl_success?(obj.gcp_md5, File.read!(target_full), opts: [input_md5: true]),
          session <- GenStage.call(Monitor, :yield_session),
 	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
+         _ <- :timer.sleep(100)
 	 :ok <- File.write(target_full, body) do
       Logger.info "Successfully wrote #{target_full}, file base name is #{target_base}"
       {:ok, target_base}
