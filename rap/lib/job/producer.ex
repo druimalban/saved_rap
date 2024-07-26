@@ -114,10 +114,9 @@ defmodule RAP.Job.Producer do
   """
   def check_table(%TableDesc{} = desc, resources) do
 
-    source_id   = desc.__id__
-    table_name  = extract_id source_id
-    table_title = desc.title
-    Logger.info "Checking table #{inspect table_name}, in resources #{inspect resources}"
+    source_id = desc.__id__
+    new_id    = RDF.IRI.append("_processed")
+    Logger.info "Checking table #{inspect source_id}, in resources #{inspect resources}"
     
     inject = fn fp ->
       %ResourceSpec{
@@ -128,9 +127,9 @@ defmodule RAP.Job.Producer do
     data_validity   = desc.resource_path   |> extract_uri() |> then(inject)
     schema_validity = desc.schema_path_ttl |> extract_uri() |> then(inject)
     
-    %TableSpec{ name:      table_name,    title:  table_title,
-		resource:  data_validity, schema: schema_validity,
-		source_id: source_id  }
+    %TableSpec{ __id__:    new_id,        submitted_table: source_id,
+		title:     desc.title,    description:     desc.description,
+		resource:  data_validity, schema_ttl:      schema_validity }
   end
 
   @doc """
@@ -139,19 +138,28 @@ defmodule RAP.Job.Producer do
   Nonetheless, may consider a possible error case where this is nil.
   This is a blank node so there's no notion of a source IRI
   """
-  def check_column(%ScopeDesc{column:   column,
+  def check_column(%ScopeDesc{__id__:   source_id,
+			      column:   column,
                               variable: underlying,
                               table: %RAP.Manifest.TableDesc{
 				        __id__:        table_id,
 					resource_path: resource_uri
                               }}) do
+    # Don't sub in the table yet, it is primarily relevant when SERIALISING
+    # we already got the resource name/base out of the injected struct
+    # Let's see if this breaks ought
+    # For the variable, the only reason we extract the ID is it gets read
+    # as this ExtColumnDesc, this is fixable. After that, the only difference
+    # between ScopeSpec and ScopeDesc is we have the temporary annotated fields
+    # below
     %ScopeSpec{
+      __id__:         RDF.IRI.append(source_id, "_processed"),
       column:         column,
-      variable_uri:   RDF.IRI.to_string(underlying.__id__),
+      variable_id:    underlying.__id__,
       variable_curie: underlying.compact_uri,
       resource_name:  extract_id(table_id),
-      resource_base:  extract_uri(resource_uri),
-      table_id:       table_id
+      resource_base:  extract_uri(resource_uri) 
+      #, table_id:       table_id 
     }
   end
 
@@ -166,13 +174,14 @@ defmodule RAP.Job.Producer do
      var0 < var1
     end
     source_id = desc.__id__
-    job_name = extract_id source_id
+    new_id    = RDF.IRI.append(source_id, "_processed")
     scope_descriptive = desc.job_scope_descriptive |> Enum.map(&check_column/1) |> Enum.sort(sub)
     scope_collected   = desc.job_scope_collected   |> Enum.map(&check_column/1) |> Enum.sort(sub)
     scope_modelled    = desc.job_scope_modelled    |> Enum.map(&check_column/1) |> Enum.sort(sub)
 
     generated_job = %JobSpec{
-      name:              job_name,
+      __id__:            new_id,
+      submitted_job:     source_id,
       type:              desc.job_type,
       result_format:     desc.job_result_format,
       result_stem:       desc.job_result_stem,
@@ -180,8 +189,7 @@ defmodule RAP.Job.Producer do
       description:       desc.description,
       scope_descriptive: Enum.sort(scope_descriptive, sub),
       scope_collected:   Enum.sort(scope_collected, sub),
-      scope_modelled:    Enum.sort(scope_modelled, sub),
-      source_id:         source_id
+      scope_modelled:    Enum.sort(scope_modelled, sub)
     }
     Logger.info "Generated job: #{inspect generated_job}"
     generated_job
@@ -219,24 +227,22 @@ defmodule RAP.Job.Producer do
 	{:error, :bad_tables, non_extant_tables}
     else
       processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
-
-      manifest_name = extract_id(source_id)
-      
+      new_id         = RDF.IRI.append(source_id, "_processed")
       manifest_obj = %ManifestSpec{
-	name:               manifest_name,
+	__id__:             new_id,
+	submitted_manifest: source_id,
 	title:              desc.title,
 	description:        desc.description,
 	local_version:      desc.local_version,
 	uuid:               prev.uuid,
 	data_source:        prev.data_source,
 	pre_signal:         prev.signal,
-	signal:             curr_signal,
+	producer_signal:    curr_signal,
 	manifest_base_ttl:  prev.manifest_ttl,
 	manifest_base_yaml: prev.manifest_yaml,
 	resource_bases:     prev.resources,
-	staging_tables:     processed_tables,
-	staging_jobs:       processed_jobs,
-	source_id:          source_id,
+	tables:             processed_tables,
+	jobs:               processed_jobs,
 	base_prefix:        prev.base_prefix
       }
       {:ok, manifest_obj}
@@ -245,16 +251,17 @@ defmodule RAP.Job.Producer do
 
   def minimal_manifest(%MidRun{} = prev, curr_signal) do
     source_id = prev.manifest_iri
+    new_id    = RDF.IRI.append(source_id, "_processed")
     manifest_name = extract_id source_id
-    %ManifestSpec{ name:               manifest_name,
+    %ManifestSpec{ __id__:             new_id,
 		   uuid:               prev.uuid,
 		   data_source:        prev.data_source,
 		   pre_signal:         prev.signal,
-		   signal:             curr_signal,
+		   producer_signal:    curr_signal,
 		   manifest_base_ttl:  prev.manifest_ttl,
 		   manifest_base_yaml: prev.manifest_yaml,
 		   resource_bases:     prev.resources,
-		   source_id:          source_id,
+		   submitted_manifest: source_id,
 		   base_prefix:        prev.base_prefix }
   end
 
@@ -349,12 +356,15 @@ defmodule RAP.Job.Producer do
     end
   end
   def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, fallback_base) do
+    # We already have a notion of a well-known unique identifier (UUID),
+    # so use it as fallback
     %ManifestSpec{
-      uuid:        prev.uuid,
-      data_source: prev.data_source,
-      pre_signal:  prev.pre_signal,
-      base_prefix: fallback_base,
-      signal:      :see_pre,
+      __id__:          "#{fallback_base}RootManifest#{prev.uuid}_processed",
+      uuid:            prev.uuid,
+      data_source:     prev.data_source,
+      pre_signal:      pre_signal,
+      base_prefix:     fallback_base,
+      producer_signal: :see_pre,
     }
   end
   

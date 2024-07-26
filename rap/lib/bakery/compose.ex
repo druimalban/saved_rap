@@ -14,8 +14,6 @@ defmodule RAP.Bakery.Compose do
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.Result
   alias RAP.Bakery.Prepare
-  alias RAP.Bakery.ManifestOutput
-
 
   defstruct [ :uuid,          :contents,
 	      :output_stem,   :output_format,
@@ -53,7 +51,7 @@ defmodule RAP.Bakery.Compose do
   #  time_zone,
   #  %ManifestOutput{} = prepared 
   #) do
-  def compose_document(%Application{} = state, %ManifestOutput{} = prepared) do
+  def compose_document(%Application{} = state, %ManifestSpec{} = prepared) do
     # %ManifestOutput{} is effectively an annotated manifest struct, pass in a map
     {html_contents, manifest_signal} =
       doc_lead_in()
@@ -97,7 +95,7 @@ defmodule RAP.Bakery.Compose do
     html_directory,
     rap_uri,
     time_zone,
-    %ManifestOutput{} = prepared
+    %ManifestSpec{} = prepared
   ) do
     ttl_full  = "#{rap_uri}/#{prepared.uuid}/#{prepared.manifest_pre_base_ttl}"
     yaml_full = "#{rap_uri}/#{prepared.uuid}/#{prepared.manifest_pre_base_yaml}"
@@ -150,7 +148,7 @@ defmodule RAP.Bakery.Compose do
   def stage_table(html_directory, rap_uri, uuid,
     %TableSpec{
       resource: %ResourceSpec{base: resource_path},
-      schema:   %ResourceSpec{base: schema_path_ttl}
+      schema_ttl:   %ResourceSpec{base: schema_path_ttl}
     } = table_spec) do
     table_extra = %{
       uuid:            uuid,
