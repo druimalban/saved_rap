@@ -48,7 +48,7 @@ defmodule RAP.Storage.PreRun do
 
   require Logger
 
-  defstruct [ :uuid, :index, :resources ]
+  defstruct [ :uuid, :index, :resources, :signal, :work ]
 
   @doc """
   Simple wrapper around Erlang term storage table of UUIDs with 
@@ -96,6 +96,20 @@ defmodule RAP.Storage.PreRun do
     end
   end
 
+  def append_work(nil, stage_atom, curr_signal, stage_invoked_at, started_at) do
+    append_work([], stage_atom, curr_signal, stage_invoked_at, started_at)
+  end
+  def append_work(past_work, stage_atom, curr_signal, stage_invoked_at, started_at) do
+    ended_at =  DateTime.utc_now() |> DateTime.to_unix()
+    work = [{stage_atom, %{
+		  signal:           curr_signal,
+		  stage_invoked_at: stage_invoked_at,
+		  work_started_at:  started_at,
+		  work_ended_at:    ended_at
+	     }}]
+    past_work ++ work
+  end
+
 end
 
 defmodule RAP.Storage.MidRun do
@@ -111,7 +125,7 @@ defmodule RAP.Storage.MidRun do
   local directory we're monitoring, some other object store like S3), so
   it's clear where failures occur.
   """
-  defstruct [ :uuid, :signal, :data_source,  :manifest_iri, :base_prefix,
+  defstruct [ :uuid, :signal, :work, :data_source, :manifest_iri, :base_prefix,
 	      :manifest_yaml, :manifest_ttl, :resources ]
 end
 

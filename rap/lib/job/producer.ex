@@ -33,7 +33,7 @@ defmodule RAP.Job.Producer do
   """
 
   alias RAP.Manifest.{TableDesc, ScopeDesc, JobDesc, ManifestDesc}
-  alias RAP.Storage.{MidRun, GCP}
+  alias RAP.Storage.{PreRun, MidRun, GCP}
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
     
   use GenStage
@@ -46,20 +46,23 @@ defmodule RAP.Job.Producer do
 
   def init initial_state do
     Logger.info "Called Job.Producer.init (initial_state = #{inspect initial_state})"
+    curr_ts = DateTime.utc_now() |> DateTime.to_unix()
+    invocation_state = %{ initial_state | stage_invoked_at: curr_ts }
     subscription = [
       # Fix this using Storage.Monitor -> Storage.GCP/Storage.Local stages
       { GCP, min_demand: 0, max_demand: 1 }
     ]
-    { :producer_consumer, initial_state, subscribe_to: subscription }
+    { :producer_consumer, invocation_state, subscribe_to: subscription }
   end
   
   def handle_events events, _from, state do
     pretty_events = events |> Enum.map(& &1.uuid) |> inspect()
     Logger.info "Called Job.Producer.handle_events on #{pretty_events}"
-
+    input_work = events |> Enum.map(& &1.work)
+    Logger.info "Job.Producer received objects with the following work defined: #{inspect input_work}"
     # Fix once we've got the GCP stuff nailed down
     processed = events
-    |> Enum.map(&invoke_manifest(&1, state.cache_directory, state.rap_base_prefix))
+    |> Enum.map(&invoke_manifest(&1, state.cache_directory, state.stage_invoked_at, state.rap_base_prefix))
     
     { :noreply, processed, state }
   end
@@ -218,10 +221,10 @@ defmodule RAP.Job.Producer do
   def check_manifest(%ManifestDesc{ description:   nil, title: nil,
 				    tables:        [],  jobs:  [],
 				    local_version: nil},
-                     _prev, _sig) do
+                     _prev, _sig, _inv, _start) do
     {:error, :empty_manifest}
   end
-  def check_manifest(%ManifestDesc{} = desc, %MidRun{manifest_iri: source_id} = prev, curr_signal) do
+  def check_manifest(%ManifestDesc{} = desc, %MidRun{manifest_iri: source_id} = prev, curr_signal, stage_invoked_at, work_started_at) do
     Logger.info "Check manifest #{source_id} (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
@@ -243,7 +246,8 @@ defmodule RAP.Job.Producer do
 	{:error, :bad_tables, non_extant_tables}
     else
       processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
-      new_id         = RDF.IRI.append(source_id, "_processed")
+      new_id   = RDF.IRI.append(source_id, "_processed")
+      new_work = PreRun.append_work(prev.work, __MODULE__, curr_signal, stage_invoked_at, work_started_at)
       manifest_obj = %ManifestSpec{
 	__id__:             new_id,
 	submitted_manifest: source_id,
@@ -252,8 +256,8 @@ defmodule RAP.Job.Producer do
 	local_version:      desc.local_version,
 	uuid:               prev.uuid,
 	data_source:        prev.data_source,
-	pre_signal:         prev.signal,
-	producer_signal:    curr_signal,
+	signal:             curr_signal,
+	work:               new_work,
 	manifest_base_ttl:  prev.manifest_ttl,
 	manifest_base_yaml: prev.manifest_yaml,
 	resource_bases:     prev.resources,
@@ -265,15 +269,17 @@ defmodule RAP.Job.Producer do
     end
   end
 
-  def minimal_manifest(%MidRun{} = prev, curr_signal) do
+  def minimal_manifest(%MidRun{} = prev, curr_signal, stage_invoked_at, work_started_at) do
     source_id = prev.manifest_iri
     new_id    = RDF.IRI.append(source_id, "_processed")
     manifest_name = extract_id source_id
+    # append_work(past_work, stage_atom, curr_signal, stage_invoked_at, started_at)
+    new_work = PreRun.append_work(prev.work, __MODULE__, curr_signal, stage_invoked_at, work_started_at)
     %ManifestSpec{ __id__:             new_id,
 		   uuid:               prev.uuid,
 		   data_source:        prev.data_source,
-		   pre_signal:         prev.signal,
-		   producer_signal:    curr_signal,
+		   signal:             curr_signal,
+		   work:               new_work,
 		   manifest_base_ttl:  prev.manifest_ttl,
 		   manifest_base_yaml: prev.manifest_yaml,
 		   resource_bases:     prev.resources,
@@ -340,15 +346,17 @@ defmodule RAP.Job.Producer do
   we can use, but it also implies that no jobs should be run, so don't
   try to run these, at least for now. Only pattern-match on `:working'.
   """
-  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir, _fallback_base) do
+  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir, stage_invoked_at, _fallback_base) do
     target_dir         = "#{cache_dir}/#{prev.uuid}"
     manifest_full_path = "#{target_dir}/#{prev.manifest_ttl}"
     load_target        = RDF.iri(prev.manifest_iri)
+    work_started_at = DateTime.utc_now() |> DateTime.to_unix()
+    
     #load_target = RAP.Vocabulary.RAP.RootManifest
     Logger.info "Building RDF graph from turtle manifest #{load_target} using data in #{target_dir}"
     with {:ok, rdf_graph}    <- RDF.Turtle.read_file(manifest_full_path),
          {:ok, ex_struct}    <- Grax.load(rdf_graph, load_target, ManifestDesc),
-         {:ok, manifest_obj} <- check_manifest(ex_struct, prev, :working)
+         {:ok, manifest_obj} <- check_manifest(ex_struct, prev, :working, stage_invoked_at, work_started_at)
       do
         Logger.info "Detecting feasible jobs"
 	Logger.info "Found RDF graph:"
@@ -361,26 +369,26 @@ defmodule RAP.Job.Producer do
     else
       {:error, :empty_manifest} ->
 	Logger.info "Corresponding struct to RDF graph was empty!"
-	minimal_manifest(prev, :empty_manifest)
+	minimal_manifest(prev, :empty_manifest, stage_invoked_at, work_started_at)
       {:error, err} ->
 	Logger.info "Could not read RDF graph #{manifest_full_path}"
         Logger.info "Error was #{inspect err}"
-	minimal_manifest(prev, :bad_input_graph)
+	minimal_manifest(prev, :bad_input_graph, stage_invoked_at, work_started_at)
       {:error, :bad_tables, _tables} ->
 	Logger.info "Error arising from manifest object shape"
-	minimal_manifest(prev, :bad_manifest_tables)
+	minimal_manifest(prev, :bad_manifest_tables, stage_invoked_at, work_started_at)
     end
   end
-  def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, fallback_base) do
+  def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, stage_invoked_at, fallback_base) do
     # We already have a notion of a well-known unique identifier (UUID),
     # so use it as fallback
+    target_id = RDF.IRI.new("#{fallback_base}RootManifest#{prev.uuid}_processed")
     %ManifestSpec{
-      __id__:          "#{fallback_base}RootManifest#{prev.uuid}_processed",
+      __id__:          target_id,
       uuid:            prev.uuid,
       data_source:     prev.data_source,
-      pre_signal:      pre_signal,
       base_prefix:     fallback_base,
-      producer_signal: :see_pre,
+      signal:          :see_pre
     }
   end
   

@@ -212,6 +212,7 @@ defmodule RAP.Job.ManifestSpec do
     property :output_format,      DCAT.mediaType,      type: :string
     property :download_url,       DCAT.downloadURL,    type: :iri
     property :submitted_manifest, PROV.wasDerivedFrom, type: :iri
+    property :signal,             SAVED.stage_signal,  type: :string
     link tables:  SAVED.tables,  type: list_of(TableSpec),  depth: +5
     link jobs:    SAVED.jobs,    type: list_of(JobSpec),    depth: +5
     link results: SAVED.results, type: list_of(Result), depth: +5
@@ -224,9 +225,7 @@ defmodule RAP.Job.ManifestSpec do
     field :resource_bases
     field :result_bases
     field :processed_manifest_base
-    field :pre_signal
-    field :producer_signal
-    field :runner_signal
+    field :work
     field :local_version
     field :staging_tables
     field :base_prefix

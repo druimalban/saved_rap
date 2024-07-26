@@ -38,9 +38,9 @@ defmodule RAP.Application do
   We have no notion of state, yet
   """
   def gen_invocation_activity(invocation_iri, application_iri, invoked_at) do
-    invocation_ts = invoked_at
-    |> DateTime.from_unix!()
-    |> DateTime.shift_zone!(@time_zone)
+    #invocation_ts = invoked_at
+    #|> DateTime.from_unix!()
+    #|> DateTime.shift_zone!(@time_zone)
     
     RDF.Description.new(invocation_iri)
     |> RDFS.label("RAP application invocation description")
@@ -50,7 +50,7 @@ defmodule RAP.Application do
     |> SAVED.beam_module(inspect __MODULE__)
     |> SAVED.otp_version(System.otp_release())
     |> SAVED.elixir_version(System.version())
-    |> PROV.startedAtTime(invocation_ts)
+    |> PROV.startedAtTime(invoked_at)
     |> PROV.wasAssociatedWith(application_iri)
   end
   
@@ -70,7 +70,8 @@ defmodule RAP.Application do
   data contained within differently.
   """
   defstruct [ :gcp_session,
-	      :rap_invocation,	      
+	      :rap_invoked_at,
+	      :stage_invoked_at,
 	      interval_seconds:   @interval_seconds,
 	      index_file:         @index_file,
 	      index_fall_back:    @index_fall_back,
@@ -97,7 +98,7 @@ defmodule RAP.Application do
     initial_ts = current_ts - @interval_seconds
 
     hardcoded_state = %RAP.Application{
-      rap_invocation: initial_ts
+      rap_invoked_at: initial_ts
     }
     
     children = [

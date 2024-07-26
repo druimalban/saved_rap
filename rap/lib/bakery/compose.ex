@@ -25,15 +25,19 @@ defmodule RAP.Bakery.Compose do
 
   def init(initial_state) do
     Logger.info "Initialised cache module `RAP.Bakery.Compose' with initial_state #{inspect initial_state}"
+    curr_ts = DateTime.utc_now() |> DateTime.to_unix()
+    invocation_state = %{ initial_state | stage_invoked_at: curr_ts }
     subscription = [
       { Prepare, min_demand: 0, max_demand: 1 }
     ]
-    {:consumer, initial_state, subscribe_to: subscription}
+    {:consumer, invocation_state, subscribe_to: subscription}
   end
 
   # target_contents, bakery_directory, uuid, stem, extension, target_name
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "HTML document consumer received #{inspect events}"
+    input_work = events |> Enum.map(& &1.work)
+    Logger.info "Bakery.Compose received objects with the following work defined: #{inspect input_work}"
     #processed_events = events
     #|> Enum.map(&compose_document(state, &1))
     #|> Enum.map(&write_result(&1, state.bakery_directory))
