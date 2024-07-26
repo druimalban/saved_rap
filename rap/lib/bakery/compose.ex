@@ -14,6 +14,7 @@ defmodule RAP.Bakery.Compose do
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Job.Result
   alias RAP.Bakery.Prepare
+  alias RAP.Bakery.ManifestOutput
 
 
   defstruct [ :uuid,          :contents,
@@ -35,13 +36,13 @@ defmodule RAP.Bakery.Compose do
   # target_contents, bakery_directory, uuid, stem, extension, target_name
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "HTML document consumer received #{inspect events}"
-    processed_events = events
-    |> Enum.map(&compose_document(state, &1))
-    |> Enum.map(&write_result(&1, state.bakery_directory))
+    #processed_events = events
+    #|> Enum.map(&compose_document(state, &1))
+    #|> Enum.map(&write_result(&1, state.bakery_directory))
     {:noreply, [], state}
   end
 
-  # Result stem/extension should be configurable and in the Prepare
+  # Result stem/extension should be configurable and in the ManifestOutput
   # struct, since there's no way to guarantee these are constant across
   # runs, i.e. we could start the program with different parameters,
   # and then past generated HTML pages may break
@@ -50,10 +51,10 @@ defmodule RAP.Bakery.Compose do
   #  rap_uri,
   #  style_sheet,
   #  time_zone,
-  #  %Prepare{} = prepared 
+  #  %ManifestOutput{} = prepared 
   #) do
-  def compose_document(%Application{} = state, %Prepare{} = prepared) do
-    # %Prepare{} is effectively an annotated manifest struct, pass in a map
+  def compose_document(%Application{} = state, %ManifestOutput{} = prepared) do
+    # %ManifestOutput{} is effectively an annotated manifest struct, pass in a map
     {html_contents, manifest_signal} =
       doc_lead_in()
       |> head_lead_in()
@@ -96,7 +97,7 @@ defmodule RAP.Bakery.Compose do
     html_directory,
     rap_uri,
     time_zone,
-    %Prepare{} = prepared
+    %ManifestOutput{} = prepared
   ) do
     ttl_full  = "#{rap_uri}/#{prepared.uuid}/#{prepared.manifest_pre_base_ttl}"
     yaml_full = "#{rap_uri}/#{prepared.uuid}/#{prepared.manifest_pre_base_yaml}"
@@ -224,7 +225,7 @@ defmodule RAP.Bakery.Compose do
     lib_d3,
     lib_plotly,
     target_uri,
-    %Result{type: "density", signal: :working} = result) do
+    %Result{job_type: "density", signal: :working} = result) do
     
     plot_extra = %{
       contents_uri:   target_uri,
@@ -241,7 +242,7 @@ defmodule RAP.Bakery.Compose do
   
   # Assumption is that we have a notion of a completed job, (see named
   # RAP.Job.Result struct), annotated with the base name of the output file
-  # As opposed to the final RAP.Bakery.Prepare struct which chucks away a
+  # As opposed to the final RAP.Bakery.ManifestOutput struct which chucks away a
   # bunch of information.
   # Call the base name of the output file contents_base since result text
   # contents are called `contents'  
@@ -280,7 +281,7 @@ defmodule RAP.Bakery.Compose do
   end
 
   @doc """
-  This is more or less identical to `Prepare.write_result/4'…
+  This is more or less identical to `ManifestOutput.write_result/4'…
   """
   def write_result(%__MODULE__{} = result, bakery_directory) do
     target_base = "#{result.output_stem}.#{result.output_format}"

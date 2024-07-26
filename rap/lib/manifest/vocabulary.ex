@@ -145,7 +145,7 @@ defmodule RAP.Vocabulary do
     file: "saved.nt",
     case_violations: :ignore,
     terms: {RAP.TermHandler, :sub_separators, [:variant1]},
-    strict: true
+    strict: false
 
   @vocabdoc """
   SAVED data-model: RAP-specific namespace

@@ -20,6 +20,7 @@ defmodule RAP.Application do
   @bakery_directory   "./bakery"              # Place to output results
   @linked_result_stem "manifest_post"
   @time_zone          "GB-Eire"
+  @rap_base_prefix    "https://marine.gov.scot/metadata/saved/rap/"
   @rap_uri_prefix     "/saved/rap"
   @rap_style_sheet    "/saved/assets/rap.css" # Imports fira.css
   @rap_js_lib_plotly  "/saved/assets/plotly-2.32.0.min.js"
@@ -33,10 +34,24 @@ defmodule RAP.Application do
   alias RDF.NS.RDFS
   alias RAP.Vocabulary.{PAV, PROV, SAVED}
 
-  def gen_invocation_activity(iri) do
-    RDF.Description.new(iri)
+  @doc """
+  We have no notion of state, yet
+  """
+  def gen_invocation_activity(invocation_iri, application_iri, invoked_at) do
+    invocation_ts = invoked_at
+    |> DateTime.from_unix!()
+    |> DateTime.shift_zone!(@time_zone)
+    
+    RDF.Description.new(invocation_iri)
     |> RDFS.label("RAP application invocation description")
     |> PAV.version(@local_version)
+    |> SAVED.beam_application("RAP")
+    |> SAVED.beam_node(node())
+    |> SAVED.beam_module(inspect __MODULE__)
+    |> SAVED.otp_version(System.otp_release())
+    |> SAVED.elixir_version(System.version())
+    |> PROV.startedAtTime(invocation_ts)
+    |> PROV.wasAssociatedWith(application_iri)
   end
   
   @doc
@@ -55,7 +70,7 @@ defmodule RAP.Application do
   data contained within differently.
   """
   defstruct [ :gcp_session,
-	      :last_poll,	      
+	      :rap_invocation,	      
 	      interval_seconds:   @interval_seconds,
 	      index_file:         @index_file,
 	      index_fall_back:    @index_fall_back,
@@ -65,6 +80,7 @@ defmodule RAP.Application do
 	      bakery_directory:   @bakery_directory,
 	      linked_result_stem: @linked_result_stem,
 	      time_zone:          @time_zone,
+	      rap_base_prefix:    @rap_base_prefix,
 	      rap_uri_prefix:     @rap_uri_prefix,
 	      rap_style_sheet:    @rap_style_sheet,
 	      rap_js_lib_plotly:  @rap_js_lib_plotly,
@@ -81,7 +97,7 @@ defmodule RAP.Application do
     initial_ts = current_ts - @interval_seconds
 
     hardcoded_state = %RAP.Application{
-      last_poll: initial_ts
+      rap_invocation: initial_ts
     }
     
     children = [

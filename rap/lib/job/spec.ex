@@ -33,7 +33,7 @@ defmodule RAP.Job.ScopeSpec do
   atomic name of the table, which is useful for generating reporting.
   """
   defstruct [ :variable_uri,  :variable_curie, :column,
-	      :resource_name, :resource_base ]
+	      :resource_name, :resource_base,  :table_id ]
 end
 
 defmodule RAP.Job.ResourceSpec do
@@ -69,7 +69,7 @@ defmodule RAP.Job.TableSpec do
   names or base file names, but instances of the above `%ResourceSpec{}'
   struct.
   """
-  defstruct [ :name, :title, :description, :resource, :schema ]
+  defstruct [ :name, :title, :description, :resource, :schema, :source_id ]
 end
 
 defmodule RAP.Job.JobSpec do
@@ -81,7 +81,8 @@ defmodule RAP.Job.JobSpec do
   defstruct [ :name, :title, :description,
 	      :type, :result_format, :result_stem,
 	      :scope_descriptive,   :scope_collected,  :scope_modelled,
-	      :errors_descriptive,  :errors_collected, :errors_modelled ]
+	      :errors_descriptive,  :errors_collected, :errors_modelled,
+	      :source_id ]
 end
 
 defmodule RAP.Job.ManifestSpec do
@@ -96,6 +97,6 @@ defmodule RAP.Job.ManifestSpec do
   defstruct [ :name, :title, :description, :local_version, :uuid, :data_source,
 	      :pre_signal, :signal, :manifest_base_ttl, :manifest_base_yaml,
 	      :resource_bases,
-	      :staging_tables, :staging_jobs ]
+	      :staging_tables, :staging_jobs,
+	      :source_id, :base_prefix ]
 end
-

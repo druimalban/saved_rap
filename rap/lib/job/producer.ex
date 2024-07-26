@@ -39,8 +39,6 @@ defmodule RAP.Job.Producer do
   use GenStage
   require Logger
 
-  defstruct [ :title, :description, :staging_jobs ]
-
   def start_link initial_state do
     Logger.info "Called Job.Producer.start_link (_)"
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
@@ -61,7 +59,7 @@ defmodule RAP.Job.Producer do
 
     # Fix once we've got the GCP stuff nailed down
     processed = events
-    |> Enum.map(&invoke_manifest(&1, state.cache_directory))
+    |> Enum.map(&invoke_manifest(&1, state.cache_directory, state.rap_base_prefix))
     
     { :noreply, processed, state }
   end
@@ -116,40 +114,44 @@ defmodule RAP.Job.Producer do
   """
   def check_table(%TableDesc{} = desc, resources) do
 
-    table_name  = extract_id(desc.__id__)
+    source_id   = desc.__id__
+    table_name  = extract_id source_id
     table_title = desc.title
     Logger.info "Checking table #{inspect table_name}, in resources #{inspect resources}"
     
     inject = fn fp ->
-      test = fp in resources and not is_nil(fp)
       %ResourceSpec{
-	base: fp, extant: test
+	base:   fp,
+	extant: fp in resources and not is_nil(fp)
       }
     end
     data_validity   = desc.resource_path   |> extract_uri() |> then(inject)
     schema_validity = desc.schema_path_ttl |> extract_uri() |> then(inject)
     
-    %TableSpec{ name:     table_name,    title:  table_title,
-		resource: data_validity, schema: schema_validity }
+    %TableSpec{ name:      table_name,    title:  table_title,
+		resource:  data_validity, schema: schema_validity,
+		source_id: source_id  }
   end
 
   @doc """
   With the new data structure, the table is implictly valid, so we just
   need to extract the information of interest (path to table).
-  Nonetheless, may consider a possible error case where this is nil. 
+  Nonetheless, may consider a possible error case where this is nil.
+  This is a blank node so there's no notion of a source IRI
   """
   def check_column(%ScopeDesc{column:   column,
-                               variable: underlying,
-                               table: %RAP.Manifest.TableDesc{
+                              variable: underlying,
+                              table: %RAP.Manifest.TableDesc{
 				        __id__:        table_id,
 					resource_path: resource_uri
-                               }}) do
+                              }}) do
     %ScopeSpec{
       column:         column,
       variable_uri:   RDF.IRI.to_string(underlying.__id__),
       variable_curie: underlying.compact_uri,
       resource_name:  extract_id(table_id),
-      resource_base:  extract_uri(resource_uri)
+      resource_base:  extract_uri(resource_uri),
+      table_id:       table_id
     }
   end
 
@@ -163,8 +165,8 @@ defmodule RAP.Job.Producer do
     sub = fn(%ScopeSpec{variable_curie: var0}, %ScopeSpec{variable_curie: var1}) ->
      var0 < var1
     end
-
-    job_name = extract_id(desc.__id__)
+    source_id = desc.__id__
+    job_name = extract_id source_id
     scope_descriptive = desc.job_scope_descriptive |> Enum.map(&check_column/1) |> Enum.sort(sub)
     scope_collected   = desc.job_scope_collected   |> Enum.map(&check_column/1) |> Enum.sort(sub)
     scope_modelled    = desc.job_scope_modelled    |> Enum.map(&check_column/1) |> Enum.sort(sub)
@@ -178,7 +180,8 @@ defmodule RAP.Job.Producer do
       description:       desc.description,
       scope_descriptive: Enum.sort(scope_descriptive, sub),
       scope_collected:   Enum.sort(scope_collected, sub),
-      scope_modelled:    Enum.sort(scope_modelled, sub)
+      scope_modelled:    Enum.sort(scope_modelled, sub),
+      source_id:         source_id
     }
     Logger.info "Generated job: #{inspect generated_job}"
     generated_job
@@ -194,8 +197,8 @@ defmodule RAP.Job.Producer do
                      _prev, _sig) do
     {:error, :empty_manifest}
   end
-  def check_manifest(%ManifestDesc{} = desc, %MidRun{} = prev, curr_signal) do
-    Logger.info "Check manifest #{prev.manifest_iri} (title #{inspect desc.title})"
+  def check_manifest(%ManifestDesc{} = desc, %MidRun{manifest_iri: source_id} = prev, curr_signal) do
+    Logger.info "Check manifest #{source_id} (title #{inspect desc.title})"
     Logger.info "Working on tables: #{inspect desc.tables}"
     Logger.info "Working on jobs: #{inspect desc.jobs}"
     
@@ -217,7 +220,7 @@ defmodule RAP.Job.Producer do
     else
       processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
 
-      manifest_name = extract_id(prev.manifest_iri)
+      manifest_name = extract_id(source_id)
       
       manifest_obj = %ManifestSpec{
 	name:               manifest_name,
@@ -232,14 +235,17 @@ defmodule RAP.Job.Producer do
 	manifest_base_yaml: prev.manifest_yaml,
 	resource_bases:     prev.resources,
 	staging_tables:     processed_tables,
-	staging_jobs:       processed_jobs
+	staging_jobs:       processed_jobs,
+	source_id:          source_id,
+	base_prefix:        prev.base_prefix
       }
       {:ok, manifest_obj}
     end
   end
 
   def minimal_manifest(%MidRun{} = prev, curr_signal) do
-    manifest_name = extract_id(prev.manifest_iri)
+    source_id = prev.manifest_iri
+    manifest_name = extract_id source_id
     %ManifestSpec{ name:               manifest_name,
 		   uuid:               prev.uuid,
 		   data_source:        prev.data_source,
@@ -247,7 +253,9 @@ defmodule RAP.Job.Producer do
 		   signal:             curr_signal,
 		   manifest_base_ttl:  prev.manifest_ttl,
 		   manifest_base_yaml: prev.manifest_yaml,
-		   resource_bases:     prev.resources    }
+		   resource_bases:     prev.resources,
+		   source_id:          source_id,
+		   base_prefix:        prev.base_prefix }
   end
 
   
@@ -284,11 +292,13 @@ defmodule RAP.Job.Producer do
 
   Therefore pattern match on that signal and pass it up.
 
-  In the following function `invoke_manifest/2', the :working signal
+  In the following function `invoke_manifest/3', the :working signal
   indicates that not only was `coalesce_job/3' successful, but we were
   able to extract an RDF graph from it. If we weren't, then we wouldn't
   be able to know anything about the resources and can't run any jobs,
-  because these are described by the RDF graph.
+  because these are described by the RDF graph. We won't know the base
+  prefix either, so fall back to some sensible base prefix, from which
+  the result reporting this error can be served.
 
   There are three signals of interest here which we can pattern-match on.
   1. The `:empty_manifest' signal implies that the manifest in question
@@ -307,7 +317,7 @@ defmodule RAP.Job.Producer do
   we can use, but it also implies that no jobs should be run, so don't
   try to run these, at least for now. Only pattern-match on `:working'.
   """
-  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir) do
+  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir, _fallback_base) do
     target_dir         = "#{cache_dir}/#{prev.uuid}"
     manifest_full_path = "#{target_dir}/#{prev.manifest_ttl}"
     load_target        = RDF.iri(prev.manifest_iri)
@@ -338,12 +348,13 @@ defmodule RAP.Job.Producer do
 	minimal_manifest(prev, :bad_manifest_tables)
     end
   end
-  def invoke_manifest(%MidRun{uuid: uuid, data_source: data_source, signal: pre_signal}, _cache) do
+  def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, fallback_base) do
     %ManifestSpec{
-      uuid:        uuid,
-      data_source: data_source,
-      pre_signal:  pre_signal,
-      signal:      :see_pre
+      uuid:        prev.uuid,
+      data_source: prev.data_source,
+      pre_signal:  prev.pre_signal,
+      base_prefix: fallback_base,
+      signal:      :see_pre,
     }
   end
   

@@ -68,7 +68,6 @@ defmodule RAP.Storage.GCP do
     with false <- File.exists?(target_full) && PreRun.dl_success?(obj.gcp_md5, File.read!(target_full), opts: [input_md5: true]),
          session <- GenStage.call(Monitor, :yield_session),
 	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
-         _ <- :timer.sleep(100)
 	 :ok <- File.write(target_full, body) do
       Logger.info "Successfully wrote #{target_full}, file base name is #{target_base}"
       {:ok, target_base}
@@ -115,7 +114,7 @@ defmodule RAP.Storage.GCP do
     index_full = "#{target_dir}/#{index_base}"
     with {:ok, uuid, file_bases}       <- fetch_job_deps(cache_dir, job),
          {:ok, index_contents}         <- File.read(index_full),
-         [m_yaml, m_ttl, _base, m_uri] <- String.split(index_contents, "\n")
+         [m_yaml, m_ttl, base, m_uri] <- String.split(index_contents, "\n")
     do
       Logger.info "Index file is #{inspect index_base}"      
       
@@ -131,7 +130,8 @@ defmodule RAP.Storage.GCP do
 	       manifest_iri:  RDF.iri(m_uri),
 	       manifest_yaml: m_yaml,
 	       manifest_ttl:  m_ttl,
-	       resources:     non_manifest_bases }
+	       resources:     non_manifest_bases,
+	       base_prefix:   base              }
     else
       {:error, uuid, errors} -> {:error, uuid, errors}
       {:error, reason} ->

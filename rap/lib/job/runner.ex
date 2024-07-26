@@ -10,7 +10,7 @@ defmodule RAP.Job.Result do
   alias RAP.Job.{ScopeSpec, JobSpec, TableSpec, ManifestSpec}
   
   defstruct [ :name, :title, :description,
-	      :source_job,    :type,
+	      :source_job,    :job_type,
 	      :output_format, :output_stem,
 	      :signal,        :contents,
 	      :start_time,    :end_time ]
@@ -52,7 +52,7 @@ defmodule RAP.Job.Result do
       title:       spec.title,
       description: spec.description,
       source_job:  spec.name,
-      type:        "ignore",
+      job_type:    "ignore",
       signal:      :ignored,
       contents:    "Dummy/ignored job"
     }
@@ -85,7 +85,7 @@ defmodule RAP.Job.Result do
       end_ts = DateTime.utc_now() |> DateTime.to_unix()
       res = "Density and time not derived from same data file"
       %__MODULE__{ title:  spec.title, description: spec.description,
-	       type:   "density",  signal:      :failure_prereq,
+	       job_type: "density", signal: :failure_prereq,
 	       contents: res, start_time: start_ts, end_time: end_ts }
     else
       file_path_count   = "#{cache_directory}/#{uuid}/#{resource_count}"
@@ -112,7 +112,7 @@ defmodule RAP.Job.Result do
  	  %__MODULE__{
 	    name: spec.name, title: spec.title,
 	    description:   spec.description,
-	    type:          "density",
+	    job_type:      "density",
 	    output_format: spec.result_format,
 	    output_stem:   spec.result_stem,
 	    source_job:    spec.name,
@@ -127,7 +127,7 @@ defmodule RAP.Job.Result do
  	  %__MODULE__{
 	    name: spec.name, title: spec.title,
 	    description:   spec.description,
-	    type:          "density",
+	    job_type:      "density",
 	    output_format: spec.result_format,
 	    output_stem:   spec.result_stem,
 	    source_job:    spec.name,
@@ -141,7 +141,7 @@ defmodule RAP.Job.Result do
  	  %__MODULE__{
 	    name: spec.name, title: spec.title,
 	    description:   spec.description,
-	    type:          "density",
+	    job_type:      "density",
 	    output_format: spec.result_format,
 	    output_stem:   spec.result_stem,
 	    source_job:    spec.name,
@@ -159,7 +159,7 @@ defmodule RAP.Job.Result do
       name:          bad_spec.name,
       title:         bad_spec.title,
       description:   bad_spec.description,
-      type:          bad_spec.type,
+      job_type:      bad_spec.type,
       source_job:    bad_spec.name,
       signal:        :bad_job_spec,
       contents:      "Unrecognised job spec"
@@ -177,7 +177,7 @@ defmodule RAP.Job.Runner do
   alias RAP.Job.ManifestSpec
 
   defstruct [
-    :uuid,  :data_source, :local_version, :name, :title, :description,
+    :uuid,  :data_source, :base_prefix, :local_version, :name, :title, :description,
     :manifest_base_ttl, :manifest_base_yaml, :resource_bases,
     :staging_tables, :staging_jobs,
     :pre_signal, :producer_signal,
@@ -235,7 +235,8 @@ defmodule RAP.Job.Runner do
       pre_signal:         spec.pre_signal,
       producer_signal:    spec.signal,
       signal:             overall_signal,
-      results:            result_contents
+      results:            result_contents,
+      base_prefix:        spec.base_prefix
     }
   end
 
@@ -244,8 +245,9 @@ defmodule RAP.Job.Runner do
       uuid:            spec.uuid,
       data_source:     spec.data_source,
       pre_signal:      spec.pre_signal,
+      base_prefix:     spec.base_prefix,
       producer_signal: :see_pre,
-      signal:          :see_pre      
+      signal:          :see_pre
     }
   end
 
@@ -268,6 +270,7 @@ defmodule RAP.Job.Runner do
       name:               spec.name,
       uuid:               spec.uuid,
       data_source:        spec.data_source,
+      base_prefix:        spec.base_prefix,
       pre_signal:         spec.pre_signal,
       producer_signal:    spec.signal,
       signal:             :see_producer,

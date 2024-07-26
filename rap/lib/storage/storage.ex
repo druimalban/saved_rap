@@ -1,7 +1,7 @@
 defmodule RAP.Storage do
   @moduledoc """
 
-  Original %RAP.Bakery.Prepare module named struct:
+  Original %RAP.Bakery.ManifestOutput module named struct:
       defstruct [ :uuid, :data_source,
                   :name, :title, :description,
 	          :start_time, :end_time,
@@ -111,7 +111,7 @@ defmodule RAP.Storage.MidRun do
   local directory we're monitoring, some other object store like S3), so
   it's clear where failures occur.
   """
-  defstruct [ :uuid, :signal, :data_source,  :manifest_iri,
+  defstruct [ :uuid, :signal, :data_source,  :manifest_iri, :base_prefix,
 	      :manifest_yaml, :manifest_ttl, :resources ]
 end
 
@@ -127,7 +127,7 @@ defmodule RAP.Storage.PostRun do
 
   alias RAP.Miscellaneous, as: Misc
   alias RAP.Job.{Result, Runner}
-  alias RAP.Bakery.Prepare
+  alias RAP.Bakery.ManifestOutput
 
   @doc """
   Remove the UUID from ETS and add a manifest row in the Mnesia DB
@@ -158,7 +158,7 @@ defmodule RAP.Storage.PostRun do
   We do want to keep track of these somehow, and this may be the place,
   just not quite yet.
   """
-  def cache_manifest(%Prepare{} = manifest, ets_table \\ :uuid) do
+  def cache_manifest(%ManifestOutput{} = manifest, ets_table \\ :uuid) do
     Logger.info "Cache processed manifest information in mnesia DB `Manifest' table"
     
     with [{uuid, start_ts}] <- :ets.lookup(ets_table, manifest.uuid),
@@ -166,7 +166,7 @@ defmodule RAP.Storage.PostRun do
       
       end_ts = DateTime.utc_now() |> DateTime.to_unix()
 
-      annotated_manifest = %Prepare{ manifest | start_time: start_ts, end_time: end_ts }
+      annotated_manifest = %ManifestOutput{ manifest | start_time: start_ts, end_time: end_ts }
       Logger.info "Annotated manifest with start/end time: #{inspect annotated_manifest}"
 
       transformed_manifest = %{ annotated_manifest | __struct__: ManifestTable }
@@ -199,7 +199,7 @@ defmodule RAP.Storage.PostRun do
   end
 
   defp inject_manifest(nil), do: nil
-  defp inject_manifest(pre), do: %{ pre | __struct__: Prepare }
+  defp inject_manifest(pre), do: %{ pre | __struct__: ManifestOutput }
 
   def yield_manifests(invoked_after \\ -1, time_zone, owner \\ :any) do
     date_proper = invoked_after |> Misc.format_time(time_zone)

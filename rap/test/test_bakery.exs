@@ -136,16 +136,18 @@ defmodule RAP.Test.Bakery.Compose do
     # Need to process extant: true/false sensibly/consistently
     staging_tables = [
       %TableSpec{
-	name:     "time_density_simple",
-	title:    "Placeholder time/density description",
-	resource: %ResourceSpec{ base: "density.csv", extant: true },
-	schema:   %ResourceSpec{ base: "density.ttl", extant: true } 
+	name:      "time_density_simple",
+	title:     "Placeholder time/density description",
+	resource:  %ResourceSpec{ base: "density.csv", extant: true },
+	schema:    %ResourceSpec{ base: "density.ttl", extant: true },
+	source_id: RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/time_density_simple"
       },
       %TableSpec{
 	name:     "sampling",
 	title:    "Sentinel cages sampling: known-good test table",
 	resource: %ResourceSpec{ base: "cagedata-10.csv",             extant: true },
-	schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true }
+	schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true },
+	RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/sampling"
       }
     ]
 
@@ -162,17 +164,19 @@ defmodule RAP.Test.Bakery.Compose do
     job_ignore = %JobSpec{
       name:          "job_example_ignore",
       title:         "Example empty/ignored job",
-      result_format: "txt",
+      result_format: "text/plain",
       result_stem:   "result_ignore",
-      type:          "ignore"
+      type:          "ignore",
+      source_id:     RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/job_example_ignore")
     }
     
     job_dens_working = %JobSpec{
       name:          "job_example_time_density_simple",
       title:         "Example job time_density_simple",
-      result_format: "json",
+      result_format: "text/json",
       result_stem:   "result_density",
       type:          "density",
+      source_id:     RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/job_example_time_density_simple"
       scope_collected: [
 	%ScopeSpec{
 	  column:         "TOTAL",
@@ -202,9 +206,10 @@ defmodule RAP.Test.Bakery.Compose do
     job_dens_job_err = %JobSpec{
       name:          "job_example_time_density_simple",
       title:         "Example job time_density_simple",
-      result_format: "json",
+      result_format: "text/json",
       result_stem:   "result_density",
       type:          "density",
+      source_id:     RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/job_dens_job_err"
       scope_collected: [
 	%ScopeSpec{
 	  column:         "TOTAL",

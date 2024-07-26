@@ -39,22 +39,7 @@ defmodule RAP.Bakery.Prepare do
   alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.{PreRun, PostRun}
   alias RAP.Job.{Result, Runner}
-
-  # Note naming of manifest_pre_base
-  # Manifest signal is simple "are all the tables valid"?
-  defstruct [ :uuid, :data_source,
-	      :name, :title, :description,
-	      :start_time, :end_time,
-	      :manifest_pre_base_ttl,
-	      :manifest_pre_base_yaml,
-	      :resource_bases,
-	      :pre_signal,
-	      :producer_signal,
-	      :runner_signal,
-	      :result_bases,
-	      :results,
-	      :staged_tables,
-	      :staged_jobs          ]
+  alias RAP.Bakery.{ResultOutput, ManifestOutput}
   
   def start_link(%Application{} = initial_state) do
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
@@ -143,8 +128,8 @@ defmodule RAP.Bakery.Prepare do
     Logger.info "Prepare (mkdir(1) -p) #{bakery_dir}/#{processed.uuid}"
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
 
-    cached_job_bases = processed.results
-    |> Enum.map(&write_result(&1, bakery_dir, processed.uuid))
+    cached_results = processed.results
+    |> Enum.map(&write_result(&1, processed.base_prefix, bakery_dir, processed.uuid))
     
     moved_manifest_ttl = processed.manifest_base_ttl
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
@@ -156,25 +141,20 @@ defmodule RAP.Bakery.Prepare do
 
     # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
     #end_time = DateTime.utc_now() |> DateTime.to_unix()
-    semi_final_data = %__MODULE__{
-      uuid:                   processed.uuid,
-      data_source:            processed.data_source,
-      name:                   processed.name,
-      title:                  processed.title,
-      description:            processed.description,
-      pre_signal:             processed.pre_signal,
-      producer_signal:        processed.producer_signal,
-      runner_signal:          processed.signal,
-      manifest_pre_base_ttl:  moved_manifest_ttl,
-      manifest_pre_base_yaml: moved_manifest_yaml,
-      resource_bases:         moved_resources,
-      result_bases:           cached_job_bases,
-      results:                processed.results,
-      staged_tables:          processed.staging_tables,
-      staged_jobs:            processed.staging_jobs
-    }
-    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
-    cached_manifest
+    semi_final_data = %ManifestOutput{
+      uuid:            processed.uuid,
+      title:           processed.title,
+      description:     processed.description,
+      signal:          processed.signal,
+      tables:          processed.staging_tables,
+      jobs:            processed.staging_jobs,
+      results:         cached_results
+      # data_source:            processed.data_source,
+    } |> ManifestOutput.expand_id(processed.name, processed.base_prefix)
+    
+    # {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
+    # cached_manifest
+    semi_final_data
   end
 
   # [:working | :job_errors] | :see_producer | :see_pre
@@ -203,39 +183,38 @@ defmodule RAP.Bakery.Prepare do
 
     # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
     #end_time = DateTime.utc_now() |> DateTime.to_unix()
-    semi_final_data = %__MODULE__{
-      uuid:                   processed.uuid,
-      data_source:            processed.data_source,
-      name:                   processed.name,
-      pre_signal:             processed.pre_signal,
-      producer_signal:        processed.producer_signal,
-      runner_signal:          processed.signal,
-      manifest_pre_base_ttl:  moved_manifest_ttl,
-      manifest_pre_base_yaml: moved_manifest_yaml,
-      resource_bases:         moved_resources
-    }
-    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
-    cached_manifest
+    semi_final_data = %ManifestOutput{
+      uuid:   processed.uuid,
+      signal: :see_producer
+    } |> ManifestOutput.expand_id(processed.name, processed.base_prefix)
+    
+    # {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
+    # cached_manifest
+    semi_final_data
   end
 
   # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
   def bake_data(%Runner{signal: :see_pre} = processed, _cache, bakery_dir, _ln, ets_table) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_pre'"
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
-    semi_final_data = %__MODULE__{
-      uuid:            processed.uuid,
-      data_source:     processed.data_source,
-      pre_signal:      processed.pre_signal,
-      producer_signal: :see_pre,
-      runner_signal:   :see_pre      
-    }
-    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
-    cached_manifest
+    
+    semi_final_data = %ManifestOutput{
+      uuid:   processed.uuid,
+      signal: :see_pre 
+      #data_source:     processed.data_source,
+    } |> ManifestOutput.expand_id(processed.name, processed.base_prefix)
+    
+    # {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
+    # cached_manifest
+    semi_final_data
   end
 
-  def bake_data(%Runner{signal: signal}, _cache, _bakery, _ln, _ets) do
+  def bake_data(%Runner{signal: signal} = processed, _cache, _bakery, _ln, _ets) do
     Logger.info "Called Prepare.bake_data/5 with signal #{signal}, not doing anything"
     #File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
+    semi_final_data = %ManifestOutput{
+      signal: signal
+    } |> ManifestOutput.expand_id(processed.name, processed.base_prefix)
   end
   
   @doc """
@@ -249,9 +228,11 @@ defmodule RAP.Bakery.Prepare do
   When logging, the name of the job is in the file name, so no problem
   just printing that to the log.
   """
-  def write_result(%Result{type: "density", signal: :working} = result, bakery_directory, uuid) do
-    target_base = "#{result.output_stem}_#{result.name}.#{result.output_format}"
+  def write_result(%Result{signal: :working} = result, base_prefix, bakery_directory, uuid) do
+    target_ext  = result.output_format |> String.split("/") |> Enum.at(1)
+    target_base = "#{result.output_stem}_#{result.name}.#{target_ext}"
     target_full = "#{bakery_directory}/#{uuid}/#{target_base}"
+    target_dl_url = "#{base_prefix}#{target_base}"
       
     Logger.info "Writing results file #{target_full}"
     
@@ -260,24 +241,52 @@ defmodule RAP.Bakery.Prepare do
          :ok   <- File.write(target_full, result.contents) do
       
       Logger.info "Wrote result of target #{inspect result.name} to fully-qualified path #{target_full}"
-      target_base
+      %ResultOutput{
+	# type output_format signal download_url
+	job_type:      result.job_type,
+	output_format: result.output_format,
+	signal:        result.signal,
+	download_url:  target_dl_url
+      } |> ResultOutput.expand_id(result.name, base_prefix)
     else
       true ->
 	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
-	result.name
+	%ResultOutput{
+	  job_type:      result.job_type,
+	  output_format: result.output_format,
+	  signal:        result.signal,
+	  download_url:  target_dl_url
+	} |> ResultOutput.expand_id(result.name, base_prefix)
       {:error, error} ->
 	Logger.info "Could not write to fully-qualified path #{target_full}: #{inspect error}"
         {:error, error}
     end
   end
-  def write_result(%Result{signal: signal} = result, _bakery, _uuid) when signal in [:job_failure, :python_error] do
+  def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) when signal in [:job_failure, :python_error] do
     Logger.info "Job exited with error: Not writing result to file"
+    %ResultOutput{
+      job_type:      result.job_type,
+      output_format: result.output_format,
+      signal:        result.signal
+    } |> ResultOutput.expand_id(result.name, base_prefix)
   end
-  def write_result(%Result{signal: :ignored}, _bakery, _uuid) do
+  def write_result(%Result{signal: :ignored} = result, base_prefix, _bakery, _uuid) do
+    Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
     Logger.info "Ignored/fake job: Not writing result to file"
+    %ResultOutput{
+      job_type:      result.job_type,
+      output_format: result.output_format,
+      signal:        :ignored
+    } |> ResultOutput.expand_id(result.name, base_prefix)
   end
-  def write_result(%Result{}, _bakery, _uuid) do
+  def write_result(%Result{} = result, base_prefix, _bakery, _uuid) do
+    Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
     Logger.info "Invalid job: Not writing result to file"
+    %ResultOutput{
+      job_type:      result.job_type,
+      output_format: result.output_format,
+      signal:        result.signal
+    } |> ResultOutput.expand_id(result.name, base_prefix)
   end
 
   @doc """
