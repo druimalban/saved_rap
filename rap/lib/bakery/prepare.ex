@@ -39,7 +39,7 @@ defmodule RAP.Bakery.Prepare do
   alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.{PreRun, PostRun}
   alias RAP.Job.ManifestSpec
-  alias RAP.Job.{Runner, Result}
+  alias RAP.Job.{Producer, Runner, Result}
   
   def start_link(%Application{} = initial_state) do
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
@@ -57,6 +57,7 @@ defmodule RAP.Bakery.Prepare do
     Logger.info "Testing storage consumer received #{inspect events}"
     processed_events = events
     |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.linked_result_stem, :uuid))
+    |> Enum.map(&write_turtle(&1, state.bakery_directory))
     {:noreply, processed_events, state}
   end
 
@@ -123,7 +124,7 @@ defmodule RAP.Bakery.Prepare do
   def bake_data(%ManifestSpec{runner_signal: sig} = processed, cache_dir, bakery_dir, _linked_stem, ets_table) when sig in [:working, :job_errors] do
     #source_dir = "#{cache_dir}/#{processed.uuid}"
     #target_dir = "#{bakery_dir}/#{processed.uuid}"
-    Logger.info "Called Prepare.bake_data/5 with signal `#{processed.signal}'"
+    Logger.info "Called Prepare.bake_data/5 with signal `#{processed.runner_signal}'"
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
     Logger.info "Prepare (mkdir(1) -p) #{bakery_dir}/#{processed.uuid}"
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
@@ -165,7 +166,7 @@ defmodule RAP.Bakery.Prepare do
     # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
     #end_time = DateTime.utc_now() |> DateTime.to_unix()
 
-    semi_final_data = processed |> ManifestSpec.expand_id()
+    semi_final_data = processed
     
     # {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
     # cached_manifest
@@ -206,10 +207,10 @@ defmodule RAP.Bakery.Prepare do
   just printing that to the log.
   """
   def write_result(%Result{signal: :working} = result, base_prefix, bakery_directory, uuid) do
-    target_ext  = result.output_format |> String.split("/") |> Enum.at(1)
-    target_base = "#{result.output_stem}_#{result.name}.#{target_ext}"
+    target_ext  = result.output_format |> String.split("/") |> Enum.at(1) # move me
+    target_name = Producer.extract_id(result.__id__)
+    target_base = "#{result.output_stem}_#{target_name}.#{target_ext}"
     target_full = "#{bakery_directory}/#{uuid}/#{target_base}"
-    target_dl_url = "#{base_prefix}#{target_base}"
       
     Logger.info "Writing results file #{target_full}"
     
@@ -217,13 +218,13 @@ defmodule RAP.Bakery.Prepare do
                     result.contents, File.read!(target_full), opts: [input_md5: false]),
          :ok   <- File.write(target_full, result.contents) do
       
-      Logger.info "Wrote result of target #{inspect result.name} to fully-qualified path #{target_full}"
+      Logger.info "Wrote result of target #{inspect result.__id__} to fully-qualified path #{target_full}"
 
-      %{ result | download_url: target_dl_url }# |> Result.expand_id(base_prefix)
+      %{ result | download_url: result.__id__, signal: "working" }
     else
       true ->
 	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
-        %{ result | download_url: target_dl_url } |> Result.expand_id(base_prefix)
+        %{ result | download_url: result.__id__, signal: "working" }
       {:error, error} ->
 	Logger.info "Could not write to fully-qualified path #{target_full}: #{inspect error}"
         {:error, error}
@@ -231,17 +232,17 @@ defmodule RAP.Bakery.Prepare do
   end
   def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) when signal in [:job_failure, :python_error] do
     Logger.info "Job exited with error: Not writing result to file"
-    result# |> Result.expand_id(base_prefix)
+    %{ result | signal: to_string(signal) }
   end
   def write_result(%Result{signal: :ignored} = result, base_prefix, _bakery, _uuid) do
     Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
     Logger.info "Ignored/fake job: Not writing result to file"
-    result# |> Result.expand_id(base_prefix)
+    %{ result | signal: "ignored" }
   end
-  def write_result(%Result{} = result, base_prefix, _bakery, _uuid) do
+  def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) do
     Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
     Logger.info "Invalid job: Not writing result to file"
-    result# |> Result.expand_id(base_prefix)
+    %{ result | signal: to_string(signal) }
   end
 
   @doc """
@@ -271,6 +272,41 @@ defmodule RAP.Bakery.Prepare do
       error ->
 	#Logger.info "Couldn't move file #{inspect fp} from cache #{inspect cache_dir} to target directory #{target_dir}"
 	Logger.info "Couldn't move file #{inspect target_full} to #{target_full}"
+	error
+    end
+  end
+
+  def write_turtle(%ManifestSpec{} = processed, bakery_dir) do
+    fp_processed = processed.manifest_base_ttl |> String.replace(~r"\.([a-z]+)$", "_processed.\\1")
+    fp_target   = cond do
+      fp_processed != processed.manifest_base_ttl -> fp_processed
+      true         -> processed.manifest_base_ttl
+    end
+    fp_full = "#{bakery_dir}/#{uuid}/#{fp_target}"
+
+    manifest_id = processed.__id__
+    tables_ids  = processed.tables |> Enum.map(& &1.__id__)
+    jobs_ids    = processed.jobs   |> Enum.map(& &1.__id__)
+    results_ids = processed.results |> Enum.map(& &1.__id__)
+    
+    Logger.info "Writing processed turtle manifest to #{fp_full}"
+    Logger.info "Processed manifest ID: #{inspect manifest_id}"
+    Logger.info "Processed table IDs: #{inspect tables_ids}"
+    Logger.info "Processed job IDs: #{inspect jobs_ids}"
+    Logger.info "Processed results IDs: #{inspect results_ids}"
+    
+    dl_url  = RDF.IRI.new(processed.base_prefix <> fp_target)
+    extra   = %{ processed | download_url: dl_url, output_format: "text/turtle" }
+    
+    with {:ok, rdf_equiv} <- Grax.to_rdf(extra),
+         :ok <- RDF.Turtle.write_file(rdf_equiv, fp_full) do
+      Logger.info "Successfully wrote turtle manifest to #{fp_full}"
+      extra
+    else
+      {:error, %Grax.ValidationError{} = err} ->
+	Logger.info(inspect err)
+        {:error, %Grax.ValidationError{} = err}
+      error ->
 	error
     end
   end

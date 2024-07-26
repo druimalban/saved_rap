@@ -201,7 +201,7 @@ defmodule RAP.Job.ManifestSpec do
   import RDF.Sigils
   alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, PAV, SAVED}
   alias RAP.Manifest.{TableDesc, JobDesc}
-  alias RAP.Job.{TableSpec, JobSpec, ResultSpec}
+  alias RAP.Job.{TableSpec, JobSpec, Result}
   #alias RAP.Manifest.{TableDesc, JobDesc}
 
   schema SAVED.ManifestOutput do
@@ -214,7 +214,7 @@ defmodule RAP.Job.ManifestSpec do
     property :submitted_manifest, PROV.wasDerivedFrom, type: :iri
     link tables:  SAVED.tables,  type: list_of(TableSpec),  depth: +5
     link jobs:    SAVED.jobs,    type: list_of(JobSpec),    depth: +5
-    link results: SAVED.results, type: list_of(ResultSpec), depth: +5
+    link results: SAVED.results, type: list_of(Result), depth: +5
     # link stages: SAVED.stages, type: list_of(RAPStage), depth: +5
     # FIXME: Extras just to get the thing to compile
     field :start_time
@@ -223,6 +223,7 @@ defmodule RAP.Job.ManifestSpec do
     field :manifest_base_yaml
     field :resource_bases
     field :result_bases
+    field :processed_manifest_base
     field :pre_signal
     field :producer_signal
     field :runner_signal
@@ -230,7 +231,7 @@ defmodule RAP.Job.ManifestSpec do
     field :staging_tables
     field :base_prefix
   end
-
+  
   #def expand_id(%__MODULE__{} = spec, source_name, base_prefix, output_suffix \\ "_output") do
   #  iri =
   #    case source_name do

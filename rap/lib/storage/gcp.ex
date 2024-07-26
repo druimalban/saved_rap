@@ -126,7 +126,7 @@ defmodule RAP.Storage.GCP do
 
       %MidRun{ uuid:          uuid,
 	       signal:        :working,
-	       data_source:   :gcp,
+	       data_source:   "gcp",
 	       manifest_iri:  RDF.iri(m_uri),
 	       manifest_yaml: m_yaml,
 	       manifest_ttl:  m_ttl,
@@ -136,14 +136,14 @@ defmodule RAP.Storage.GCP do
       {:error, uuid, errors} -> {:error, uuid, errors}
       {:error, reason} ->
 	Logger.info "Could not read index file #{index_full}"
-	%MidRun{ uuid: job.uuid, signal: reason, data_source: :gcp }
+	%MidRun{ uuid: job.uuid, signal: reason, data_source: "gcp" }
       [] ->
 	Logger.info "Index file #{index_full} is empty!"
 	{:error, :empty_index, job.uuid}
-        %MidRun{ uuid: job.uuid, signal: :empty_index, data_source: :gcp }
+        %MidRun{ uuid: job.uuid, signal: :empty_index, data_source: "gcp" }
       _ ->
 	Logger.info "Malformed index file #{index_full}!"
-	%MidRun{ uuid: job.uuid, signal: :bad_index, data_source: :gcp }
+	%MidRun{ uuid: job.uuid, signal: :bad_index, data_source: "gcp" }
     end
   end
 
