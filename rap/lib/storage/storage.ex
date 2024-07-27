@@ -96,18 +96,21 @@ defmodule RAP.Storage.PreRun do
     end
   end
 
-  def append_work(nil, stage_atom, curr_signal, stage_invoked_at, started_at) do
-    append_work([], stage_atom, curr_signal, stage_invoked_at, started_at)
-  end
-  def append_work(past_work, stage_atom, curr_signal, stage_invoked_at, started_at) do
+  def append_work(past_work, stage_atom, curr_signal, stage_invoked_at, started_at, work_input \\ [], work_output \\ []) do    
     ended_at =  DateTime.utc_now() |> DateTime.to_unix()
     work = [{stage_atom, %{
 		  signal:           curr_signal,
 		  stage_invoked_at: stage_invoked_at,
 		  work_started_at:  started_at,
-		  work_ended_at:    ended_at
+		  work_ended_at:    ended_at,
+		  work_input:       work_input,
+		  work_output:      work_output
 	     }}]
-    past_work ++ work
+    if is_nil(past_work) do
+      work
+    else
+      past_work ++ work
+    end
   end
 
 end

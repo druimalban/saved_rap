@@ -27,32 +27,9 @@ defmodule RAP.Application do
   @rap_js_lib_d3      "/saved/assets/d3.v7.min.js"
   @python_call        "/opt/local/bin/python3.12"
   @html_directory     "./html_fragments"
+  @ets_table          :uuid
   
   use Application
-
-  use RDF
-  alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{PAV, PROV, SAVED}
-
-  @doc """
-  We have no notion of state, yet
-  """
-  def gen_invocation_activity(invocation_iri, application_iri, invoked_at) do
-    #invocation_ts = invoked_at
-    #|> DateTime.from_unix!()
-    #|> DateTime.shift_zone!(@time_zone)
-    
-    RDF.Description.new(invocation_iri)
-    |> RDFS.label("RAP application invocation description")
-    |> PAV.version(@local_version)
-    |> SAVED.beam_application("RAP")
-    |> SAVED.beam_node(node())
-    |> SAVED.beam_module(inspect __MODULE__)
-    |> SAVED.otp_version(System.otp_release())
-    |> SAVED.elixir_version(System.version())
-    |> PROV.startedAtTime(invoked_at)
-    |> PROV.wasAssociatedWith(application_iri)
-  end
   
   @doc
   """
@@ -88,6 +65,7 @@ defmodule RAP.Application do
 	      rap_js_lib_d3:      @rap_js_lib_d3,
 	      html_directory:     @html_directory,
 	      python_call:        @python_call,
+	      ets_table:          @ets_table,
 	      staging_objects:    []               ]
   
   @impl true

@@ -87,11 +87,6 @@ defmodule RAP.Storage.GCP do
       {:error, reason} ->
 	Logger.info "Error writing file due to #{inspect reason}"
         {:error, reason}
-      other_success ->
-	Logger.info "Refreshing session"
-	GenStage.call(__MODULE__, :update_session)
-        :timer.sleep(5000)
-        fetch_object(target_dir, obj)
     end
   end
       
@@ -130,6 +125,8 @@ defmodule RAP.Storage.GCP do
          [m_yaml, m_ttl, base, m_uri] <- String.split(index_contents, "\n")
     do
       Logger.info "Index file is #{inspect index_base}"
+
+      manifest_id = RDF.IRI.new(m_uri)
       
       non_manifest_bases = file_bases
       |> List.delete(m_yaml)
@@ -137,13 +134,13 @@ defmodule RAP.Storage.GCP do
       |> List.delete(index_base)
       Logger.info "Non-manifest files are #{inspect non_manifest_bases}"      
 
-      new_work = PreRun.append_work(job.work, __MODULE__, :working, stage_invoked_at, started_at)
+      new_work = PreRun.append_work(job.work, __MODULE__, :working, stage_invoked_at, started_at, [manifest_id], [])
       
       %MidRun{ uuid:          uuid,
 	       signal:        :working,
 	       work:          new_work,
 	       data_source:   "gcp",
-	       manifest_iri:  RDF.iri(m_uri),
+	       manifest_iri:  manifest_id,
 	       manifest_yaml: m_yaml,
 	       manifest_ttl:  m_ttl,
 	       resources:     non_manifest_bases,
