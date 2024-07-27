@@ -20,7 +20,7 @@ defmodule RAP.Bakery.Provenance do
     |> SAVED.beam_module(inspect __MODULE__)
     |> SAVED.otp_version(System.otp_release())
     |> SAVED.elixir_version(System.version())
-    |> PROV.startedAtTime(invoked_ts)
+    |> PROV.startedAtTime(invocation_ts)
     |> PROV.wasAssociatedWith(application_iri)
   end
 
@@ -28,7 +28,7 @@ defmodule RAP.Bakery.Provenance do
     produce =
       fn({st, wd}, prev) ->
 	stage = gen_stage_entity(              st, rap_prefix)
-	inv   = gen_stage_invocation_activity( st, base_prefix, rap_prefix, wd.stage_invoked_at, tz)
+	inv   = gen_stage_invocation_activity( st, base_prefix, rap_prefix, tz, wd)
 	procs = gen_stage_processing_activity( st, base_prefix, rap_prefix, tz, wd)
 	out   = gen_stage_output_entity(       st, base_prefix, prev)
 	%{ stage: stage, invocation: inv, processing: procs, production: out }
@@ -62,8 +62,7 @@ defmodule RAP.Bakery.Provenance do
   # signal stage_invoked_at, work_started_at, work_ended_at, work_input, work_output
   def gen_stage_processing_activity(
     stage_atom,
-    base_prefix, rap_prefix,
-    tz,
+    base_prefix, rap_prefix, tz,
     %{} = work,
     prev_output_extra \\ [],
     output_extra \\ []
@@ -98,8 +97,12 @@ defmodule RAP.Bakery.Provenance do
     |> PROV.wasDerivedFrom(prev_output_iris)
   end
 
-  def gen_stage_invocation_activity(stage_atom, base_prefix, rap_prefix, invoked_at, tz) do
-    invocation_ts = invoked_at
+  def gen_stage_invocation_activity(
+    stage_atom,
+    base_prefix, rap_prefix, tz,
+    %{} = work
+  ) do
+    invocation_ts = work.stage_invoked_at
     #|> DateTime.from_unix!()
     #|> DateTime.shift_zone!(tz)
 
@@ -109,13 +112,16 @@ defmodule RAP.Bakery.Provenance do
     
     RDF.Description.new(stage_inv_iri)
     |> RDFS.label("#{inspect stage_norm} stage invocation activity")
-    |> SAVED.beam_application( "RAP"                 )
-    |> SAVED.beam_node(        to_string(node())     )
-    |> SAVED.beam_module(      to_string(stage_atom) )
-    |> SAVED.otp_version(      System.otp_release()  )
-    |> SAVED.elixir_version(   System.version()      )
-    |> PROV.startedAtTime(     invocation_ts         )
-    |> PROV.wasAssociatedWith( stage_iri             )
+    |> SAVED.beam_application(       "RAP"                      )
+    |> SAVED.beam_node(              to_string(node())          )
+    |> SAVED.beam_module(            to_string(stage_atom)      )
+    |> SAVED.otp_version(            System.otp_release()       )
+    |> SAVED.elixir_version(         System.version()           )
+    |> SAVED.gen_stage_type(         to_string(work.stage_type) )
+    |> SAVED.gen_stage_subscrptions( to_string(work.stage_subscriptions))
+    |> SAVED.gen_stage_dispatcher(   to_string(work.stage_dispatcher))
+    |> PROV.startedAtTime(           invocation_ts              )
+    |> PROV.wasAssociatedWith(       stage_iri                  )
   end
 
 end

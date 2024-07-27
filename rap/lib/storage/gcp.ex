@@ -24,11 +24,16 @@ defmodule RAP.Storage.GCP do
   def init initial_state do
     Logger.info "Called Storage.GCP.init (initial_state = #{inspect initial_state})"
     curr_ts = DateTime.utc_now() |> DateTime.to_unix()
-    invocation_state = %{ initial_state | stage_invoked_at: curr_ts }
-    subscription = [
-      { Monitor, min_demand: 0, max_demand: 1 }
-    ]
-    { :producer_consumer, invocation_state, subscribe_to: subscription }
+    invocation_state = %{ initial_state |
+			  stage_invoked_at:    curr_ts,
+			  stage_type:          :producer_consumer,
+			  stage_subscriptions: [{ Monitor, min_demand: 0, max_demand: 1 }],
+			  stage_dispatcher:    GenStage.DemandDispatcher
+			}
+    { invocation_state.stage_type,
+      invocation_state,
+      subscribe_to: invocation_state.stage_subscriptions,
+      dispatcher:   invocation_state.stage_dispatcher   }
   end
   
   def handle_events(events, _from, %Application{} = state) do
@@ -37,7 +42,7 @@ defmodule RAP.Storage.GCP do
     Logger.info "Storage.GCP received objects with the following work defined: #{inspect input_work}"
     
     processed = events
-    |> Enum.map(&coalesce_job(state.cache_directory, state.index_file, state.stage_invoked_at, &1))
+    |> Enum.map(&coalesce_job(state.cache_directory, state.index_file, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, &1))
     { :noreply, processed, state }
   end
 
@@ -115,8 +120,8 @@ defmodule RAP.Storage.GCP do
     end
   end
   
-  def coalesce_job(cache_dir, index_base, stage_invoked_at, %PreRun{} = job) do
-    started_at = DateTime.utc_now() |> DateTime.to_unix()
+  def coalesce_job(cache_dir, index_base, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, %PreRun{} = job) do
+    work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
     target_dir = "#{cache_dir}/#{job.uuid}"
     index_full = "#{target_dir}/#{index_base}"
@@ -134,8 +139,7 @@ defmodule RAP.Storage.GCP do
       |> List.delete(index_base)
       Logger.info "Non-manifest files are #{inspect non_manifest_bases}"      
 
-      new_work = PreRun.append_work(job.work, __MODULE__, :working, stage_invoked_at, started_at, [manifest_id], [])
-      
+      new_work = PreRun.append_work(job.work, __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, [manifest_id], [])
       %MidRun{ uuid:          uuid,
 	       signal:        :working,
 	       work:          new_work,
@@ -149,16 +153,16 @@ defmodule RAP.Storage.GCP do
       {:error, uuid, errors} -> {:error, uuid, errors}
       {:error, reason} ->
 	Logger.info "Could not read index file #{index_full}"
-	new_work = PreRun.append_work(job.work, __MODULE__, reason, stage_invoked_at, started_at)
+	new_work = PreRun.append_work(job.work, __MODULE__, reason, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
 	%MidRun{ uuid: job.uuid, signal: reason, work: new_work, data_source: "gcp" }
       [] ->
 	Logger.info "Index file #{index_full} is empty!"
 	{:error, :empty_index, job.uuid}
-	new_work = PreRun.append_work(job.work, __MODULE__, :empty_index, stage_invoked_at, started_at)
+	new_work = PreRun.append_work(job.work, __MODULE__, :empty_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
         %MidRun{ uuid: job.uuid, signal: :empty_index, work: new_work, data_source: "gcp" }
       _ ->
 	Logger.info "Malformed index file #{index_full}!"
-	new_work = PreRun.append_work(job.work, __MODULE__, :bad_index, stage_invoked_at, started_at)
+	new_work = PreRun.append_work(job.work, __MODULE__, :bad_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
 	%MidRun{ uuid: job.uuid, signal: :bad_index, work: new_work, data_source: "gcp" }
     end
   end

@@ -55,18 +55,23 @@ defmodule RAP.Storage.Monitor do
       do
       curr_ts = DateTime.utc_now() |> DateTime.to_unix()
       invocation_state = %{ initial_state |
-			      stage_invoked_at: curr_ts,
-			      gcp_session:      initial_session }
+			    stage_invoked_at: curr_ts,
+			    stage_type:       :producer,
+			    gcp_session:      initial_session,
+			    stage_dispatcher: GenStage.DemandDispatcher
+			  }
       Task.start_link(fn() ->
 	monitor_gcp(
 	  invocation_state.gcp_session,
 	  invocation_state.gcp_bucket,
 	  invocation_state.index_file,
 	  invocation_state.interval_seconds * 1000,
-	  invocation_state.stage_invoked_at
+	  invocation_state.stage_invoked_at,
+	  invocation_state.stage_type,
+	  invocation_state.stage_dispatcher
 	)
       end)
-      {:producer, invocation_state}
+      {invocation_state.stage_type, invocation_state, dispatcher: invocation_state.stage_dispatcher }
     else
       {:error, _msg} = error -> error
     end
@@ -196,7 +201,7 @@ defmodule RAP.Storage.Monitor do
   other files into this index file is unneccesary because the manifest
   describes these.
   """
-  defp monitor_gcp(session, bucket, index_file, interval_ms, stage_invoked_at) do
+  defp monitor_gcp(session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher) do
     with {:ok, objects} <- wrap_gcp_request(session, bucket) do
       Logger.info "Called RAP.Storage.Monitor.monitor_gcp/4 with interval #{interval_ms} milliseconds"
       work_started_at = DateTime.utc_now() |> DateTime.to_unix()
@@ -218,7 +223,8 @@ defmodule RAP.Storage.Monitor do
       |> Enum.group_by(& &1.uuid)
 
       annotate = fn({:ok, ds}) ->
-	initial_work = PreRun.append_work([], __MODULE__, :working, stage_invoked_at, work_started_at)
+	initial_work =
+	  PreRun.append_work([], __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, [], stage_dispatcher)
 	%{ds | work: initial_work}
       end
       
@@ -230,13 +236,13 @@ defmodule RAP.Storage.Monitor do
       Logger.info "RAP.Storage.Monitor.monitor_gcp/4: casting staged objects and sleeping for #{interval_ms} milliseconds"
       GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
       :timer.sleep(interval_ms)
-      monitor_gcp(session, bucket, index_file, interval_ms, stage_invoked_at)
+      monitor_gcp(session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher)
     else
       {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
         {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
 	Logger.info "Call to seek new session returned #{inspect new_session}"
-	monitor_gcp(new_session, bucket, index_file, interval_ms, stage_invoked_at)
+	monitor_gcp(new_session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher)
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}

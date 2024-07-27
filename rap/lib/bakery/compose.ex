@@ -26,11 +26,14 @@ defmodule RAP.Bakery.Compose do
   def init(initial_state) do
     Logger.info "Initialised cache module `RAP.Bakery.Compose' with initial_state #{inspect initial_state}"
     curr_ts = DateTime.utc_now() |> DateTime.to_unix()
-    invocation_state = %{ initial_state | stage_invoked_at: curr_ts }
-    subscription = [
-      { Prepare, min_demand: 0, max_demand: 1 }
-    ]
-    {:consumer, invocation_state, subscribe_to: subscription}
+    subscription = [{ Prepare, min_demand: 0, max_demand: 1 }]
+    invocation_state = %{ initial_state |
+			  stage_invoked_at:    curr_ts,
+			  stage_type:          :consumer,
+			  stage_subscriptions: subscription,
+			  stage_dispatcher:    GenStage.DemandDispatcher }
+
+    {invocation_state.stage_type, invocation_state, subscribe_to: invocation_state.stage_subscriptions }
   end
 
   # target_contents, bakery_directory, uuid, stem, extension, target_name

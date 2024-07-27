@@ -7,14 +7,6 @@ defmodule RAP.Job.Runner do
   alias RAP.Job.{Producer, Result}
   alias RAP.Job.ManifestSpec
 
-  #  defstruct [
-  #    :uuid,  :data_source, :base_prefix, :local_version, :name, :title, :description,
-  #    :manifest_base_ttl, :manifest_base_yaml, :resource_bases,
-  #    :staging_tables, :staging_jobs,
-  #    :pre_signal, :producer_signal,
-  #    :signal, :results
-  #  ]
-  
   def start_link initial_state do
     Logger.info "Called Job.Runner.start_link (_)"
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
@@ -23,11 +15,16 @@ defmodule RAP.Job.Runner do
   def init initial_state do
     Logger.info "Called Job.Runner.init (initial_state = #{inspect initial_state})"
     curr_ts = DateTime.utc_now() |> DateTime.to_unix()
-    invocation_state = %{ initial_state | stage_invoked_at: curr_ts }
-    subscription = [
-      { Producer, min_demand: 0, max_demand: 1 }
-    ]
-    { :producer_consumer, invocation_state, subscribe_to: subscription }
+    subscription = [{ Producer, min_demand: 0, max_demand: 1 }]
+    invocation_state = %{ initial_state |
+			  stage_invoked_at:    curr_ts,
+			  stage_type:          :producer_consumer,
+			  stage_subscriptions: subscription,
+			  stage_dispatcher:    GenStage.DemandDispatcher }
+    
+    { invocation_state.stage_type, invocation_state,
+      subscribe_to: invocation_state.stage_subscriptions,
+      dispatcher:   invocation_state.stage_dispatcher }
   end
   
   def handle_events events, _from, state do
@@ -38,12 +35,12 @@ defmodule RAP.Job.Runner do
     Logger.info "Job.Runner received objects with the following work defined: #{inspect input_work}"
     
     target_events = events
-    |> Enum.map(&process_jobs(&1, state.cache_directory, state.python_call, state.stage_invoked_at))
+    |> Enum.map(&process_jobs(&1, state.cache_directory, state.python_call, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher))
     
     { :noreply, target_events, state }
   end
   
-  def process_jobs(%ManifestSpec{signal: :working, jobs: staging} = spec, cache_directory, python_call, stage_invoked_at) do  
+  def process_jobs(%ManifestSpec{signal: :working, jobs: staging} = spec, cache_directory, python_call, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do  
     Logger.info "Staging jobs: #{inspect staging}"
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
@@ -58,15 +55,14 @@ defmodule RAP.Job.Runner do
 	:job_errors
       end
 
-    # append_work(past_work, stage_atom, curr_signal, stage_invoked_at, started_at)
-    overall_work = PreRun.append_work(spec.work, __MODULE__, overall_signal, stage_invoked_at, work_started_at)
+    overall_work = PreRun.append_work(spec.work, __MODULE__, overall_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
 
     %{ spec | signal: overall_signal, results: result_contents, work: overall_work }
   end
 
-  def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache, _interpreter, stage_invoked_at) do
+  def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache, _interpreter, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
-    overall_work = PreRun.append_work(spec.work, __MODULE__, :see_pre, stage_invoked_at, work_started_at)
+    overall_work = PreRun.append_work(spec.work, __MODULE__, :see_pre, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     %{ spec | signal: :see_pre, work: overall_work }
   end
 
@@ -84,9 +80,9 @@ defmodule RAP.Job.Runner do
 		   resource_bases:     prev.resources    }
   end
   """
-  def process_jobs(%ManifestSpec{} = spec, _cache, _interpreter, stage_invoked_at) do
+  def process_jobs(%ManifestSpec{} = spec, _cache, _interpreter, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
-    overall_work = PreRun.append_work(spec.work, __MODULE__, :see_producer, stage_invoked_at, work_started_at)
+    overall_work = PreRun.append_work(spec.work, __MODULE__, :see_producer, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     %{ spec | signal: :see_producer, work: overall_work }
   end
 end
