@@ -35,6 +35,7 @@ defmodule RAP.Job.Producer do
   alias RAP.Manifest.{TableDesc, ScopeDesc, JobDesc, ManifestDesc}
   alias RAP.Storage.{PreRun, MidRun, GCP}
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
+  alias RAP.Provenance.Work
     
   use GenStage
   require Logger
@@ -254,7 +255,7 @@ defmodule RAP.Job.Producer do
     else
       processed_jobs = desc.jobs |> Enum.map(&check_job(&1, extant_tables))
       new_id   = RDF.IRI.append(source_id, "_processed")
-      new_work = PreRun.append_work(prev.work, __MODULE__, curr_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+      new_work = Work.append_work(prev.work, __MODULE__, curr_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
       manifest_obj = %ManifestSpec{
 	__id__:             new_id,
 	submitted_manifest: source_id,
@@ -280,7 +281,7 @@ defmodule RAP.Job.Producer do
     source_id = prev.manifest_iri
     new_id    = RDF.IRI.append(source_id, "_processed")
     manifest_name = extract_id source_id
-    new_work = PreRun.append_work(prev.work, __MODULE__, curr_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+    new_work = Work.append_work(prev.work, __MODULE__, curr_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     %ManifestSpec{ __id__:             new_id,
 		   uuid:               prev.uuid,
 		   data_source:        prev.data_source,

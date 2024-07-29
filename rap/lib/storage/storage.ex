@@ -96,27 +96,6 @@ defmodule RAP.Storage.PreRun do
     end
   end
 
-  def append_work(past_work, stage_atom, curr_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, work_input \\ [], work_output \\ []) do    
-    work_ended_at =  DateTime.utc_now() |> DateTime.to_unix()
-    work = [{stage_atom, %{
-		stage_pid:           self(),
-		stage_invoked_at:    stage_invoked_at,
-		stage_type:          stage_type,
-		stage_subscriptions: stage_subscriptions,
-		stage_dispatcher:    stage_dispatcher,
-		signal:              curr_signal,
-		work_started_at:     work_started_at,
-		work_ended_at:       work_ended_at,
-		work_input:          work_input,
-		work_output:         work_output
-	     }}]
-    if is_nil(past_work) do
-      work
-    else
-      past_work ++ work
-    end
-  end
-
 end
 
 defmodule RAP.Storage.MidRun do

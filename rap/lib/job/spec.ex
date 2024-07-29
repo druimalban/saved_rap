@@ -202,6 +202,7 @@ defmodule RAP.Job.ManifestSpec do
   alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, PAV, SAVED}
   alias RAP.Manifest.{TableDesc, JobDesc}
   alias RAP.Job.{TableSpec, JobSpec, Result}
+  alias RAP.Provenance.{RAPProcess, RAPInvocation, RAPStageProcessing}
   #alias RAP.Manifest.{TableDesc, JobDesc}
 
   schema SAVED.ManifestOutput do
@@ -216,6 +217,12 @@ defmodule RAP.Job.ManifestSpec do
     link tables:  SAVED.tables,  type: list_of(TableSpec),  depth: +5
     link jobs:    SAVED.jobs,    type: list_of(JobSpec),    depth: +5
     link results: SAVED.results, type: list_of(Result), depth: +5
+    link rap_app:         SAVED.rap_application,      type: RAPProcess,    depth: +5
+    link rap_app_init:    SAVED.rap_application_init, type: RAPInvocation, depth: +5
+    link rap_stages:      SAVED.rap_stages,      type: list_of(RAPProcess),    depth: +5
+    link rap_stages_init: SAVED.rap_stages_init, type: list_of(RAPInvocation), depth: +5
+    link rap_processing:  SAVED.rap_processing,  type: list_of(RAPStageProcessing), depth: +5
+    
     # link stages: SAVED.stages, type: list_of(RAPStage), depth: +5
     # FIXME: Extras just to get the thing to compile
     field :start_time

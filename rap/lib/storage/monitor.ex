@@ -27,6 +27,7 @@ defmodule RAP.Storage.Monitor do
   alias RAP.Storage.Monitor
 
   alias RAP.Storage.PreRun
+  alias RAP.Provenance.Work
   
   defstruct [:owner, :uuid, :path,
 	     :gcp_name, :gcp_id, :gcp_bucket, :gcp_md5]
@@ -224,7 +225,7 @@ defmodule RAP.Storage.Monitor do
 
       annotate = fn({:ok, ds}) ->
 	initial_work =
-	  PreRun.append_work([], __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, [], stage_dispatcher)
+	  Work.append_work([], __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, [], stage_dispatcher)
 	%{ds | work: initial_work}
       end
       

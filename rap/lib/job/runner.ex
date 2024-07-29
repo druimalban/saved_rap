@@ -6,6 +6,7 @@ defmodule RAP.Job.Runner do
   alias RAP.Storage.PreRun
   alias RAP.Job.{Producer, Result}
   alias RAP.Job.ManifestSpec
+  alias RAP.Provenance.Work
 
   def start_link initial_state do
     Logger.info "Called Job.Runner.start_link (_)"
@@ -55,14 +56,14 @@ defmodule RAP.Job.Runner do
 	:job_errors
       end
 
-    overall_work = PreRun.append_work(spec.work, __MODULE__, overall_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+    overall_work = Work.append_work(spec.work, __MODULE__, overall_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
 
     %{ spec | signal: overall_signal, results: result_contents, work: overall_work }
   end
 
   def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache, _interpreter, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
-    overall_work = PreRun.append_work(spec.work, __MODULE__, :see_pre, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+    overall_work = Work.append_work(spec.work, __MODULE__, :see_pre, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     %{ spec | signal: :see_pre, work: overall_work }
   end
 
@@ -82,7 +83,7 @@ defmodule RAP.Job.Runner do
   """
   def process_jobs(%ManifestSpec{} = spec, _cache, _interpreter, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
-    overall_work = PreRun.append_work(spec.work, __MODULE__, :see_producer, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+    overall_work = Work.append_work(spec.work, __MODULE__, :see_producer, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     %{ spec | signal: :see_producer, work: overall_work }
   end
 end

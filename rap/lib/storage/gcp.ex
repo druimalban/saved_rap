@@ -15,6 +15,7 @@ defmodule RAP.Storage.GCP do
 
   alias RAP.Application
   alias RAP.Storage.{PreRun, MidRun, Monitor}
+  alias RAP.Provenance.Work
 
   def start_link initial_state do
     Logger.info "Called Storage.GCP.start_link (_)"
@@ -139,7 +140,7 @@ defmodule RAP.Storage.GCP do
       |> List.delete(index_base)
       Logger.info "Non-manifest files are #{inspect non_manifest_bases}"      
 
-      new_work = PreRun.append_work(job.work, __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, [manifest_id], [])
+      new_work = Work.append_work(job.work, __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, [manifest_id], [])
       %MidRun{ uuid:          uuid,
 	       signal:        :working,
 	       work:          new_work,
@@ -153,16 +154,16 @@ defmodule RAP.Storage.GCP do
       {:error, uuid, errors} -> {:error, uuid, errors}
       {:error, reason} ->
 	Logger.info "Could not read index file #{index_full}"
-	new_work = PreRun.append_work(job.work, __MODULE__, reason, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+	new_work = Work.append_work(job.work, __MODULE__, reason, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
 	%MidRun{ uuid: job.uuid, signal: reason, work: new_work, data_source: "gcp" }
       [] ->
 	Logger.info "Index file #{index_full} is empty!"
 	{:error, :empty_index, job.uuid}
-	new_work = PreRun.append_work(job.work, __MODULE__, :empty_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+	new_work = Work.append_work(job.work, __MODULE__, :empty_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
         %MidRun{ uuid: job.uuid, signal: :empty_index, work: new_work, data_source: "gcp" }
       _ ->
 	Logger.info "Malformed index file #{index_full}!"
-	new_work = PreRun.append_work(job.work, __MODULE__, :bad_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+	new_work = Work.append_work(job.work, __MODULE__, :bad_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
 	%MidRun{ uuid: job.uuid, signal: :bad_index, work: new_work, data_source: "gcp" }
     end
   end
