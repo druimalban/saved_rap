@@ -75,8 +75,8 @@ defmodule RAP.Provenance.RAPStageResponse do
 
   use Grax.Schema, depth: +5
   import RDF.Sigils
-
   
+  alias RDF.NS.RDFS
   alias RAP.Vocabulary.{PAV, PROV, DCAT, SAVED}
 
   schema SAVED.RAPStageResponse do
@@ -146,7 +146,7 @@ defmodule RAP.Provenance.Work do
 	  st, stage_in_scope, app_agent, base_prefix, rap_prefix, tz, wd
 	)
 	staged_work_output = gen_stage_output_entity(
-	  st, base_prefix, prev_prod
+	  st, base_prefix, wd.stage_pid, prev_prod
 	)
 	staging_processing = gen_stage_processing_activity(
 	  st, base_prefix, rap_prefix, tz, wd, [staged_work_output.__id__]
@@ -199,7 +199,7 @@ defmodule RAP.Provenance.Work do
   def gen_stage_agent(stage_atom, rap_prefix) do
     agent_name = uncase(stage_atom)
     agent_iri  = RDF.IRI.new(rap_prefix <> "stage_" <> agent_name)
-    agent_lbl  = to_string(stage_atom) <> " stage agent"
+    agent_lbl = "#{stage_atom} stage agent"
     %RAPProcess{ __id__: agent_iri, label:  agent_lbl }
   end
   
@@ -218,11 +218,11 @@ defmodule RAP.Provenance.Work do
     
     %RAPInvocation{
       __id__:           invocation_iri,
-      label:            "RAP application invocation activity",
+      label:            "#{app_atom} OTP application invocation activity",
       version:          local_version,
       beam_application: "RAP",
       beam_node:        to_string(node()),
-      beam_module:      "RAP.Application",
+      beam_module:      to_string(app_atom),
       otp_version:      System.otp_release(),
       elixir_version:   System.version(),
       started_at:       invocation_ts,
@@ -253,7 +253,9 @@ defmodule RAP.Provenance.Work do
 
     stage_norm    = uncase(stage_atom)
     stage_inv_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_invocation")
-    stage_inv_lbl = "#{stage_norm} stage invocation activity"
+    stage_inv_lbl = "#{stage_atom} (#{work.stage_pid}) stage invocation activity"
+
+      # to_string(stage_atom) <> " stage invocation activity"
 
     subscriptions = work.stage_subscriptions
     |> Enum.map(&gen_stage_subscription(&1, rap_prefix))
@@ -285,7 +287,7 @@ defmodule RAP.Provenance.Work do
     stage_norm     = uncase(stage_atom)
     stage_iri      = RDF.IRI.new(rap_prefix <> "stage_" <> stage_norm)
     stage_proc_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_processing")
-    stage_proc_lbl = "#{stage_norm} stage event-processing activity"
+    stage_proc_lbl = "#{stage_atom} (#{work.stage_pid}) stage processing activity"
 
     start_ts = work.work_started_at
     #|> DateTime.from_unix!() |> DateTime.shift_zone!(tz)
@@ -310,13 +312,14 @@ defmodule RAP.Provenance.Work do
     }
   end
 
-  def gen_stage_output_entity(stage_atom, base_prefix, prev_output_iris) do
+  def gen_stage_output_entity(stage_atom, base_prefix, stage_pid, prev_output_iris) do
     stage_norm = uncase(stage_atom)
     stage_output_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_output")
+    stage_output_lbl = "#{stage_atom} (#{stage_pid}) stage ouptut entity"
 
     %RAPStageResponse{
       __id__:       stage_output_iri,
-      label:        "#{stage_norm} intermediate response entity",
+      label:        stage_output_lbl,
       derived_from: prev_output_iris
     }
   end

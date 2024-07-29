@@ -38,9 +38,9 @@ defmodule RAP.Bakery.Compose do
 
   # target_contents, bakery_directory, uuid, stem, extension, target_name
   def handle_events(events, _from, %Application{} = state) do
-    Logger.info "HTML document consumer received #{inspect events}"
-    input_work = events |> Enum.map(& &1.work)
-    Logger.info "Bakery.Compose received objects with the following work defined: #{inspect input_work}"
+    #Logger.info "HTML document consumer received #{inspect events}"
+    #input_work = events |> Enum.map(& &1.work)
+    #Logger.info "Bakery.Compose received objects with the following work defined: #{inspect input_work}"
     #processed_events = events
     #|> Enum.map(&compose_document(state, &1))
     #|> Enum.map(&write_result(&1, state.bakery_directory))

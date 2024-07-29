@@ -1,38 +1,18 @@
 defmodule RAP.Storage do
   @moduledoc """
-
-  Original %RAP.Bakery.ManifestOutput module named struct:
-      defstruct [ :uuid, :data_source,
-                  :name, :title, :description,
-	          :start_time, :end_time,
-	          :manifest_pre_base_ttl,
-	          :manifest_pre_base_yaml,
-	          :resource_bases,
-	          :pre_signal,
-	          :producer_signal,
-	          :runner_signal,
-	          :result_bases,
-	          :results,
-	          :staged_tables,
-	          :staged_jobs          ]
   """
   use Amnesia
   
   defdatabase DB do
     deftable Manifest, [
       :uuid, :data_source,
-      :name, :title, :description,
       :start_time, :end_time,
-      :manifest_pre_base_ttl,
-      :manifest_pre_base_yaml,
+      :submitted_manifest_base_ttl,
+      :submitted_manifest_base_yaml,
+      :processed_manifest_base_ttl,
       :resource_bases,
-      :pre_signal,
-      :producer_signal,
-      :runner_signal,
-      :result_bases,
-      :results,
-      :staged_tables,
-      :staged_jobs
+      :signal,
+      :result_bases
     ]
   end
   
@@ -169,7 +149,20 @@ defmodule RAP.Storage.PostRun do
       annotated_manifest = %ManifestSpec{ manifest | start_time: start_ts, end_time: end_ts }
       Logger.info "Annotated manifest with start/end time: #{inspect annotated_manifest}"
 
-      transformed_manifest = %{ annotated_manifest | __struct__: ManifestTable }
+      #transformed_manifest = %{ annotated_manifest | __struct__: ManifestTable }
+      transformed_manifest =
+	%ManifestTable{
+	  uuid:        manifest.uuid,
+	  data_source: manifest.data_source,
+	  start_time:  manifest.start_time,
+	  end_time:    manifest.end_time,
+	  submitted_manifest_base_ttl:  manifest.manifest_base_ttl,
+	  submitted_manifest_base_yaml: manifest.manifest_base_yaml,
+	  processed_manifest_base_ttl:  manifest.processed_manifest_base,
+	  resource_bases: manifest.resource_bases,
+	  result_bases:   manifest.result_bases,
+	  signal:         manifest.signal
+	}
       Logger.info "Transformed annotated manifest into: #{inspect transformed_manifest}"
       Amnesia.transaction do
 	transformed_manifest |> ManifestTable.write()

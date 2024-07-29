@@ -82,7 +82,7 @@ defmodule RAP.Bakery.Prepare do
     processed_events = events
     |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.rap_base_prefix, state.rap_invoked_at, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, state.time_zone))
     |> Enum.map(&write_turtle(&1, state.bakery_directory, known_prefixes, state.linked_result_stem))
-    # |> Enum.map(&PostRun.cache_manifest(&1, state.ets_table))
+    |> Enum.map(&PostRun.cache_manifest(&1, state.ets_table))
     {:noreply, processed_events, state}
   end
 
