@@ -70,7 +70,7 @@ defmodule RAP.Job.Producer do
     Logger.info "Job.Producer received objects with the following work defined: #{inspect input_work}"
     # Fix once we've got the GCP stuff nailed down
     processed = events
-    |> Enum.map(&invoke_manifest(&1, state.cache_directory, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, state.rap_base_prefix))
+    |> Enum.map(&invoke_manifest(&1, state.cache_directory, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher))
     
     { :noreply, processed, state }
   end
@@ -353,7 +353,7 @@ defmodule RAP.Job.Producer do
   we can use, but it also implies that no jobs should be run, so don't
   try to run these, at least for now. Only pattern-match on `:working'.
   """
-  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, _fallback_base) do
+  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     target_dir         = "#{cache_dir}/#{prev.uuid}"
     manifest_full_path = "#{target_dir}/#{prev.manifest_ttl}"
     load_target        = RDF.iri(prev.manifest_iri)
@@ -386,9 +386,10 @@ defmodule RAP.Job.Producer do
 	minimal_manifest(prev, :bad_manifest_tables, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     end
   end
-  def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, _stage_invoked_at, _stage_type, _stage_subs, _stage_dispatcher, fallback_base) do
+  def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, _stage_invoked_at, _stage_type, _stage_subs, _stage_dispatcher) do
     # We already have a notion of a well-known unique identifier (UUID),
-    # so use it as fallback    
+    # so use it as fallback
+    fallback_base = RAP.Vocabulary.RAP.__base_iri__
     target_id = RDF.IRI.new("#{fallback_base}RootManifest#{prev.uuid}_processed")
     %ManifestSpec{
       __id__:          target_id,

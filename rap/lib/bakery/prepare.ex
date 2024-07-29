@@ -80,7 +80,7 @@ defmodule RAP.Bakery.Prepare do
     Logger.info "Bakery.Prepare received objects with the following work defined: #{inspect input_work}"
     
     processed_events = events
-    |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.rap_base_prefix, state.rap_invoked_at, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, state.time_zone))
+    |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.rap_invoked_at, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, state.time_zone))
     |> Enum.map(&write_turtle(&1, state.bakery_directory, known_prefixes, state.linked_result_stem))
     |> Enum.map(&PostRun.cache_manifest(&1, state.ets_table))
     {:noreply, processed_events, state}
@@ -142,7 +142,7 @@ defmodule RAP.Bakery.Prepare do
 
   Therefore, this stage doesn't record a signal.
   """
-  def bake_data(%ManifestSpec{signal: sig} = processed, cache_dir, bakery_dir, rap_prefix, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) when sig in [:working, :job_errors] do
+  def bake_data(%ManifestSpec{signal: sig} = processed, cache_dir, bakery_dir, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) when sig in [:working, :job_errors] do
 
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
@@ -172,8 +172,7 @@ defmodule RAP.Bakery.Prepare do
          stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
          [], [processed.__id__])
     |> Work.traverse_work(
-         #work, base_prefix, rap_prefix, rap_invoked_at, app_atom, tz
-         processed.base_prefix, rap_prefix,
+         processed.base_prefix,
          rap_invoked_at, RAP.Application,
          pipeline_generated_iris,
          tz)
@@ -189,7 +188,7 @@ defmodule RAP.Bakery.Prepare do
     }
   end
 
-  def bake_data(%ManifestSpec{signal: :see_producer} = processed, cache_dir, bakery_dir, rap_prefix, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
+  def bake_data(%ManifestSpec{signal: :see_producer} = processed, cache_dir, bakery_dir, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_producer'"
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
@@ -213,8 +212,7 @@ defmodule RAP.Bakery.Prepare do
          stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
          [], [processed.__id__])
     |> Work.traverse_work(
-         #work, base_prefix, rap_prefix, rap_invoked_at, app_atom, tz
-         processed.base_prefix, rap_prefix,
+         processed.base_prefix,
          rap_invoked_at, RAP.Application,
          pipeline_generated_iris,
          tz)
@@ -231,7 +229,7 @@ defmodule RAP.Bakery.Prepare do
 
   
   # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
-  def bake_data(%ManifestSpec{signal: :see_pre} = processed, _cache, bakery_dir, rap_prefix, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
+  def bake_data(%ManifestSpec{signal: :see_pre} = processed, _cache, bakery_dir, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_pre'"
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
@@ -243,8 +241,7 @@ defmodule RAP.Bakery.Prepare do
          stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
          [], [processed.__id__])
     |> Work.traverse_work(
-         #work, base_prefix, rap_prefix, rap_invoked_at, app_atom, tz
-         processed.base_prefix, rap_prefix,
+         processed.base_prefix,
          rap_invoked_at, RAP.Application,
          [processed.__id__],
          tz)
@@ -259,7 +256,7 @@ defmodule RAP.Bakery.Prepare do
   end
 
   # Not sure whether to remove this bit
-  def bake_data(%ManifestSpec{signal: sig} = processed, _cache, bakery_dir, rap_prefix, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
+  def bake_data(%ManifestSpec{signal: sig} = processed, _cache, bakery_dir, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
     Logger.info "Called Prepare.bake_data/5 with signal #{sig}, not doing anything"
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
@@ -271,8 +268,7 @@ defmodule RAP.Bakery.Prepare do
          stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
          [], [processed.__id__])
     |> Work.traverse_work(
-         #work, base_prefix, rap_prefix, rap_invoked_at, app_atom, tz
-         processed.base_prefix, rap_prefix,
+         processed.base_prefix,
          rap_invoked_at, RAP.Application, [processed.__id__], tz)
     
     %{ processed |

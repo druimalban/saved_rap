@@ -46,7 +46,7 @@ defmodule RAP.Provenance.RAPInvocation do
     property :elixir_version,       SAVED.elixir_version,         type: :string
     property :gen_stage_type,       SAVED.gen_stage_type,         type: :string
     property :gen_stage_dispatcher, SAVED.gen_stage_dispatcher,   type: :string
-    property :started_at,           PROV.startedAtTime,           type: :integer
+    property :started_at,           PROV.startedAtTime,           type: :date_time
     link associated_with:           PROV.wasAssociatedWith,       type: list_of(RAPProcess)
     link gen_stage_subscriptions:   SAVED.gen_stage_subscription, type: list_of(RAPStageSubscription)
   end
@@ -63,8 +63,8 @@ defmodule RAP.Provenance.RAPStageProcessing do
 
   schema SAVED.RAPStageProcessing do
     property :label,                RDFS.label,             type: :string
-    property :started_at,           PROV.startedAtTime,     type: :integer
-    property :ended_at,             PROV.endedAtTime,       type: :integer
+    property :started_at,           PROV.startedAtTime,     type: :date_time
+    property :ended_at,             PROV.endedAtTime,       type: :date_time
     property :associated_with,      PROV.wasAssociatedWith, type: list_of(:iri)
     property :used_previous_output, PROV.used,              type: list_of(:iri)
     link generated_entities: PROV.generated, type: list_of(RAPStageResponse)
@@ -135,7 +135,7 @@ defmodule RAP.Provenance.Work do
 
   Currently broken in the sense that sorting out what produces what is vague
   """  
-  def traverse_work(work, base_prefix, rap_prefix, rap_invoked_at, app_atom, final_output_iris, tz) do
+  def traverse_work(work, base_prefix, rap_invoked_at, app_atom, final_output_iris, tz, rap_prefix \\ RAP.Vocabulary.RAP.__base_iri__) do
     app_agent      = app_agent(app_atom, rap_prefix)
     app_invocation = app_invocation_activity(app_atom, app_agent, base_prefix, rap_invoked_at, tz)
     
@@ -212,8 +212,8 @@ defmodule RAP.Provenance.Work do
     local_version \\ "0.1"
   ) do
     invocation_ts = invoked_at
-    #|> DateTime.from_unix!()
-    #|> DateTime.shift_zone!(@time_zone)
+    |> DateTime.from_unix!()
+    |> DateTime.shift_zone!(tz)
 
     invocation_iri = RDF.IRI.new(base_prefix <> uncase(app_atom) <> "_invocation")
     
@@ -249,14 +249,12 @@ defmodule RAP.Provenance.Work do
     local_version \\ "0.1"
   ) do
     invocation_ts = work.stage_invoked_at
-    #|> DateTime.from_unix!()
-    #|> DateTime.shift_zone!(tz)
+    |> DateTime.from_unix!()
+    |> DateTime.shift_zone!(tz)
 
     stage_norm    = uncase(stage_atom)
     stage_inv_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_invocation")
     stage_inv_lbl = "#{stage_atom} (#{work.stage_pid}) stage invocation activity"
-
-      # to_string(stage_atom) <> " stage invocation activity"
 
     subscriptions = work.stage_subscriptions
     |> Enum.map(&gen_stage_subscription(&1, rap_prefix))
@@ -291,14 +289,12 @@ defmodule RAP.Provenance.Work do
     stage_proc_lbl = "#{stage_atom} (#{work.stage_pid}) stage processing activity"
 
     start_ts = work.work_started_at
-    #|> DateTime.from_unix!() |> DateTime.shift_zone!(tz)
+    |> DateTime.from_unix!() |> DateTime.shift_zone!(tz)
     end_ts = work.work_ended_at
-    #|> DateTime.from_unix!() |> DateTime.shift_zone!(tz)
+    |> DateTime.from_unix!() |> DateTime.shift_zone!(tz)
 
     work_input_all  = work.work_input
-    #|> Enum.map(& &1.__id__)
     work_output_all = work.work_output ++ output_entities
-    #|> Enum.map(& &1.__id__)
     
     #Logger.info("WORK OUTPUT FOR GENERATED ENTITIES: #{inspect work_output_all}")
     

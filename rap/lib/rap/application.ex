@@ -20,7 +20,6 @@ defmodule RAP.Application do
   @bakery_directory   "./bakery"              # Place to output results
   @linked_result_stem "processed"
   @time_zone          "GB-Eire"
-  @rap_base_prefix    "https://marine.gov.scot/metadata/saved/rap/"
   @rap_uri_prefix     "/saved/rap"
   @rap_style_sheet    "/saved/assets/rap.css" # Imports fira.css
   @rap_js_lib_plotly  "/saved/assets/plotly-2.32.0.min.js"
@@ -61,7 +60,6 @@ defmodule RAP.Application do
 	      bakery_directory:   @bakery_directory,
 	      linked_result_stem: @linked_result_stem,
 	      time_zone:          @time_zone,
-	      rap_base_prefix:    @rap_base_prefix,
 	      rap_uri_prefix:     @rap_uri_prefix,
 	      rap_style_sheet:    @rap_style_sheet,
 	      rap_js_lib_plotly:  @rap_js_lib_plotly,
