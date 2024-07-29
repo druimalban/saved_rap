@@ -114,13 +114,13 @@ defmodule RAP.Bakery.Prepare do
   presented
   """
   defp move_manifest(fp, cache_dir, bakery_dir, uuid) do
-    fp_pre    = fp |> String.replace(~r"\.([a-z]+)$", "_pre.\\1")
-    fp_target = cond do
-      fp_pre != fp -> fp_pre
-      true         -> fp
-    end
-    fp |> move_wrapper(cache_dir, bakery_dir, uuid, fp_target)
-    fp_target
+    #fp_pre    = fp |> String.replace(~r"\.([a-z]+)$", "_pre.\\1")
+    #fp_target = cond do
+    #  fp_pre != fp -> fp_pre
+    #  true         -> fp
+    ###end
+    fp |> move_wrapper(cache_dir, bakery_dir, uuid, fp)
+    fp
   end
   
   @doc """
@@ -290,8 +290,8 @@ defmodule RAP.Bakery.Prepare do
     
     fp_processed =
       case processed.manifest_base_ttl do
-	nil -> "manifest_#{processed.uuid}_#{linked_stem}.ttl"
-	nom -> String.replace(nom, ~r"\.([a-z]+)$", "_#{linked_stem}.\\1")
+	nil -> "manifest_#{processed.uuid}.#{linked_stem}.ttl"
+	nom -> String.replace(nom, ~r"\.([a-z]+)$", ".#{linked_stem}.\\1")
       end
     fp_target   = cond do
       fp_processed != processed.manifest_base_ttl -> fp_processed

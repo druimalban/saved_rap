@@ -155,7 +155,8 @@ defmodule RAP.Provenance.Work do
 	   invocation: stage_invocation,
 	   processing: staging_processing,
 	   production: staged_work_output }
-      end
+    end
+    
     collapse = fn
       {st, wd}, nil ->
 	trans = produce.({st, wd}, nil)

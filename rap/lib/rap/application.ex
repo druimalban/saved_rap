@@ -18,7 +18,7 @@ defmodule RAP.Application do
   @local_directory    "/var/db/saved"         # Monitor this like GCP
   @cache_directory    "./data_cache"
   @bakery_directory   "./bakery"              # Place to output results
-  @linked_result_stem "manifest_post"
+  @linked_result_stem "processed"
   @time_zone          "GB-Eire"
   @rap_base_prefix    "https://marine.gov.scot/metadata/saved/rap/"
   @rap_uri_prefix     "/saved/rap"
