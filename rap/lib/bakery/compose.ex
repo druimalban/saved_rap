@@ -58,7 +58,7 @@ defmodule RAP.Bakery.Compose do
   #  time_zone,
   #  %ManifestOutput{} = prepared 
   #) do
-  def compose_document(%Application{} = state, %ManifestSpec{signal: :working} = prepared) do
+  def compose_document(%Application{} = state, %ManifestSpec{signal: sig} = prepared) when sig in [:working, :job_errors] do
     # %ManifestOutput{} is effectively an annotated manifest struct, pass in a map
     {html_contents, manifest_signal} =
       doc_lead_in()
