@@ -266,8 +266,8 @@ defmodule RAP.Job.Producer do
 	data_source:        prev.data_source,
 	signal:             curr_signal,
 	work:               new_work,
-	manifest_base_ttl:  prev.manifest_ttl,
-	manifest_base_yaml: prev.manifest_yaml,
+	submitted_manifest_base_ttl:  prev.manifest_ttl,
+	submitted_manifest_base_yaml: prev.manifest_yaml,
 	resource_bases:     prev.resources,
 	tables:             processed_tables,
 	jobs:               processed_jobs,
@@ -287,8 +287,8 @@ defmodule RAP.Job.Producer do
 		   data_source:        prev.data_source,
 		   signal:             curr_signal,
 		   work:               new_work,
-		   manifest_base_ttl:  prev.manifest_ttl,
-		   manifest_base_yaml: prev.manifest_yaml,
+		   submitted_manifest_base_ttl:  prev.manifest_ttl,
+		   submitted_manifest_base_yaml: prev.manifest_yaml,
 		   resource_bases:     prev.resources,
 		   submitted_manifest: source_id,
 		   base_prefix:        prev.base_prefix }
@@ -386,17 +386,25 @@ defmodule RAP.Job.Producer do
 	minimal_manifest(prev, :bad_manifest_tables, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     end
   end
-  def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, _stage_invoked_at, _stage_type, _stage_subs, _stage_dispatcher) do
+  def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     # We already have a notion of a well-known unique identifier (UUID),
     # so use it as fallback
     fallback_base = RAP.Vocabulary.RAP.__base_iri__
     target_id = RDF.IRI.new("#{fallback_base}RootManifest#{prev.uuid}_processed")
+
+    work_started_at = DateTime.utc_now() |> DateTime.to_unix()
+    new_work = Work.append_work(prev.work, __MODULE__, :see_pre, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+    
     %ManifestSpec{
       __id__:          target_id,
       uuid:            prev.uuid,
       data_source:     prev.data_source,
       base_prefix:     fallback_base,
-      signal:          :see_pre
+      submitted_manifest_base_ttl:  prev.manifest_ttl,
+      submitted_manifest_base_yaml: prev.manifest_yaml,
+      resource_bases:     prev.resources,
+      signal:          :see_pre,
+      work:            new_work
     }
   end
   

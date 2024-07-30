@@ -206,14 +206,15 @@ defmodule RAP.Job.ManifestSpec do
   #alias RAP.Manifest.{TableDesc, JobDesc}
 
   schema SAVED.ManifestOutput do
-    property :uuid,               SAVED.uuid,          type: :string
-    property :data_source,        SAVED.data_source,   type: :string
-    property :title,              DCTERMS.title,       type: :string
-    property :description,        DCTERMS.description, type: :string
-    property :output_format,      DCAT.mediaType,      type: :string
-    property :download_url,       DCAT.downloadURL,    type: :iri
-    property :submitted_manifest, PROV.wasDerivedFrom, type: :iri
-    property :signal,             SAVED.stage_signal,  type: :string
+    property :uuid,               SAVED.uuid,           type: :string
+    property :data_source,        SAVED.data_source,    type: :string
+    property :title,              DCTERMS.title,        type: :string
+    property :description,        DCTERMS.description,  type: :string
+    property :output_format,      DCAT.mediaType,       type: :string
+    property :download_url,       DCAT.downloadURL,     type: :iri
+    property :submitted_manifest, PROV.wasDerivedFrom,  type: :iri
+    property :ended_at,           PROV.generatedAtTime, type: :date_time
+    #property :ended_at            PROV.generatedAtTime, type: :date_time
     link tables:  SAVED.tables,  type: list_of(TableSpec),  depth: +5
     link jobs:    SAVED.jobs,    type: list_of(JobSpec),    depth: +5
     link results: SAVED.results, type: list_of(Result), depth: +5
@@ -223,12 +224,16 @@ defmodule RAP.Job.ManifestSpec do
     link rap_stages_init: SAVED.rap_stages_init, type: list_of(RAPInvocation), depth: +5
     link rap_processing:  SAVED.rap_processing,  type: list_of(RAPStageProcessing), depth: +5
     
-    # link stages: SAVED.stages, type: list_of(RAPStage), depth: +5
-    # FIXME: Extras just to get the thing to compile
-    field :start_time
-    field :end_time
-    field :manifest_base_ttl
-    field :manifest_base_yaml
+    # semantically, start/end times largely don't make sense for this, an entity,
+    # but they do in the potted summary in HTML
+    # likewise, signal is derived from the LAST stage signal of relevance,
+    # which is hard to model
+    field :started_at
+    field :start_time_unix
+    field :end_time_unix
+    field :signal
+    field :submitted_manifest_base_ttl
+    field :submitted_manifest_base_yaml
     field :resource_bases
     field :result_bases
     field :processed_manifest_base

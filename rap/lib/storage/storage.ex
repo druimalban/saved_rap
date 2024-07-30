@@ -6,7 +6,7 @@ defmodule RAP.Storage do
   defdatabase DB do
     deftable Manifest, [
       :uuid, :data_source,
-      :start_time, :end_time,
+      :start_time_unix, :end_time_unix,
       :submitted_manifest_base_ttl,
       :submitted_manifest_base_yaml,
       :processed_manifest_base_ttl,
@@ -138,15 +138,21 @@ defmodule RAP.Storage.PostRun do
   We do want to keep track of these somehow, and this may be the place,
   just not quite yet.
   """
-  def cache_manifest(%ManifestSpec{} = manifest, ets_table \\ :uuid) do
+  def cache_manifest(%ManifestSpec{} = manifest, tz, ets_table \\ :uuid) do
     Logger.info "Cache processed manifest information in mnesia DB `Manifest' table"
     
     with [{uuid, start_ts}] <- :ets.lookup(ets_table, manifest.uuid),
          true               <- :ets.delete(ets_table, manifest.uuid) do
-      
-      end_ts = DateTime.utc_now() |> DateTime.to_unix()
 
-      annotated_manifest = %ManifestSpec{ manifest | start_time: start_ts, end_time: end_ts }
+      started_at = DateTime.utc_now() |> DateTime.shift_zone!(tz)
+      end_ts     = DateTime.utc_now() |> DateTime.to_unix()
+      ended_at   = DateTime.utc_now() |> DateTime.shift_zone!(tz)
+
+      annotated_manifest = %ManifestSpec{ manifest |
+					  start_time_unix: start_ts,
+					  started_at:      started_at,
+					  end_time_unix:   end_ts,
+					  ended_at:        ended_at }
       Logger.info "Annotated manifest with start/end time: #{inspect annotated_manifest}"
 
       #transformed_manifest = %{ annotated_manifest | __struct__: ManifestTable }
@@ -154,10 +160,10 @@ defmodule RAP.Storage.PostRun do
 	%ManifestTable{
 	  uuid:        manifest.uuid,
 	  data_source: manifest.data_source,
-	  start_time:  manifest.start_time,
-	  end_time:    manifest.end_time,
-	  submitted_manifest_base_ttl:  manifest.manifest_base_ttl,
-	  submitted_manifest_base_yaml: manifest.manifest_base_yaml,
+	  start_time_unix: start_ts,
+	  end_time_unix:   end_ts,
+	  submitted_manifest_base_ttl:  manifest.submitted_manifest_base_ttl,
+	  submitted_manifest_base_yaml: manifest.submitted_manifest_base_yaml,
 	  processed_manifest_base_ttl:  manifest.processed_manifest_base,
 	  resource_bases: manifest.resource_bases,
 	  result_bases:   manifest.result_bases,
@@ -167,8 +173,7 @@ defmodule RAP.Storage.PostRun do
       Amnesia.transaction do
 	transformed_manifest |> ManifestTable.write()
       end
-     
-      {:ok, annotated_manifest}
+      annotated_manifest
     else
       [] ->
 	Logger.info "Could not find UUID in ETS!"
@@ -199,7 +204,7 @@ defmodule RAP.Storage.PostRun do
     Logger.info "Retrieve all prepared manifests after #{date_proper}"
     
     Amnesia.transaction do
-      ManifestTable.where(start_time > invoked_after)
+      ManifestTable.where(start_time_unix > invoked_after)
       |> Amnesia.Selection.values()
       |> Enum.map(&inject_manifest/1)
     end

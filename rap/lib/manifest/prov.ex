@@ -3,11 +3,15 @@ defmodule RAP.Provenance.RAPProcess do
   use Grax.Schema, depth: +5
   import RDF.Sigils
   alias RDF.NS.RDFS
-  alias RAP.Vocabulary.SAVED
+  alias RAP.Vocabulary.{PROV, SAVED}
 
   schema SAVED.RAPStage do
     property :label, RDFS.label, type: :string
   end
+
+  #def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+  #  {:ok, RDF.Graph.add(graph, [id, RDF.type(), PROV.SoftwareAgent])}
+  #end
 end
 
 defmodule RAP.Provenance.RAPStageSubscription do
@@ -67,6 +71,7 @@ defmodule RAP.Provenance.RAPStageProcessing do
     property :ended_at,             PROV.endedAtTime,       type: :date_time
     property :associated_with,      PROV.wasAssociatedWith, type: list_of(:iri)
     property :used_previous_output, PROV.used,              type: list_of(:iri)
+    property :signal_text,          SAVED.stage_signal,     type: :string
     link generated_entities: PROV.generated, type: list_of(RAPStageResponse)
   end
 end
@@ -295,6 +300,8 @@ defmodule RAP.Provenance.Work do
 
     work_input_all  = work.work_input
     work_output_all = work.work_output ++ output_entities
+
+    signal_text = to_string(work.signal)
     
     #Logger.info("WORK OUTPUT FOR GENERATED ENTITIES: #{inspect work_output_all}")
     
@@ -305,7 +312,8 @@ defmodule RAP.Provenance.Work do
       ended_at:             end_ts,
       associated_with:      [stage_iri],
       used_previous_output: work_input_all,
-      generated_entities:   work_output_all
+      generated_entities:   work_output_all,
+      signal_text:          signal_text
     }
   end
 

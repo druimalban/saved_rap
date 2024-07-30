@@ -82,7 +82,7 @@ defmodule RAP.Bakery.Prepare do
     processed_events = events
     |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.rap_invoked_at, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, state.time_zone))
     |> Enum.map(&write_turtle(&1, state.bakery_directory, known_prefixes, state.linked_result_stem))
-    |> Enum.map(&PostRun.cache_manifest(&1, state.ets_table))
+    |> Enum.map(&PostRun.cache_manifest(&1, state.time_zone, state.ets_table))
     {:noreply, processed_events, state}
   end
 
@@ -154,9 +154,9 @@ defmodule RAP.Bakery.Prepare do
     cached_results = processed.results
     |> Enum.map(&write_result(&1, processed.base_prefix, bakery_dir, processed.uuid))
     
-    moved_manifest_ttl = processed.manifest_base_ttl
+    moved_manifest_ttl = processed.submitted_manifest_base_ttl
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
-    moved_manifest_yaml = processed.manifest_base_yaml
+    moved_manifest_yaml = processed.submitted_manifest_base_yaml
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
 
     moved_resources = processed.resource_bases
@@ -194,9 +194,9 @@ defmodule RAP.Bakery.Prepare do
     
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
     
-    moved_manifest_ttl = processed.manifest_base_ttl
+    moved_manifest_ttl = processed.submitted_manifest_base_ttl
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
-    moved_manifest_yaml = processed.manifest_base_yaml
+    moved_manifest_yaml = processed.submitted_manifest_base_yaml
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
 
     moved_resources = processed.resource_bases
@@ -285,23 +285,19 @@ defmodule RAP.Bakery.Prepare do
     |> Map.put_new(:submission, RDF.IRI.new(processed.base_prefix))
     
     fp_processed =
-      case processed.manifest_base_ttl do
+      case processed.submitted_manifest_base_ttl do
 	nil -> "manifest_#{processed.uuid}.#{linked_stem}.ttl"
 	nom -> String.replace(nom, ~r"\.([a-z]+)$", ".#{linked_stem}.\\1")
       end
-    fp_target   = cond do
-      fp_processed != processed.manifest_base_ttl -> fp_processed
-      true         -> processed.manifest_base_ttl
-    end
-    fp_full = "#{bakery_dir}/#{processed.uuid}/#{fp_target}"
+    fp_full = "#{bakery_dir}/#{processed.uuid}/#{fp_processed}"
     
     Logger.info "Writing processed turtle manifest to #{fp_full}"
     
-    dl_url    = RDF.IRI.new(processed.base_prefix <> fp_target)
+    dl_url    = RDF.IRI.new(processed.base_prefix <> fp_processed)
     annotated = %{ processed |
-		   download_url:  dl_url,
-		   output_format: "text/turtle",
-		   signal:        to_string(processed.signal) }
+		   processed_manifest_base: fp_processed,
+		   download_url:            dl_url,
+		   output_format:           "text/turtle" }
     
     with {:ok, rdf_equiv} <- Grax.to_rdf(annotated),
          rdf_annotated    <- RDF.Graph.add_prefixes(rdf_equiv, all_prefixes),
@@ -343,11 +339,11 @@ defmodule RAP.Bakery.Prepare do
       
       Logger.info "Wrote result of target #{inspect result.__id__} to fully-qualified path #{target_full}"
 
-      %{ result | download_url: result.__id__, signal: "working" }
+      %{ result | download_url: result.__id__, signal: :working, text_signal: "working" }
     else
       true ->
 	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
-        %{ result | download_url: result.__id__, signal: "working" }
+        %{ result | download_url: result.__id__, signal: :working, text_signal: "working" }
       {:error, error} ->
 	Logger.info "Could not write to fully-qualified path #{target_full}: #{inspect error}"
         {:error, error}
@@ -355,17 +351,17 @@ defmodule RAP.Bakery.Prepare do
   end
   def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) when signal in [:job_failure, :python_error] do
     Logger.info "Job exited with error: Not writing result to file"
-    %{ result | signal: to_string(signal) }
+    %{ result | text_signal: to_string(signal) }
   end
   def write_result(%Result{signal: :ignored} = result, base_prefix, _bakery, _uuid) do
     Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
     Logger.info "Ignored/fake job: Not writing result to file"
-    %{ result | signal: "ignored" }
+    %{ result | text_signal: "ignored" }
   end
   def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) do
     Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
     Logger.info "Invalid job: Not writing result to file"
-    %{ result | signal: to_string(signal) }
+    %{ result | text_signal: to_string(signal) }
   end
 
   @doc """
