@@ -129,7 +129,7 @@ defmodule RAP.Job.Result do
       # b) Guarantees about dependencies
       # We're after good reporting, and this information should certainly be part of that.
       py_result = 
- 	cmd_wrapper(python_call, "contrib/density_count_ode.py", [
+ 	cmd_wrapper(python_call, "contrib/bin/density_count_ode.py", [
  	            file_path_count,   label_count,
  	            file_path_density, label_time,  label_density])
       case py_result do
