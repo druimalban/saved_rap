@@ -27,6 +27,7 @@ defmodule RAP.Storage.Monitor do
   alias RAP.Storage.Monitor
 
   alias RAP.Storage.PreRun
+  alias RAP.Provenance.Work
   
   defstruct [:owner, :uuid, :path,
 	     :gcp_name, :gcp_id, :gcp_bucket, :gcp_md5]
@@ -53,16 +54,25 @@ defmodule RAP.Storage.Monitor do
     :ets.new(:uuid, [:set, :public, :named_table])
     with {:ok, initial_session} <- new_connection()
       do
-      state = initial_state |> Map.put(:gcp_session, initial_session)
+      curr_ts = DateTime.utc_now() |> DateTime.to_unix()
+      invocation_state = %{ initial_state |
+			    stage_invoked_at: curr_ts,
+			    stage_type:       :producer,
+			    gcp_session:      initial_session,
+			    stage_dispatcher: GenStage.DemandDispatcher
+			  }
       Task.start_link(fn() ->
 	monitor_gcp(
-	  state.gcp_session,
-	  state.gcp_bucket,
-	  state.index_file,
-	  state.interval_seconds * 1000
+	  invocation_state.gcp_session,
+	  invocation_state.gcp_bucket,
+	  invocation_state.index_file,
+	  invocation_state.interval_seconds * 1000,
+	  invocation_state.stage_invoked_at,
+	  invocation_state.stage_type,
+	  invocation_state.stage_dispatcher
 	)
       end)
-      {:producer, state}
+      {invocation_state.stage_type, invocation_state, dispatcher: invocation_state.stage_dispatcher }
     else
       {:error, _msg} = error -> error
     end
@@ -139,11 +149,11 @@ defmodule RAP.Storage.Monitor do
       ds = %PreRun{uuid: uuid, index: index, resources: resources}
       Logger.info("Inserted #{uuid} and current UNIX time stamp #{inspect curr} into Erlang term storage (:ets)")
       Logger.info("UUID/content map: #{Misc.pretty_print_object ds}")
-      ds
+      {:ok, ds}
     else
       nil ->
 	Logger.info "Job (UUID #{uuid}) not associated with index (file `#{index_file}')"
-	nil
+	:error
     end
   end
 
@@ -181,7 +191,7 @@ defmodule RAP.Storage.Monitor do
   of files associated with the UUID.
 
   There are certain well-founded assumptions which are governed by the
-  functionality of `fisdat' and/or `fisup'. Firstly, there is at most one
+[]  functionality of `fisdat' and/or `fisup'. Firstly, there is at most one
   manifest per UUID, because that's the single file we fed into `fisup'
   in order to upload the files (and a unique UUID is created per
   invocation of `fisup'). The original idea was to have the manifest file
@@ -192,9 +202,10 @@ defmodule RAP.Storage.Monitor do
   other files into this index file is unneccesary because the manifest
   describes these.
   """
-  defp monitor_gcp(session, bucket, index_file, interval_ms) do
+  defp monitor_gcp(session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher) do
     with {:ok, objects} <- wrap_gcp_request(session, bucket) do
       Logger.info "Called RAP.Storage.Monitor.monitor_gcp/4 with interval #{interval_ms} milliseconds"
+      work_started_at = DateTime.utc_now() |> DateTime.to_unix()
       
       normalised_objects = objects
       |> Enum.map(&uuid_helper/1)
@@ -212,20 +223,27 @@ defmodule RAP.Storage.Monitor do
       grouped_objects = normalised_objects
       |> Enum.group_by(& &1.uuid)
 
+      annotate = fn({:ok, ds}) ->
+	initial_work =
+	  Work.append_work([], __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, [], stage_dispatcher)
+	%{ds | work: initial_work}
+      end
+      
       staging_objects = staging_uuids
       |> Enum.map(&prep_job(&1, grouped_objects, index_file))
-      |> Enum.reject(&is_nil/1)
+      |> Enum.reject(& &1 == :error)
+      |> Enum.map(annotate)
 
       Logger.info "RAP.Storage.Monitor.monitor_gcp/4: casting staged objects and sleeping for #{interval_ms} milliseconds"
       GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
       :timer.sleep(interval_ms)
-      monitor_gcp(session, bucket, index_file, interval_ms)
+      monitor_gcp(session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher)
     else
       {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
         {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
 	Logger.info "Call to seek new session returned #{inspect new_session}"
-	monitor_gcp(new_session, bucket, index_file, interval_ms)
+	monitor_gcp(new_session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher)
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}

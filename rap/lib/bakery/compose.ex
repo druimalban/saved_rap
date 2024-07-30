@@ -12,13 +12,12 @@ defmodule RAP.Bakery.Compose do
   alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.PreRun
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
-  alias RAP.Job.Result
+  alias RAP.Job.{Producer, Result}
   alias RAP.Bakery.Prepare
-
 
   defstruct [ :uuid,          :contents,
 	      :output_stem,   :output_format,
-	      :runner_signal, :runner_signal_full ]
+	      :signal, :signal_full ]
 
   def start_link(%Application{} = initial_state) do
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
@@ -26,22 +25,29 @@ defmodule RAP.Bakery.Compose do
 
   def init(initial_state) do
     Logger.info "Initialised cache module `RAP.Bakery.Compose' with initial_state #{inspect initial_state}"
-    subscription = [
-      { Prepare, min_demand: 0, max_demand: 1 }
-    ]
-    {:consumer, initial_state, subscribe_to: subscription}
+    curr_ts = DateTime.utc_now() |> DateTime.to_unix()
+    subscription = [{ Prepare, min_demand: 0, max_demand: 1 }]
+    invocation_state = %{ initial_state |
+			  stage_invoked_at:    curr_ts,
+			  stage_type:          :consumer,
+			  stage_subscriptions: subscription,
+			  stage_dispatcher:    GenStage.DemandDispatcher }
+
+    {invocation_state.stage_type, invocation_state, subscribe_to: invocation_state.stage_subscriptions }
   end
 
   # target_contents, bakery_directory, uuid, stem, extension, target_name
   def handle_events(events, _from, %Application{} = state) do
     Logger.info "HTML document consumer received #{inspect events}"
+    input_work = events |> Enum.map(& &1.work)
+    Logger.info "Bakery.Compose received objects with the following work defined: #{inspect input_work}"
     processed_events = events
     |> Enum.map(&compose_document(state, &1))
     |> Enum.map(&write_result(&1, state.bakery_directory))
     {:noreply, [], state}
   end
 
-  # Result stem/extension should be configurable and in the Prepare
+  # Result stem/extension should be configurable and in the ManifestOutput
   # struct, since there's no way to guarantee these are constant across
   # runs, i.e. we could start the program with different parameters,
   # and then past generated HTML pages may break
@@ -50,10 +56,10 @@ defmodule RAP.Bakery.Compose do
   #  rap_uri,
   #  style_sheet,
   #  time_zone,
-  #  %Prepare{} = prepared 
+  #  %ManifestOutput{} = prepared 
   #) do
-  def compose_document(%Application{} = state, %Prepare{} = prepared) do
-    # %Prepare{} is effectively an annotated manifest struct, pass in a map
+  def compose_document(%Application{} = state, %ManifestSpec{signal: :working} = prepared) do
+    # %ManifestOutput{} is effectively an annotated manifest struct, pass in a map
     {html_contents, manifest_signal} =
       doc_lead_in()
       |> head_lead_in()
@@ -61,8 +67,8 @@ defmodule RAP.Bakery.Compose do
       |> head_lead_out()
       |> body_lead_in()
       |> manifest_info(state.html_directory, state.rap_uri_prefix, state.time_zone, prepared)
-      |> tables_info(  state.html_directory, state.rap_uri_prefix, prepared.uuid, prepared.staged_tables)
-      |> jobs_info(    state.html_directory, prepared.staged_jobs)
+      |> tables_info(  state.html_directory, state.rap_uri_prefix, prepared.uuid, prepared.tables)
+      |> jobs_info(    state.html_directory, prepared.jobs)
       |> results_info( state.html_directory, state.rap_uri_prefix, state.rap_js_lib_d3, state.rap_js_lib_plotly, state.time_zone, prepared.uuid, prepared.results)
       |> body_lead_out()
       |> doc_lead_out()
@@ -72,8 +78,28 @@ defmodule RAP.Bakery.Compose do
       contents:             html_contents,
       output_stem:          "index",
       output_format:        "html",
-      runner_signal:        prepared.runner_signal,
-      runner_signal_full:   manifest_signal
+      signal:        prepared.signal,
+      signal_full:   manifest_signal
+    }
+  end
+  def compose_document(%Application{} = state, %ManifestSpec{signal: _sig} = prepared) do
+    {html_contents, manifest_signal} =
+      doc_lead_in()
+      |> head_lead_in()
+      |> preamble(state.html_directory, state.rap_style_sheet, prepared.uuid)
+      |> head_lead_out()
+      |> body_lead_in()
+      |> manifest_info(state.html_directory, state.rap_uri_prefix, state.time_zone, prepared)
+      |> body_lead_out()
+      |> doc_lead_out()
+
+    %__MODULE__{
+      uuid:                 prepared.uuid,
+      contents:             html_contents,
+      output_stem:          "index",
+      output_format:        "html",
+      signal:        prepared.signal,
+      signal_full:   manifest_signal
     }
   end
   
@@ -90,27 +116,38 @@ defmodule RAP.Bakery.Compose do
     working_contents = curr <> preamble_fragment
     {working_contents, sig}
   end
-
+  
   def manifest_info(
     {curr, _sig},
     html_directory,
     rap_uri,
     time_zone,
-    %Prepare{} = prepared
+    %ManifestSpec{} = prepared
   ) do
-    ttl_full  = "#{rap_uri}/#{prepared.uuid}/#{prepared.manifest_pre_base_ttl}"
-    yaml_full = "#{rap_uri}/#{prepared.uuid}/#{prepared.manifest_pre_base_yaml}"
+    ttl_full  = "#{rap_uri}/#{prepared.uuid}/#{prepared.submitted_manifest_base_ttl}"
+    yaml_full = "#{rap_uri}/#{prepared.uuid}/#{prepared.submitted_manifest_base_yaml}"
+    post_full = "#{rap_uri}/#{prepared.uuid}/#{prepared.processed_manifest_base}"
 
+    start_time_readable = Misc.format_time(prepared.started_at, time_zone)
+    end_time_readable   = Misc.format_time(prepared.ended_at,   time_zone)
+
+    get_signal = fn stage ->
+      prepared
+      |> Map.get(:work)
+      |> Keyword.get(stage)
+      |> Map.get(:signal)
+    end
+    
     signal_full =
-      case prepared.runner_signal do
+      case prepared.signal do
 	:working      -> "All stages succeeded."
 	:job_errors   -> "Some jobs have failed. See below."
 	:see_producer ->
 	  producer_signal_full =
-	    case prepared.producer_signal do
+	    case get_signal.(RAP.Job.Producer) do
 	      :empty_manifest      -> "Name/IRI of manifest was malformed"
 	      :bad_manifest_tables -> "RDF graph was valid, but referenced tables were malformed"
-	      :bad_input_graph     -> "RDF graph was malformed and could not be load at all"
+	      :bad_input_graph     -> "RDF graph was malformed and could not be loaded at all"
 	      :working             -> "Passing loaded manifest to job runner stage failed"
 	      nil                  -> "Other error loading manifest: unspecified signal"
 	      error                -> "Other error loading manifest: #{error}"
@@ -118,7 +155,7 @@ defmodule RAP.Bakery.Compose do
 	  "Reading the manifest file failed: #{producer_signal_full}"
 	:see_pre ->
 	  pre_full =
-	    case prepared.pre_signal do
+	    case get_signal.(RAP.Storage.GCP) do
 	      :empty_index -> "Index file was empty"
 	      :bad_index   -> "Index file was malformed"
 	      :working     -> "Passing loaded index to job producer stage failed"
@@ -131,11 +168,13 @@ defmodule RAP.Bakery.Compose do
       end
 
     info_extra = %{
+      name: Producer.extract_id(prepared.__id__),
       manifest_uri_ttl:    ttl_full,
       manifest_uri_yaml:   yaml_full,
-      start_time_readable: Misc.format_time(prepared.start_time, time_zone),
-      end_time_readable:   Misc.format_time(prepared.end_time,   time_zone),
-      runner_signal_full:  signal_full
+      processed_uri:       post_full,
+      start_time_readable: start_time_readable,
+      end_time_readable:   end_time_readable,
+      signal_full:         signal_full
     }
     info_input = prepared |> Map.merge(info_extra) |> Map.to_list()
 
@@ -149,10 +188,11 @@ defmodule RAP.Bakery.Compose do
   def stage_table(html_directory, rap_uri, uuid,
     %TableSpec{
       resource: %ResourceSpec{base: resource_path},
-      schema:   %ResourceSpec{base: schema_path_ttl}
+      schema_ttl:   %ResourceSpec{base: schema_path_ttl}
     } = table_spec) do
     table_extra = %{
       uuid:            uuid,
+      name: Producer.extract_id(table_spec.__id__),
       resource_path:   resource_path,
       schema_path_ttl: schema_path_ttl,
       resource_uri:    "#{rap_uri}/#{uuid}/#{resource_path}",
@@ -177,10 +217,10 @@ defmodule RAP.Bakery.Compose do
   end
 
   def stage_scope(html_directory, %ScopeSpec{} = scope_spec) do
-    EEx.eval_file(
-      "#{html_directory}/scope.html",
-      Map.to_list(scope_spec)
-    )
+    scope_extra = scope_spec
+    #|> Map.put_new(:variable_uri, RDF.IRI.to_string(variable_id))
+    |> Map.to_list()
+    EEx.eval_file("#{html_directory}/scope.html", scope_extra)
   end
   
   def stage_scope_list(_dir, nil, scope_type), do: nil
@@ -198,7 +238,7 @@ defmodule RAP.Bakery.Compose do
     modelled    = stage_scope_list(html_directory, job_spec.scope_modelled,    "Modelled")
     
     job_input = [
-      name:  job_spec.name,
+      name:  Producer.extract_id(job_spec.__id__),
       title: job_spec.title,
       type:  job_spec.type,
       description:       job_spec.description,
@@ -215,8 +255,8 @@ defmodule RAP.Bakery.Compose do
     job_fragments = jobs
     |> Enum.map(&stage_job(html_directory, &1))
     |> Enum.join("\n")
-    curr <> jobs_lead <> job_fragments
-    {curr, sig}
+    working_jobs = curr <> jobs_lead <> job_fragments
+    {working_jobs, sig}
   end
 
   def plot_result(
@@ -224,9 +264,12 @@ defmodule RAP.Bakery.Compose do
     lib_d3,
     lib_plotly,
     target_uri,
-    %Result{type: "density", signal: :working} = result) do
+    %Result{job_type: "density", signal: :working} = result) do
+    
+    result_name = Producer.extract_id(result.__id__)
     
     plot_extra = %{
+      name:           result_name,
       contents_uri:   target_uri,
       lib_d3:         lib_d3,
       lib_plotly:     lib_plotly,
@@ -237,22 +280,40 @@ defmodule RAP.Bakery.Compose do
     |> Map.to_list()
     EEx.eval_file("#{html_directory}/plot_density.html", plot_input)
   end
-  def plot_result(_fragments, _uri, _d3, _plotly, _res), do: ""
+
+  def plot_result(_fragments, _uri, _d3, _plotly, res), do: ""
+
+  # def plot_result(_fragments, _uri, _d3, _plotly, _res), do: ""
   
   # Assumption is that we have a notion of a completed job, (see named
   # RAP.Job.Result struct), annotated with the base name of the output file
-  # As opposed to the final RAP.Bakery.Prepare struct which chucks away a
+  # As opposed to the final RAP.Bakery.ManifestOutput struct which chucks away a
   # bunch of information.
   # Call the base name of the output file contents_base since result text
   # contents are called `contents'  
   def stage_result(html_directory, rap_uri, lib_d3, lib_plotly, time_zone, uuid, %Result{} = result) do
-    target_base = "#{result.output_stem}_#{result.name}.#{result.output_format}"
+    result_name = Producer.extract_id(result.__id__)
+
+    output_ext =
+      case result.output_format do
+	"text/json"   -> "json"
+	"text/turtle" -> "ttl"
+	"text/csv"    -> "csv"
+	_             -> "txt"
+      end
+    
+    target_base = "#{result.output_stem}_#{result_name}.#{output_ext}"
     target_uri  = "#{rap_uri}/#{uuid}/#{target_base}"
     plotted     = plot_result(html_directory, lib_d3, lib_plotly, target_uri, result)
 
+    start_time_readable = Misc.format_time(result.started_at, time_zone)
+    end_time_readable   = Misc.format_time(result.ended_at,   time_zone)
+    
     result_extra = %{
-      start_time_readable: Misc.format_time(result.start_time, time_zone),
-      end_time_readable:   Misc.format_time(result.end_time,   time_zone),
+      name: Producer.extract_id(result.__id__),
+      title: "Result of " <> Producer.extract_id(result.source_job),
+      start_time_readable: start_time_readable,
+      end_time_readable:   end_time_readable,
       contents_base:       target_base,
       contents_uri:        target_uri
     }
@@ -280,7 +341,7 @@ defmodule RAP.Bakery.Compose do
   end
 
   @doc """
-  This is more or less identical to `Prepare.write_result/4'…
+  This is more or less identical to `ManifestOutput.write_result/4'…
   """
   def write_result(%__MODULE__{} = result, bakery_directory) do
     target_base = "#{result.output_stem}.#{result.output_format}"
@@ -297,7 +358,7 @@ defmodule RAP.Bakery.Compose do
     else
       true ->
 	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
-	result.name
+	target_base
       {:error, error} ->
 	Logger.info "Could not write to fully-qualified path #{target_full}: #{inspect error}"
         {:error, error}

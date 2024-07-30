@@ -38,23 +38,12 @@ defmodule RAP.Bakery.Prepare do
   alias RAP.Application
   alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.{PreRun, PostRun}
-  alias RAP.Job.{Result, Runner}
+  alias RAP.Job.ManifestSpec
+  alias RAP.Job.{Producer, Runner, Result}
+  alias RAP.Provenance.Work
 
-  # Note naming of manifest_pre_base
-  # Manifest signal is simple "are all the tables valid"?
-  defstruct [ :uuid, :data_source,
-	      :name, :title, :description,
-	      :start_time, :end_time,
-	      :manifest_pre_base_ttl,
-	      :manifest_pre_base_yaml,
-	      :resource_bases,
-	      :pre_signal,
-	      :producer_signal,
-	      :runner_signal,
-	      :result_bases,
-	      :results,
-	      :staged_tables,
-	      :staged_jobs          ]
+  alias RDF.NS.RDFS
+  alias RAP.Vocabulary.{DCAT, DCTERMS, DC, PROV, PAV, SAVED, RAP}
   
   def start_link(%Application{} = initial_state) do
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
@@ -62,16 +51,38 @@ defmodule RAP.Bakery.Prepare do
 
   def init(initial_state) do
     Logger.info "Initialised cache module `RAP.Bakery' with initial_state #{inspect initial_state}"
-    subscription = [
-      { Runner, min_demand: 0, max_demand: 1 }
-    ]
-    {:producer_consumer, initial_state, subscribe_to: subscription}
+    curr_ts = DateTime.utc_now() |> DateTime.to_unix()
+    subscription = [{ Runner, min_demand: 0, max_demand: 1 }]
+    invocation_state = %{ initial_state |
+			  stage_invoked_at:    curr_ts,
+			  stage_type:          :producer_consumer,
+			  stage_subscriptions: subscription,
+			  stage_dispatcher:    GenStage.DemandDispatcher }
+
+    { invocation_state.stage_type, invocation_state,
+      subscribe_to: invocation_state.stage_subscriptions,
+      dispatcher:   invocation_state.stage_dispatcher }
   end
 
   def handle_events(events, _from, %Application{} = state) do
+    known_prefixes = %{
+      rap:     RAP,
+      saved:   SAVED,
+      rdfs:    RDFS,
+      dcat:    DCAT,
+      dcterms: DCTERMS,
+      prov:    PROV,
+      pav:     PAV
+    }
+    
     Logger.info "Testing storage consumer received #{inspect events}"
+    input_work = events |> Enum.map(& &1.work)
+    Logger.info "Bakery.Prepare received objects with the following work defined: #{inspect input_work}"
+    
     processed_events = events
-    |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.linked_result_stem, :uuid))
+    |> Enum.map(&bake_data(&1, state.cache_directory, state.bakery_directory, state.rap_invoked_at, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, state.time_zone))
+    |> Enum.map(&write_turtle(&1, state.bakery_directory, known_prefixes, state.linked_result_stem))
+    |> Enum.map(&PostRun.cache_manifest(&1, state.time_zone, state.ets_table))
     {:noreply, processed_events, state}
   end
 
@@ -95,7 +106,7 @@ defmodule RAP.Bakery.Prepare do
       [] -> {:noreply, [], state}
     end    
   end
-
+  
   @doc """
   Special case for the manifest, rename to something like
   manifest_pre.ttl since we have a notion that we generate
@@ -103,13 +114,13 @@ defmodule RAP.Bakery.Prepare do
   presented
   """
   defp move_manifest(fp, cache_dir, bakery_dir, uuid) do
-    fp_pre    = fp |> String.replace(~r"\.([a-z]+)$", "_pre.\\1")
-    fp_target = cond do
-      fp_pre != fp -> fp_pre
-      true         -> fp
-    end
-    fp |> move_wrapper(cache_dir, bakery_dir, uuid, fp_target)
-    fp_target
+    #fp_pre    = fp |> String.replace(~r"\.([a-z]+)$", "_pre.\\1")
+    #fp_target = cond do
+    #  fp_pre != fp -> fp_pre
+    #  true         -> fp
+    ###end
+    fp |> move_wrapper(cache_dir, bakery_dir, uuid, fp)
+    fp
   end
   
   @doc """
@@ -131,111 +142,176 @@ defmodule RAP.Bakery.Prepare do
 
   Therefore, this stage doesn't record a signal.
   """
-  #def bake_data(%Runner{} = processed, cache_dir, bakery_dir, linked_stem, ets_table \\ :) do
-  #  Logger.info "Called Prepare.bake_data/5 with ets_table #{ets_table}"
-  #  bake_data(processed, cache_dir, bakery_dir, linked_stem, ets_table)
-  #end
-  def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem, ets_table) when processed.signal in [:working, :job_errors] do
-    #source_dir = "#{cache_dir}/#{processed.uuid}"
-    #target_dir = "#{bakery_dir}/#{processed.uuid}"
+  def bake_data(%ManifestSpec{signal: sig} = processed, cache_dir, bakery_dir, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) when sig in [:working, :job_errors] do
+
+    work_started_at = DateTime.utc_now() |> DateTime.to_unix()
+    
     Logger.info "Called Prepare.bake_data/5 with signal `#{processed.signal}'"
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
     Logger.info "Prepare (mkdir(1) -p) #{bakery_dir}/#{processed.uuid}"
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
 
-    cached_job_bases = processed.results
-    |> Enum.map(&write_result(&1, bakery_dir, processed.uuid))
+    cached_results = processed.results
+    |> Enum.map(&write_result(&1, processed.base_prefix, bakery_dir, processed.uuid))
     
-    moved_manifest_ttl = processed.manifest_base_ttl
+    moved_manifest_ttl = processed.submitted_manifest_base_ttl
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
-    moved_manifest_yaml = processed.manifest_base_yaml
+    moved_manifest_yaml = processed.submitted_manifest_base_yaml
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
 
     moved_resources = processed.resource_bases
     |> Enum.map(&move_wrapper(&1, cache_dir, bakery_dir, processed.uuid))
 
-    # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
-    #end_time = DateTime.utc_now() |> DateTime.to_unix()
-    semi_final_data = %__MODULE__{
-      uuid:                   processed.uuid,
-      data_source:            processed.data_source,
-      name:                   processed.name,
-      title:                  processed.title,
-      description:            processed.description,
-      pre_signal:             processed.pre_signal,
-      producer_signal:        processed.producer_signal,
-      runner_signal:          processed.signal,
-      manifest_pre_base_ttl:  moved_manifest_ttl,
-      manifest_pre_base_yaml: moved_manifest_yaml,
-      resource_bases:         moved_resources,
-      result_bases:           cached_job_bases,
-      results:                processed.results,
-      staged_tables:          processed.staging_tables,
-      staged_jobs:            processed.staging_jobs
+    #resource_iris = processed.resources |> Enum.map(& &1.__id__)
+    result_iris   = processed.results   |> Enum.map(& &1.__id__)
+    pipeline_generated_iris = [processed.__id__ | result_iris]
+    
+    new_work = processed.work
+    |> Work.append_work(
+         __MODULE__, sig, work_started_at,
+         stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
+         [], [processed.__id__])
+    |> Work.traverse_work(
+         processed.base_prefix,
+         rap_invoked_at, RAP.Application,
+         pipeline_generated_iris,
+         tz)
+
+    %{ processed |
+       results:         cached_results,
+       resource_bases:  moved_resources,
+       rap_app:         new_work.app_agent,
+       rap_app_init:    new_work.app_invocation,
+       rap_stages:      new_work.stages,
+       rap_stages_init: new_work.invocations,
+       rap_processing:  new_work.processing
     }
-    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
-    cached_manifest
   end
 
-  # [:working | :job_errors] | :see_producer | :see_pre
-  # :see_producer means that we're only able to move the data package over
-  @doc """
-  %Runner{ name:               spec.name,
-	   uuid:               spec.uuid,
-	   pre_signal:         spec.pre_signal,
-	   producer_signal:    spec.signal,
-	   signal:             :see_producer,
-	   manifest_base_ttl:  spec.manifest_base_ttl,
-	   manifest_base_yaml: spec.manifest_base_yaml,
-	   resource_bases:     spec.resource_bases    }
-  """
-  def bake_data(%Runner{signal: :see_producer} = processed, cache_dir, bakery_dir, _linked_stem, ets_table) do
+  def bake_data(%ManifestSpec{signal: :see_producer} = processed, cache_dir, bakery_dir, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_producer'"
+    work_started_at = DateTime.utc_now() |> DateTime.to_unix()
+    
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
     
-    moved_manifest_ttl = processed.manifest_base_ttl
+    moved_manifest_ttl = processed.submitted_manifest_base_ttl
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
-    moved_manifest_yaml = processed.manifest_base_yaml
+    moved_manifest_yaml = processed.submitted_manifest_base_yaml
     |> move_manifest(cache_dir, bakery_dir, processed.uuid)
 
     moved_resources = processed.resource_bases
     |> Enum.map(&move_wrapper(&1, cache_dir, bakery_dir, processed.uuid))
 
-    # Start time and end time are calculated when caching, albeit %Prepare{} struct has these fields
-    #end_time = DateTime.utc_now() |> DateTime.to_unix()
-    semi_final_data = %__MODULE__{
-      uuid:                   processed.uuid,
-      data_source:            processed.data_source,
-      name:                   processed.name,
-      pre_signal:             processed.pre_signal,
-      producer_signal:        processed.producer_signal,
-      runner_signal:          processed.signal,
-      manifest_pre_base_ttl:  moved_manifest_ttl,
-      manifest_pre_base_yaml: moved_manifest_yaml,
-      resource_bases:         moved_resources
+    #resource_iris = processed.resources |> Enum.map(& &1.__id__)
+    result_iris   = processed.results |> Enum.map(& &1.__id__)
+    pipeline_generated_iris = [processed.__id__ | result_iris]
+
+    new_work = processed.work
+    |> Work.append_work(
+         __MODULE__, :see_producer, work_started_at,
+         stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
+         [], [processed.__id__])
+    |> Work.traverse_work(
+         processed.base_prefix,
+         rap_invoked_at, RAP.Application,
+         pipeline_generated_iris,
+         tz)
+
+    %{ processed |
+       resource_bases:  moved_resources,
+       rap_app:         new_work.app_agent,
+       rap_app_init:    new_work.app_invocation,
+       rap_stages:      new_work.stages,
+       rap_stages_init: new_work.invocations,
+       rap_processing:  new_work.processing
     }
-    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
-    cached_manifest
   end
 
+  
   # :see_pre means that we have very little to work with, effectively only UUID + 'runner', 'producer' and 'pre' stage signals (uniformly :see_pre)
-  def bake_data(%Runner{signal: :see_pre} = processed, _cache, bakery_dir, _ln, ets_table) do
+  def bake_data(%ManifestSpec{signal: :see_pre} = processed, _cache, bakery_dir, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
     Logger.info "Called Prepare.bake_data/5 with signal `see_pre'"
+    work_started_at = DateTime.utc_now() |> DateTime.to_unix()
+    
     File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
-    semi_final_data = %__MODULE__{
-      uuid:            processed.uuid,
-      data_source:     processed.data_source,
-      pre_signal:      processed.pre_signal,
-      producer_signal: :see_pre,
-      runner_signal:   :see_pre      
+
+    new_work = processed.work
+    |> Work.append_work(
+         __MODULE__, :see_pre, work_started_at,
+         stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
+         [], [processed.__id__])
+    |> Work.traverse_work(
+         processed.base_prefix,
+         rap_invoked_at, RAP.Application,
+         [processed.__id__],
+         tz)
+    
+    %{ processed |
+       rap_app:         new_work.app_agent,
+       rap_app_init:    new_work.app_invocation,
+       rap_stages:      new_work.stages,
+       rap_stages_init: new_work.invocations,
+       rap_processing:  new_work.processing
     }
-    {:ok, cached_manifest} = PostRun.cache_manifest(semi_final_data, ets_table)
-    cached_manifest
   end
 
-  def bake_data(%Runner{signal: signal}, _cache, _bakery, _ln, _ets) do
-    Logger.info "Called Prepare.bake_data/5 with signal #{signal}, not doing anything"
-    #File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
+  # Not sure whether to remove this bit
+  def bake_data(%ManifestSpec{signal: sig} = processed, _cache, bakery_dir, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
+    Logger.info "Called Prepare.bake_data/5 with signal #{sig}, not doing anything"
+    work_started_at = DateTime.utc_now() |> DateTime.to_unix()
+    
+    File.mkdir_p("#{bakery_dir}/#{processed.uuid}")
+    
+    new_work = processed.work
+    |> Work.append_work(
+         processed.work, __MODULE__, sig, work_started_at,
+         stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
+         [], [processed.__id__])
+    |> Work.traverse_work(
+         processed.base_prefix,
+         rap_invoked_at, RAP.Application, [processed.__id__], tz)
+    
+    %{ processed |
+       rap_app:         new_work.app_agent,
+       rap_app_init:    new_work.app_invocation,
+       rap_stages:      new_work.stages,
+       rap_stages_init: new_work.invocations,
+       rap_processing:  new_work.processing
+    }
+  end
+
+  def write_turtle(%ManifestSpec{} = processed, bakery_dir, known_prefixes, linked_stem \\ "processed") do
+    all_prefixes = known_prefixes
+    |> Map.put_new(:submission, RDF.IRI.new(processed.base_prefix))
+    
+    fp_processed =
+      case processed.submitted_manifest_base_ttl do
+	nil -> "manifest_#{processed.uuid}.#{linked_stem}.ttl"
+	nom -> String.replace(nom, ~r"\.([a-z]+)$", ".#{linked_stem}.\\1")
+      end
+    fp_full = "#{bakery_dir}/#{processed.uuid}/#{fp_processed}"
+    
+    Logger.info "Writing processed turtle manifest to #{fp_full}"
+    
+    dl_url    = RDF.IRI.new(processed.base_prefix <> fp_processed)
+    annotated = %{ processed |
+		   processed_manifest_base: fp_processed,
+		   download_url:            dl_url,
+		   output_format:           "text/turtle" }
+    
+    with {:ok, rdf_equiv} <- Grax.to_rdf(annotated),
+         rdf_annotated    <- RDF.Graph.add_prefixes(rdf_equiv, all_prefixes),
+         :ok <- RDF.Turtle.write_file(rdf_annotated, fp_full, force: true)
+      do
+      Logger.info "Successfully wrote turtle manifest to #{fp_full}"
+      annotated
+    else
+      {:error, %Grax.ValidationError{} = err} ->
+	Logger.info(inspect err)
+        {:error, %Grax.ValidationError{} = err}
+      other_error ->
+	other_error
+    end
   end
   
   @doc """
@@ -249,8 +325,10 @@ defmodule RAP.Bakery.Prepare do
   When logging, the name of the job is in the file name, so no problem
   just printing that to the log.
   """
-  def write_result(%Result{type: "density", signal: :working} = result, bakery_directory, uuid) do
-    target_base = "#{result.output_stem}_#{result.name}.#{result.output_format}"
+  def write_result(%Result{signal: :working} = result, base_prefix, bakery_directory, uuid) do
+    target_ext  = result.output_format |> String.split("/") |> Enum.at(1) # move me
+    target_name = Producer.extract_id(result.__id__)
+    target_base = "#{result.output_stem}_#{target_name}.#{target_ext}"
     target_full = "#{bakery_directory}/#{uuid}/#{target_base}"
       
     Logger.info "Writing results file #{target_full}"
@@ -259,25 +337,31 @@ defmodule RAP.Bakery.Prepare do
                     result.contents, File.read!(target_full), opts: [input_md5: false]),
          :ok   <- File.write(target_full, result.contents) do
       
-      Logger.info "Wrote result of target #{inspect result.name} to fully-qualified path #{target_full}"
-      target_base
+      Logger.info "Wrote result of target #{inspect result.__id__} to fully-qualified path #{target_full}"
+
+      %{ result | download_url: result.__id__, signal: :working, text_signal: "working" }
     else
       true ->
 	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
-	result.name
+        %{ result | download_url: result.__id__, signal: :working, text_signal: "working" }
       {:error, error} ->
 	Logger.info "Could not write to fully-qualified path #{target_full}: #{inspect error}"
         {:error, error}
     end
   end
-  def write_result(%Result{signal: signal} = result, _bakery, _uuid) when signal in [:job_failure, :python_error] do
+  def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) when signal in [:job_failure, :python_error] do
     Logger.info "Job exited with error: Not writing result to file"
+    %{ result | text_signal: to_string(signal) }
   end
-  def write_result(%Result{signal: :ignored}, _bakery, _uuid) do
+  def write_result(%Result{signal: :ignored} = result, base_prefix, _bakery, _uuid) do
+    Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
     Logger.info "Ignored/fake job: Not writing result to file"
+    %{ result | text_signal: "ignored" }
   end
-  def write_result(%Result{}, _bakery, _uuid) do
+  def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) do
+    Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
     Logger.info "Invalid job: Not writing result to file"
+    %{ result | text_signal: to_string(signal) }
   end
 
   @doc """

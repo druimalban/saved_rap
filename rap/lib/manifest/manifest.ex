@@ -15,7 +15,16 @@ defmodule RAP.Manifest.TableDesc do
 end
 
 defmodule RAP.Manifest.ExtColumnDesc do
+  @moduledoc """
+  This is a placeholder for IRIs which need to be annotated, which
+  avoids having to pass the loaded RDF graph along the pipeline.
 
+  The Grax RDF tooling already has an :iri type, which should be used
+  instead of this data structure. When we change/revamp the RDF generated
+  by fisdat/fisup, so that it has a distinct notion of a resource with a
+  file type, this ought to be removed and treated just as a simple IRI
+  corresponding to that resource description.
+  """
   use Grax.Schema, depth: +5
   import RDF
   alias RAP.Manifest.ExtColumnDesc
@@ -82,8 +91,8 @@ defmodule RAP.Manifest.JobDesc do
   def on_load(%JobDesc{job_type: job_type} = job_desc, _graph, _opts) do
     fmt =
       case job_type do
-	"density" -> "json"
-	_         -> "txt"
+	"density" -> "text/json"
+	_         -> "text/plain"
       end
     stem =
       case job_type do

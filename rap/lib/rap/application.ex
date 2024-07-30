@@ -18,7 +18,7 @@ defmodule RAP.Application do
   @local_directory    "/var/db/saved"         # Monitor this like GCP
   @cache_directory    "./data_cache"
   @bakery_directory   "./bakery"              # Place to output results
-  @linked_result_stem "manifest_post"
+  @linked_result_stem "processed"
   @time_zone          "GB-Eire"
   @rap_uri_prefix     "/saved/rap"
   @rap_style_sheet    "/saved/assets/rap.css" # Imports fira.css
@@ -26,18 +26,9 @@ defmodule RAP.Application do
   @rap_js_lib_d3      "/saved/assets/d3.v7.min.js"
   @python_call        "/opt/local/bin/python3.12"
   @html_directory     "./html_fragments"
+  @ets_table          :uuid
   
   use Application
-
-  use RDF
-  alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{PAV, PROV, SAVED}
-
-  def gen_invocation_activity(iri) do
-    RDF.Description.new(iri)
-    |> RDFS.label("RAP application invocation description")
-    |> PAV.version(@local_version)
-  end
   
   @doc
   """
@@ -55,7 +46,11 @@ defmodule RAP.Application do
   data contained within differently.
   """
   defstruct [ :gcp_session,
-	      :last_poll,	      
+	      :rap_invoked_at,
+	      :stage_invoked_at,
+	      :stage_type,
+	      :stage_subscriptions,
+	      :stage_dispatcher,
 	      interval_seconds:   @interval_seconds,
 	      index_file:         @index_file,
 	      index_fall_back:    @index_fall_back,
@@ -71,6 +66,7 @@ defmodule RAP.Application do
 	      rap_js_lib_d3:      @rap_js_lib_d3,
 	      html_directory:     @html_directory,
 	      python_call:        @python_call,
+	      ets_table:          @ets_table,
 	      staging_objects:    []               ]
   
   @impl true
@@ -81,7 +77,7 @@ defmodule RAP.Application do
     initial_ts = current_ts - @interval_seconds
 
     hardcoded_state = %RAP.Application{
-      last_poll: initial_ts
+      rap_invoked_at: initial_ts
     }
     
     children = [

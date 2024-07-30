@@ -1,10 +1,11 @@
 <h1>Manifest information</h1>
 <ul>
   <li>UUID: <tt><%= uuid %></tt></li>
-  <li>Run state (signal): <%= runner_signal %></li>
-  <li>Run state (reason): <%= runner_signal_full %></li>
-  <li>Submitted YAML manifest: <a href="<%= manifest_uri_yaml %>"><tt><%= manifest_pre_base_yaml %></tt></a></li>
-  <li>TTL conversion of manifest: <a href="<%= manifest_uri_ttl %>"><tt><%= manifest_pre_base_ttl %></tt></a></li>
+  <li>Run state (signal): <%= signal      %></li>
+  <li>Run state (reason): <%= signal_full %></li>
+  <li>Submitted YAML manifest: <a href="<%= manifest_uri_yaml %>"><tt><%= submitted_manifest_base_yaml %></tt></a></li>
+  <li>TTL conversion of manifest: <a href="<%= manifest_uri_ttl %>"><tt><%= submitted_manifest_base_ttl %></tt></a></li>
+  <li>Output TTL description of work: <a href="<%= processed_uri %>"><tt><%= processed_manifest_base %></tt></a></li>
   <li>Begin: <u><%= start_time_readable %></u></li>
   <li>End: <u><%= end_time_readable %></u></li>
 </ul>
