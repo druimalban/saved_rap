@@ -18,21 +18,21 @@ defmodule RAP.Bakery.Compose do
 	      :output_stem,   :output_ext,
 	      :signal, :signal_full ]
 
-  def start_link(initial_state) do
+  def start_link([] = initial_state) do
+    Logger.info "Start link to Bakery.Compose"
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
   end
 
-  def init(initial_state) do
-    Logger.info "Initialised cache module `RAP.Bakery.Compose' with initial_state #{inspect initial_state}"
+  def init(_initial_state) do
+    Logger.info "Initialise Bakery.Compose"
     curr_ts = DateTime.utc_now() |> DateTime.to_unix()
     subscription = [{ Prepare, min_demand: 0, max_demand: 1 }]
-    invocation_state = %{ initial_state |
-			  stage_invoked_at:    curr_ts,
-			  stage_type:          :consumer,
-			  stage_subscriptions: subscription,
-			  stage_dispatcher:    GenStage.DemandDispatcher }
+    stage_state = %{ stage_invoked_at:    curr_ts,
+		     stage_type:          :consumer,
+		     stage_subscriptions: subscription,
+		     stage_dispatcher:    GenStage.DemandDispatcher }
 
-    {invocation_state.stage_type, invocation_state, subscribe_to: invocation_state.stage_subscriptions }
+    {stage_state.stage_type, stage_state, subscribe_to: stage_state.stage_subscriptions }
   end
 
   # target_contents, bakery_directory, uuid, stem, extension, target_name

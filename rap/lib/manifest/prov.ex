@@ -102,17 +102,17 @@ defmodule RAP.Provenance.Work do
   alias RAP.Provenance.{RAPProcess, RAPInvocation, RAPStageSubscription, RAPStageProcessing, RAPStageResponse}
   require Logger
 
-  def append_work(past_work, stage_atom, curr_signal, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, work_input \\ [], work_output \\ []) do    
+  def append_work(past_work, stage_atom, curr_signal, work_started_at, %{} = stage_state, work_input \\ [], work_output \\ []) do
     work_ended_at =  DateTime.utc_now() |> DateTime.to_unix()
     curr_pid = self() |> :erlang.pid_to_list() |> to_string()
     
     work = [{stage_atom,
 	     %{
 	       stage_pid:           curr_pid,
-	       stage_invoked_at:    stage_invoked_at,
-	       stage_type:          stage_type,
-	       stage_subscriptions: stage_subscriptions,
-	       stage_dispatcher:    stage_dispatcher,
+	       stage_invoked_at:    stage_state.stage_invoked_at,
+	       stage_type:          stage_state.stage_type,
+	       stage_subscriptions: stage_state.stage_subscriptions,
+	       stage_dispatcher:    stage_state.stage_dispatcher,
 	       signal:              curr_signal,
 	       work_started_at:     work_started_at,
 	       work_ended_at:       work_ended_at,
@@ -140,11 +140,11 @@ defmodule RAP.Provenance.Work do
 
   Currently broken in the sense that sorting out what produces what is vague
   """  
-  def traverse_work(work, base_prefix, rap_invoked_at, app_atom, final_output_iris) do
+  def traverse_work(work, base_prefix, rap_invoked_at, final_output_iris) do
     rap_prefix = RAP.Vocabulary.RAP.__base_iri__
     
-    app_agent      = app_agent(app_atom, rap_prefix)
-    app_invocation = app_invocation_activity(app_atom, app_agent, base_prefix, rap_invoked_at)
+    app_agent      = app_agent(rap_prefix)
+    app_invocation = app_invocation_activity(app_agent, base_prefix, rap_invoked_at)
     
     produce =
       fn({st, wd}, prev_prod) ->
@@ -199,10 +199,10 @@ defmodule RAP.Provenance.Work do
     |> Macro.underscore()
   end
   
-  def app_agent(app_atom, rap_prefix) do
+  def app_agent(rap_prefix) do
     # RAP.Application -> "rap_application"
-    agent_iri = RDF.IRI.new(rap_prefix <> "application")
-    agent_lbl = to_string(app_atom) <> " application agent"
+    agent_iri = RDF.IRI.new(rap_prefix <> " OTP application")
+    agent_lbl = "RAP application agent"
     %RAPProcess{ __id__: agent_iri, label:  agent_lbl }
   end
   def gen_stage_agent(stage_atom, rap_prefix) do
@@ -212,13 +212,7 @@ defmodule RAP.Provenance.Work do
     %RAPProcess{ __id__: agent_iri, label:  agent_lbl }
   end
   
-  def app_invocation_activity(
-    app_atom,
-    app_agent,
-    base_prefix,
-    invoked_at
-  ) do
-
+  def app_invocation_activity(app_agent, base_prefix, invoked_at) do
     with {:ok, time_zone} <- Application.fetch_env(:rap, :time_zone),
 	 [_|_] = spec     <- Application.spec(:rap),
          local_version    <- Keyword.get(spec, :vsn) do
@@ -227,15 +221,15 @@ defmodule RAP.Provenance.Work do
       |> DateTime.from_unix!()
       |> DateTime.shift_zone!(time_zone)
 
-      invocation_iri = RDF.IRI.new(base_prefix <> uncase(app_atom) <> "_invocation")
+      invocation_iri = RDF.IRI.new(base_prefix <> "application_invocation")
       
       %RAPInvocation{
 	__id__:           invocation_iri,
-	label:            "#{app_atom} OTP application invocation activity",
+	label:            "OTP application invocation activity",
 	version:          to_string(local_version),
-	beam_application: "RAP",
+	beam_application: "rap",
 	beam_node:        to_string(node()),
-	beam_module:      to_string(app_atom),
+	beam_module:      "RAP",
 	otp_version:      System.otp_release(),
 	elixir_version:   System.version(),
 	started_at:       invocation_ts,

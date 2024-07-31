@@ -36,8 +36,8 @@ defmodule RAP.Storage.Monitor do
   # acquiring an OAuth token.
   @gcp_scope "https://www.googleapis.com/auth/cloud-platform"
   
-  def start_link initial_state do
-    Logger.info "Called Storage.Monitor.start_link (initial_state = #{inspect initial_state})"
+  def start_link([] = initial_state) do
+    Logger.info "Start link to Storage.Monitor"
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
   end
 
@@ -48,8 +48,8 @@ defmodule RAP.Storage.Monitor do
   The idea is that any given store uses randomly generated UUIDs, which
   are de-facto unique, so there is no chance of conflict here.
   """
-  def init(initial_state) do
-    Logger.info "Called Storage.Monitor.init (initial_state: #{inspect initial_state})"
+  def init([] = _initial_state) do
+    Logger.info "Initialise Storage.Monitor"
     
     with {:ok, gcp_bucket}       <- Application.fetch_env(:rap, :gcp_bucket),
          {:ok, index_file}       <- Application.fetch_env(:rap, :index_file),
@@ -58,25 +58,25 @@ defmodule RAP.Storage.Monitor do
          _tab = ets_table        <- :ets.new(ets_table, [:set, :public, :named_table]),
 	 {:ok, initial_session}  <- new_connection() do
       curr_ts = DateTime.utc_now() |> DateTime.to_unix()
-      invocation_state = %{
-	initial_state |
-	stage_invoked_at: curr_ts,
-	stage_type:       :producer,
-	gcp_session:      initial_session,
-	stage_dispatcher: GenStage.DemandDispatcher
+
+      stage_state = %{
+	stage_invoked_at:    curr_ts,
+	stage_type:          :producer,
+	stage_subscriptions: [],
+	stage_dispatcher:    GenStage.DemandDispatcher,
+	gcp_session:         initial_session,
+	staging_objects:     []
       }
       Task.start_link(fn() ->
 	monitor_gcp(
-	  invocation_state.gcp_session,
+	  stage_state.gcp_session,
 	  gcp_bucket,
 	  index_file,
 	  interval_seconds * 1000,
-	  invocation_state.stage_invoked_at,
-	  invocation_state.stage_type,
-	  invocation_state.stage_dispatcher
+	  stage_state
 	)
       end)
-      {invocation_state.stage_type, invocation_state, dispatcher: invocation_state.stage_dispatcher }
+      {stage_state.stage_type, stage_state, dispatcher: stage_state.stage_dispatcher }
     else
       {:error, _msg} = error -> error
       :error -> { :error, "Could not fetch keywords from RAP configuration" }
@@ -129,7 +129,7 @@ defmodule RAP.Storage.Monitor do
   events in this manner, i.e. there is this notion of back-pressure
   fundamental to the `GenStage' library.
   """
-  def handle_demand demand, state do
+  def handle_demand(demand, %{} = state) do
     Logger.info "Storage.Monitor: Received demand for #{inspect demand} event"
     yielded   = state.staging_objects |> Enum.take(demand)
     remaining = state.staging_objects |> Enum.drop(demand)
@@ -207,7 +207,7 @@ defmodule RAP.Storage.Monitor do
   other files into this index file is unneccesary because the manifest
   describes these.
   """
-  defp monitor_gcp(session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher) do
+  defp monitor_gcp(session, bucket, index_file, interval_ms, %{} = stage_state) do
     with {:ok, objects} <- wrap_gcp_request(session, bucket) do
       Logger.info "Called RAP.Storage.Monitor.monitor_gcp/4 with interval #{interval_ms} milliseconds"
       work_started_at = DateTime.utc_now() |> DateTime.to_unix()
@@ -229,8 +229,7 @@ defmodule RAP.Storage.Monitor do
       |> Enum.group_by(& &1.uuid)
 
       annotate = fn({:ok, ds}) ->
-	initial_work =
-	  Work.append_work([], __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, [], stage_dispatcher)
+	initial_work = Work.append_work([], __MODULE__, :working, work_started_at, stage_state)
 	%{ds | work: initial_work}
       end
       
@@ -242,13 +241,13 @@ defmodule RAP.Storage.Monitor do
       Logger.info "RAP.Storage.Monitor.monitor_gcp/4: casting staged objects and sleeping for #{interval_ms} milliseconds"
       GenStage.cast(__MODULE__, {:stage_objects, staging_objects})
       :timer.sleep(interval_ms)
-      monitor_gcp(session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher)
+      monitor_gcp(session, bucket, index_file, interval_ms, stage_state)
     else
       {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
         {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
 	Logger.info "Call to seek new session returned #{inspect new_session}"
-	monitor_gcp(new_session, bucket, index_file, interval_ms, stage_invoked_at, stage_type, stage_dispatcher)
+	monitor_gcp(new_session, bucket, index_file, interval_ms, stage_state)
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}

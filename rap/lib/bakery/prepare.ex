@@ -40,19 +40,17 @@ defmodule RAP.Bakery.Prepare do
   alias RAP.Job.ManifestSpec
   alias RAP.Job.{Producer, Runner, Result}
   alias RAP.Provenance.Work
-
-  alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{DCAT, DCTERMS, DC, PROV, PAV}
   
-  def start_link(%RAP.Application{} = initial_state) do
+  def start_link(initial_state) do
+    Logger.info "Start link to Bakery.Prepare"
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
   end
 
-  def init(initial_state) do
-    Logger.info "Initialised cache module `RAP.Bakery' with initial_state #{inspect initial_state}"
+  def init([rap_invoked_at: rap_invoked_at] = initial_state) do
+    Logger.info "Initialise Bakery.Prepare"
     curr_ts = DateTime.utc_now() |> DateTime.to_unix()
     subscription = [{ Runner, min_demand: 0, max_demand: 1 }]
-    invocation_state = %{ initial_state |
+    invocation_state = %{ rap_invoked_at:      rap_invoked_at,
 			  stage_invoked_at:    curr_ts,
 			  stage_type:          :producer_consumer,
 			  stage_subscriptions: subscription,
@@ -63,25 +61,25 @@ defmodule RAP.Bakery.Prepare do
       dispatcher:   invocation_state.stage_dispatcher }
   end
 
-  def handle_events(events, _from, state) do
+  def handle_events(events, _from, stage_state) do
     known_prefixes = %{
       rap:     RAP.Vocabulary.RAP,
       saved:   RAP.Vocabulary.SAVED,
-      rdfs:    RDFS,
-      dcat:    DCAT,
-      dcterms: DCTERMS,
-      prov:    PROV,
-      pav:     PAV
+      rdfs:    RDF.NS.RDFS,
+      dcat:    RAP.Vocabulary.DCAT,
+      dcterms: RAP.Vocabulary.DCTERMS,
+      prov:    RAP.Vocabulary.PROV,
+      pav:     RAP.Vocabulary.PAV
     }
     Logger.info "Testing storage consumer received #{inspect events}"
     input_work = events |> Enum.map(& &1.work)
     Logger.info "Bakery.Prepare received objects with the following work defined: #{inspect input_work}"
     
     processed_events = events
-    |> Enum.map(&bake_data(&1, state.rap_invoked_at, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher))
+    |> Enum.map(&bake_data(&1, stage_state))
     |> Enum.map(&write_turtle(&1, known_prefixes))
     |> Enum.map(&PostRun.cache_manifest/1)
-    {:noreply, processed_events, state}
+    {:noreply, processed_events, stage_state}
   end
 
   #  def handle_demand(demand, state) do
@@ -95,30 +93,17 @@ defmodule RAP.Bakery.Prepare do
   #  end
 
   # Very similar to Storage.Monitor :stage_objects cast
-  def handle_cast({:trigger_rebuild, after_ts}, %RAP.Application{staging_objects: extant} = state) do
-    with prepared  <- PostRun.yield_manifests(after_ts, state.time_zone),
-         [qh | qt] <- extant ++ prepared do
-      new_state = state |> Map.put(:staging_objects, qt)
+  def handle_cast({:trigger_rebuild, after_ts}, %{} = stage_state) do
+    with {:ok, extant}    <- Map.fetch(stage_state, :staging_objects),
+         {:ok, time_zone} <- Application.fetch(:rap, :time_zone),
+	 prepared  <- PostRun.yield_manifests(after_ts, time_zone),
+         [qh | qt] <- extant ++ prepared
+      do
+      new_state = stage_state |> Map.put(:staging_objects, qt)
       {:noreply, [qh], new_state}
     else
-      [] -> {:noreply, [], state}
-    end    
-  end
-  
-  @doc """
-  Special case for the manifest, rename to something like
-  manifest_pre.ttl since we have a notion that we generate
-  a post-results manifest which links the results and the data
-  presented
-  """
-  defp move_manifest(fp, cache_dir, bakery_dir, uuid) do
-    #fp_pre    = fp |> String.replace(~r"\.([a-z]+)$", "_pre.\\1")
-    #fp_target = cond do
-    #  fp_pre != fp -> fp_pre
-    #  true         -> fp
-    ###end
-    fp |> move_wrapper(cache_dir, bakery_dir, uuid, fp)
-    fp
+      [] -> {:noreply, [], stage_state}
+    end
   end
   
   @doc """
@@ -140,12 +125,13 @@ defmodule RAP.Bakery.Prepare do
 
   Therefore, this stage doesn't record a signal.
   """
-  def bake_data(%ManifestSpec{signal: sig} = processed, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) when sig in [:working, :job_errors, :see_producer] do
+  def bake_data(%ManifestSpec{signal: sig} = processed, %{} = state) when sig in [:working, :job_errors, :see_producer] do
     Logger.info "Called Prepare.bake_data/5 with signal `#{processed.signal}'"
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
-    with {:ok, cache_dir}  <- Application.fetch_env(:rap, :cache_directory),
+    with {:ok, rap_invoked_at} <- Map.fetch(state, :rap_invoked_at),
+	 {:ok, cache_dir}  <- Application.fetch_env(:rap, :cache_directory),
 	 {:ok, bakery_dir} <- Application.fetch_env(:rap, :bakery_directory),
 	 :ok <- File.mkdir_p("#{bakery_dir}/#{processed.uuid}") do
 
@@ -154,9 +140,9 @@ defmodule RAP.Bakery.Prepare do
       |> Enum.map(&write_result(&1, processed.base_prefix, bakery_dir, processed.uuid))
     
       moved_manifest_ttl = processed.submitted_manifest_base_ttl
-      |> move_manifest(cache_dir, bakery_dir, processed.uuid)
+      |> move_wrapper(cache_dir, bakery_dir, processed.uuid)
       moved_manifest_yaml = processed.submitted_manifest_base_yaml
-      |> move_manifest(cache_dir, bakery_dir, processed.uuid)
+      |> move_wrapper(cache_dir, bakery_dir, processed.uuid)
       
       moved_resources = processed.resource_bases
       |> Enum.map(&move_wrapper(&1, cache_dir, bakery_dir, processed.uuid))
@@ -168,12 +154,11 @@ defmodule RAP.Bakery.Prepare do
       new_work = processed.work
       |> Work.append_work(
            __MODULE__, sig, work_started_at,
-           stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
+           state,
            [], [processed.__id__])
       |> Work.traverse_work(
            processed.base_prefix,
-           rap_invoked_at, RAP.Application,
-           pipeline_generated_iris)
+           rap_invoked_at, pipeline_generated_iris)
 
       %{ processed |
 	 results:         cached_results,
@@ -189,22 +174,23 @@ defmodule RAP.Bakery.Prepare do
     end
   end
 
-  def bake_data(%ManifestSpec{signal: :see_pre} = processed, rap_invoked_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
+  def bake_data(%ManifestSpec{signal: :see_pre} = processed, %{} = state) do
 
     Logger.info "Called Prepare.bake_data/5 with signal `see_pre', not doing anything"
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
 
-     with {:ok, bakery_dir} <- Application.fetch_env(:rap, :bakery_directory),
-	  :ok <- File.mkdir_p("#{bakery_dir}/#{processed.uuid}") do
+    with {:ok, rap_invoked_at} <- Map.fetch(state, :rap_invoked_at),
+	 {:ok, bakery_dir} <- Application.fetch_env(:rap, :bakery_directory),
+	 :ok <- File.mkdir_p("#{bakery_dir}/#{processed.uuid}") do
         
        new_work = processed.work
        |> Work.append_work(
             __MODULE__, :see_pre, work_started_at,
-            stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher,
+            state,
             [], [processed.__id__])
        |> Work.traverse_work(
             processed.base_prefix,
-            rap_invoked_at, RAP.Application, [processed.__id__])
+            rap_invoked_at, [processed.__id__])
     
        %{ processed |
 	  rap_app:         new_work.app_agent,
@@ -240,10 +226,9 @@ defmodule RAP.Bakery.Prepare do
     with :ok              <- File.mkdir_p("#{bakery_dir}/#{processed.uuid}"),
 	 {:ok, rdf_equiv} <- Grax.to_rdf(annotated),
          rdf_annotated    <- RDF.Graph.add_prefixes(rdf_equiv, all_prefixes),
-         :ok              <- RDF.Turtle.write_file(rdf_annotated, fp_full, force: true)
-      do
-        Logger.info "Successfully wrote turtle manifest to #{fp_full}"
-        annotated
+         :ok              <- RDF.Turtle.write_file(rdf_annotated, fp_full, force: true) do
+      Logger.info "Successfully wrote turtle manifest to #{fp_full}"
+      annotated
     else
       {:error, %Grax.ValidationError{} = err} ->
 	Logger.info(inspect err)

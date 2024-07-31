@@ -16,42 +16,35 @@ defmodule RAP.Storage.GCP do
   alias RAP.Storage.{PreRun, MidRun, Monitor}
   alias RAP.Provenance.Work
 
-  def start_link initial_state do
-    Logger.info "Called Storage.GCP.start_link (_)"
+  def start_link([] = initial_state) do
+    Logger.info "Start link to Storage.GCP"
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
   end
 
-  def init initial_state do
-    Logger.info "Called Storage.GCP.init (initial_state = #{inspect initial_state})"
+  def init([] = _initial_state) do
+    Logger.info "Initialise Storage.GCP"
     curr_ts = DateTime.utc_now() |> DateTime.to_unix()
-    invocation_state = %{ initial_state |
-			  stage_invoked_at:    curr_ts,
-			  stage_type:          :producer_consumer,
-			  stage_subscriptions: [{ Monitor, min_demand: 0, max_demand: 1 }],
-			  stage_dispatcher:    GenStage.DemandDispatcher
-			}
-    { invocation_state.stage_type,
-      invocation_state,
-      subscribe_to: invocation_state.stage_subscriptions,
-      dispatcher:   invocation_state.stage_dispatcher   }
+    stage_state = %{
+      stage_invoked_at:    curr_ts,
+      stage_type:          :producer_consumer,
+      stage_subscriptions: [{ Monitor, min_demand: 0, max_demand: 1 }],
+      stage_dispatcher:    GenStage.DemandDispatcher
+    }
+    { stage_state.stage_type,
+      stage_state,
+      subscribe_to: stage_state.stage_subscriptions,
+      dispatcher:   stage_state.stage_dispatcher   }
   end
   
-  def handle_events(events, _from, %RAP.Application{} = state) do
+  def handle_events(events, _from, %{} = stage_state) do
     Logger.info "Called `Storage.GCP.handle_events (events = #{inspect events}, …)'"
     input_work = events |> Enum.map(& &1.work)
     Logger.info "Storage.GCP received objects with the following work defined: #{inspect input_work}"
     
     processed = events
-    |> Enum.map(
-      &coalesce_job(
-	&1,
-	state.stage_invoked_at,
-	state.stage_type,
-	state.stage_subscriptions,
-	state.stage_dispatcher
-      )
-    )
-    { :noreply, processed, state }
+    |> Enum.map(&coalesce_job(&1, stage_state))
+    
+    { :noreply, processed, stage_state }
   end
 
   defp wrap_gcp_fetch(obj, session) do
@@ -128,7 +121,7 @@ defmodule RAP.Storage.GCP do
     end
   end
   
-  def coalesce_job(%PreRun{} = job, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
+  def coalesce_job(%PreRun{} = job, %{} = stage_state) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
     with {:ok, cache_dir}  <- Application.fetch_env(:rap, :cache_directory),
@@ -147,7 +140,13 @@ defmodule RAP.Storage.GCP do
       |> List.delete(index_base)
       Logger.info "Non-manifest files are #{inspect non_manifest_bases}"      
 
-      new_work = Work.append_work(job.work, __MODULE__, :working, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, [manifest_id], [])
+      new_work =
+	Work.append_work(
+	  job.work, __MODULE__, :working,
+	  work_started_at,
+	  stage_state, [manifest_id], []
+	)
+
       %MidRun{ uuid:          uuid,
 	       signal:        :working,
 	       work:          new_work,
@@ -161,16 +160,16 @@ defmodule RAP.Storage.GCP do
       {:error, uuid, errors} -> {:error, uuid, errors}
       {:error, reason} ->
 	Logger.info "Could not read index"
-	new_work = Work.append_work(job.work, __MODULE__, reason, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+	new_work = Work.append_work(job.work, __MODULE__, reason, work_started_at, stage_state)
 	%MidRun{ uuid: job.uuid, signal: reason, work: new_work, data_source: "gcp" }
       [] ->
 	Logger.info "Index file is empty!"
 	{:error, :empty_index, job.uuid}
-	new_work = Work.append_work(job.work, __MODULE__, :empty_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+	new_work = Work.append_work(job.work, __MODULE__, :empty_index, work_started_at, stage_state)
         %MidRun{ uuid: job.uuid, signal: :empty_index, work: new_work, data_source: "gcp" }
       _ ->
 	Logger.info "Malformed index file!"
-	new_work = Work.append_work(job.work, __MODULE__, :bad_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
+	new_work = Work.append_work(job.work, __MODULE__, :bad_index, work_started_at, stage_state)
 	%MidRun{ uuid: job.uuid, signal: :bad_index, work: new_work, data_source: "gcp" }
     end
   end
