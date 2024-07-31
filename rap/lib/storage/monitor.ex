@@ -48,7 +48,7 @@ defmodule RAP.Storage.Monitor do
   The idea is that any given store uses randomly generated UUIDs, which
   are de-facto unique, so there is no chance of conflict here.
   """
-  def init(%RAP.Application{} = initial_state) do
+  def init(initial_state) do
     Logger.info "Called Storage.Monitor.init (initial_state: #{inspect initial_state})"
     
     with {:ok, gcp_bucket}       <- Application.fetch_env(:rap, :gcp_bucket),
@@ -114,7 +114,7 @@ defmodule RAP.Storage.Monitor do
   computationally and in terms of the subscription to the GCP storage
   platform.
   """
-  def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
+  def handle_cast({:stage_objects, additional}, %{staging_objects: extant} = state) do
     Logger.info "Received cast :stage_objects for objects #{inspect additional}"
     with [queue_head | queue_tail] <- extant ++ additional do
       new_state = state |> Map.put(:staging_objects, queue_tail)

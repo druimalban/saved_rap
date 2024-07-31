@@ -8,7 +8,6 @@ defmodule RAP.Bakery.Compose do
 
   import EEx
   
-  alias RAP.Application
   alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.PreRun
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
@@ -16,10 +15,10 @@ defmodule RAP.Bakery.Compose do
   alias RAP.Bakery.Prepare
 
   defstruct [ :uuid,          :contents,
-	      :output_stem,   :output_format,
+	      :output_stem,   :output_ext,
 	      :signal, :signal_full ]
 
-  def start_link(%Application{} = initial_state) do
+  def start_link(initial_state) do
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
   end
 
@@ -37,13 +36,15 @@ defmodule RAP.Bakery.Compose do
   end
 
   # target_contents, bakery_directory, uuid, stem, extension, target_name
-  def handle_events(events, _from, %Application{} = state) do
+  def handle_events(events, _from, state) do
     Logger.info "HTML document consumer received #{inspect events}"
     input_work = events |> Enum.map(& &1.work)
     Logger.info "Bakery.Compose received objects with the following work defined: #{inspect input_work}"
-    processed_events = events
-    |> Enum.map(&compose_document(state, &1))
-    |> Enum.map(&write_result(&1, state.bakery_directory))
+
+    events
+    |> Enum.map(&compose_document/1)
+    |> Enum.map(&write_document/1)
+
     {:noreply, [], state}
   end
 
@@ -58,49 +59,68 @@ defmodule RAP.Bakery.Compose do
   #  time_zone,
   #  %ManifestOutput{} = prepared 
   #) do
-  def compose_document(%Application{} = state, %ManifestSpec{signal: sig} = prepared) when sig in [:working, :job_errors] do
-    # %ManifestOutput{} is effectively an annotated manifest struct, pass in a map
-    {html_contents, manifest_signal} =
-      doc_lead_in()
-      |> head_lead_in()
-      |> preamble(state.html_directory, state.rap_style_sheet, prepared.uuid)
-      |> head_lead_out()
-      |> body_lead_in()
-      |> manifest_info(state.html_directory, state.rap_uri_prefix, state.time_zone, prepared)
-      |> tables_info(  state.html_directory, state.rap_uri_prefix, prepared.uuid, prepared.tables)
-      |> jobs_info(    state.html_directory, prepared.jobs)
-      |> results_info( state.html_directory, state.rap_uri_prefix, state.rap_js_lib_d3, state.rap_js_lib_plotly, state.time_zone, prepared.uuid, prepared.results)
-      |> body_lead_out()
-      |> doc_lead_out()
+  def compose_document(%ManifestSpec{signal: sig} = prepared) when sig in [:working, :job_errors] do
+    with {:ok, html_dir} <- Application.fetch_env(:rap, :html_directory),
+	 {:ok, style}    <- Application.fetch_env(:rap, :rap_style_sheet),
+	 {:ok, prefix}   <- Application.fetch_env(:rap, :rap_uri_prefix),
+	 {:ok, tz}       <- Application.fetch_env(:rap, :time_zone),
+	 {:ok, d3}       <- Application.fetch_env(:rap, :rap_js_lib_d3),
+	 {:ok, plotly}   <- Application.fetch_env(:rap, :rap_js_lib_plotly) do
+      
+      {html_contents, manifest_signal} =
+	doc_lead_in()
+	|> head_lead_in()
+	|> preamble(html_dir, style, prepared.uuid)
+	|> head_lead_out()
+	|> body_lead_in()
+	|> manifest_info(html_dir, prefix, tz, prepared)
+	|> tables_info(  html_dir, prefix, prepared.uuid, prepared.tables)
+	|> jobs_info(    html_dir, prepared.jobs)
+	|> results_info( html_dir, prefix, d3, plotly, tz, prepared.uuid, prepared.results)
+	|> body_lead_out()
+	|> doc_lead_out()
 
-    %__MODULE__{
-      uuid:                 prepared.uuid,
-      contents:             html_contents,
-      output_stem:          "index",
-      output_format:        "html",
-      signal:        prepared.signal,
-      signal_full:   manifest_signal
-    }
+	%__MODULE__{
+	  uuid:          prepared.uuid,
+	  contents:      html_contents,
+	  output_stem:   "index",
+	  output_ext:    "html",
+	  signal:        prepared.signal,
+	  signal_full:   manifest_signal
+	}
+    else
+      :error -> {:error, "Failed to extract keywords from RAP configuration"}
+    end
   end
-  def compose_document(%Application{} = state, %ManifestSpec{signal: _sig} = prepared) do
-    {html_contents, manifest_signal} =
-      doc_lead_in()
-      |> head_lead_in()
-      |> preamble(state.html_directory, state.rap_style_sheet, prepared.uuid)
-      |> head_lead_out()
-      |> body_lead_in()
-      |> manifest_info(state.html_directory, state.rap_uri_prefix, state.time_zone, prepared)
-      |> body_lead_out()
-      |> doc_lead_out()
+  def compose_document(%ManifestSpec{signal: _sig} = prepared) do
+    with {:ok, html_dir} <- Application.fetch_env(:rap, :html_directory),
+	 {:ok, style}    <- Application.fetch_env(:rap, :rap_style_sheet),
+	 {:ok, prefix}   <- Application.fetch_env(:rap, :rap_uri_prefix),
+	 {:ok, tz}       <- Application.fetch_env(:rap, :time_zone),
+	 {:ok, d3}       <- Application.fetch_env(:rap, :rap_js_lib_d3),
+	 {:ok, plotly}   <- Application.fetch_env(:rap, :rap_js_lib_plotly) do
+      
+      {html_contents, manifest_signal} =
+	doc_lead_in()
+	|> head_lead_in()
+	|> preamble(html_dir, style, prepared.uuid)
+	|> head_lead_out()
+	|> body_lead_in()
+	|> manifest_info(html_dir, prefix, tz, prepared)
+	|> body_lead_out()
+	|> doc_lead_out()
 
-    %__MODULE__{
-      uuid:                 prepared.uuid,
-      contents:             html_contents,
-      output_stem:          "index",
-      output_format:        "html",
-      signal:        prepared.signal,
-      signal_full:   manifest_signal
-    }
+	%__MODULE__{
+	  uuid:          prepared.uuid,
+	  contents:      html_contents,
+	  output_stem:   "index",
+	  output_ext:    "html",
+	  signal:        prepared.signal,
+	  signal_full:   manifest_signal
+	}
+    else
+      :error -> {:error, "Failed to extract keywords from RAP configuration"}
+    end
   end
   
   def doc_lead_in, do: {"<!DOCTYPE html>\n<html>\n", nil}
@@ -282,8 +302,6 @@ defmodule RAP.Bakery.Compose do
   end
 
   def plot_result(_fragments, _uri, _d3, _plotly, res), do: ""
-
-  # def plot_result(_fragments, _uri, _d3, _plotly, _res), do: ""
   
   # Assumption is that we have a notion of a completed job, (see named
   # RAP.Job.Result struct), annotated with the base name of the output file
@@ -340,16 +358,12 @@ defmodule RAP.Bakery.Compose do
     {working_contents, sig}
   end
 
-  @doc """
-  This is more or less identical to `ManifestOutput.write_result/4'…
-  """
-  def write_result(%__MODULE__{} = result, bakery_directory) do
-    target_base = "#{result.output_stem}.#{result.output_format}"
-    target_full = "#{bakery_directory}/#{result.uuid}/#{target_base}"
-      
-    Logger.info "Writing index file #{target_full}"
+  def write_document(%__MODULE__{} = result) do
+    target_base = "#{result.output_stem}.#{result.output_ext}"
     
-    with false <- File.exists?(target_full) && PreRun.dl_success?(
+    with {:ok, bakery_dir} <- Application.fetch_env(:rap, :bakery_directory),
+	 target_full <- "#{bakery_dir}/#{result.uuid}/#{target_base}",
+	 false <- File.exists?(target_full) && PreRun.dl_success?(
                     result.contents, File.read!(target_full), opts: [input_md5: false]),
          :ok   <- File.write(target_full, result.contents) do
       
@@ -357,10 +371,10 @@ defmodule RAP.Bakery.Compose do
       target_base
     else
       true ->
-	Logger.info "File #{target_full} already exists and matches checksum of result to be written"
+	Logger.info "File #{target_base} already exists and matches checksum of result to be written"
 	target_base
       {:error, error} ->
-	Logger.info "Could not write to fully-qualified path #{target_full}: #{inspect error}"
+	Logger.info "Could not write to fully-qualified path #{target_base}: #{inspect error}"
         {:error, error}
     end
   end

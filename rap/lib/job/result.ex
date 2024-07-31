@@ -28,9 +28,13 @@ defmodule RAP.Job.Result do
     field :contents
   end
   
-  defp expand_id(source_job_id, base_prefix, result_prefix \\ "result_") do
-    source_job_name = Producer.extract_id(source_job_id)
-    RDF.IRI.new(base_prefix <> result_prefix <> source_job_name)
+  defp expand_id(source_job_id, base_prefix) do
+    with {:ok, result_stem} <- Application.fetch_env(:rap, :result_stem) do
+      source_job_name = Producer.extract_id(source_job_id)
+      RDF.IRI.new(base_prefix <> result_stem <> "_" <> source_job_name)
+    else
+      :error -> {:error, "Cannot fetch result prefix from RAP configuration"}
+    end
   end
 
   @doc """
@@ -63,18 +67,6 @@ defmodule RAP.Job.Result do
 	{:call_error, error, nil}
     end
   end
-  
-  def run_job(%JobSpec{type: "ignore"} = spec, _uuid, _cache_dir, _interpreter, base_prefix, _tz) do
-    source_job_id = spec.__id__
-    new_id        = expand_id(source_job_id, base_prefix)
-    %__MODULE__{
-      __id__:      new_id,
-      source_job:  source_job_id,
-      job_type:    "ignore",
-      signal:      :ignored,
-      contents:    "Dummy/ignored job"
-    }
-  end
 
   def run_job(
     %JobSpec{
@@ -94,106 +86,120 @@ defmodule RAP.Job.Result do
 			   column:         label_time,
 			   resource_base:  resource_time}
 			 | _ ]
-    } = spec,
-    uuid, cache_directory, python_call, base_prefix, tz
+    } = spec, uuid, base_prefix
   ) do
     Logger.info "Running job #{inspect source_job_id} (associated with UUID #{uuid})"
-    start_ts   = DateTime.utc_now() |> DateTime.to_unix()
-    started_at = DateTime.utc_now() |> DateTime.shift_zone!(tz)
-    new_id     = expand_id(source_job_id, base_prefix)
 
-    if resource_density != resource_time do
-      end_ts   = DateTime.utc_now() |> DateTime.to_unix()
-      ended_at = DateTime.utc_now() |> DateTime.shift_zone!(tz)
-      res      = "Density and time not derived from same data file"
-      %__MODULE__{ job_type:        "density",
-		   signal:          :failure_prereq,
-		   contents:        res,
-		   start_time_unix: start_ts,
-		   started_at:      started_at,
-		   end_time_unix:   end_ts,
-		   ended_at:        ended_at  }
-    else
-      file_path_count   = "#{cache_directory}/#{uuid}/#{resource_count}"
-      file_path_density = "#{cache_directory}/#{uuid}/#{resource_density}"
-      _file_path_time   = "#{cache_directory}/#{uuid}/#{resource_time}"
+    with {:ok, cache_dir}   <- Application.fetch_env(:rap, :cache_directory),
+	 {:ok, python_call} <- Application.fetch_env(:rap, :python_call),
+	 {:ok, time_zone}   <- Application.fetch_env(:rap, :time_zone) do
 
-      Logger.info "Fully-qualified path for count data is #{file_path_count}"
-      Logger.info "Fully-qualified path for density/time data is #{file_path_density}"
+      start_ts   = DateTime.utc_now() |> DateTime.to_unix()
+      started_at = DateTime.utc_now() |> DateTime.shift_zone!(time_zone)
+      new_id     = expand_id(source_job_id, base_prefix)
 
-      end_ts   = DateTime.utc_now() |> DateTime.shift_zone!(tz)
-      ended_at = DateTime.utc_now() |> DateTime.shift_zone!(tz)
+      if resource_density != resource_time do
+	end_ts   = DateTime.utc_now() |> DateTime.to_unix()
+	ended_at = DateTime.utc_now() |> DateTime.shift_zone!(time_zone)
+	res      = "Density and time not derived from same data file"
+	%__MODULE__{ job_type:        "density",
+		     signal:          :failure_prereq,
+		     contents:        res,
+		     start_time_unix: start_ts,
+		     started_at:      started_at,
+		     end_time_unix:   end_ts,
+		     ended_at:        ended_at  }
+      else
+	file_path_count   = "#{cache_dir}/#{uuid}/#{resource_count}"
+	file_path_density = "#{cache_dir}/#{uuid}/#{resource_density}"
+	_file_path_time   = "#{cache_dir}/#{uuid}/#{resource_time}"
+
+	Logger.info "Fully-qualified path for count data is #{file_path_count}"
+	Logger.info "Fully-qualified path for density/time data is #{file_path_density}"
+
+	end_ts   = DateTime.utc_now() |> DateTime.shift_zone!(time_zone)
+	ended_at = DateTime.utc_now() |> DateTime.shift_zone!(time_zone)
       
-      # This needs to be fixed so that it's less fragile, at least in terms of:
-      # a) Python version
-      # b) Guarantees about dependencies
-      # We're after good reporting, and this information should certainly be part of that.
-      py_result = 
- 	cmd_wrapper(python_call, "contrib/bin/density_count_ode.py", [
- 	            file_path_count,   label_count,
- 	            file_path_density, label_time,  label_density])
-      case py_result do
-	{:run_success, _sig, py_result} ->
-	  Logger.info "Call to external command/executable density_count_ode succeeded:"
-	  Logger.info(inspect py_result)
- 	  %__MODULE__{
-	    __id__:          new_id,
-	    job_type:        "density",
-	    output_format:   spec.result_format,
-	    output_stem:     spec.result_stem,
-	    source_job:      spec.__id__,
-	    start_time_unix: start_ts,
-	    started_at:      started_at,
-	    end_time_unix:   end_ts,
-	    ended_at:        ended_at,
-	    signal:          :working,
-	    contents:        py_result
-	  }
+	# This needs to be fixed so that it's less fragile, at least in terms of:
+	# a) Python version
+	# b) Guarantees about dependencies
+	# We're after good reporting, and this information should certainly be part of that.
+	py_result = 
+ 	  cmd_wrapper(python_call, "contrib/bin/density_count_ode.py", [
+ 	             file_path_count,   label_count,
+ 	             file_path_density, label_time,  label_density])
+	case py_result do
+	  {:run_success, _sig, py_result} ->
+	    Logger.info "Call to external command/executable density_count_ode succeeded:"
+	    Logger.info(inspect py_result)
+ 	    %__MODULE__{
+	      __id__:          new_id,
+	      job_type:        "density",
+	      output_format:   spec.result_format,
+	      output_stem:     spec.result_stem,
+	      source_job:      spec.__id__,
+	      start_time_unix: start_ts,
+	      started_at:      started_at,
+	      end_time_unix:   end_ts,
+	      ended_at:        ended_at,
+	      signal:          :working,
+	      contents:        py_result
+	    }
 		   
-	{:run_error, _sig, py_result} ->
-	  Logger.info "Call to external command/executable density_count_ode: non-zero exit status:"
-	  Logger.info(inspect py_result)
- 	  %__MODULE__{
-	    __id__:          new_id,
-	    job_type:        "density",
-	    output_format:   spec.result_format,
-	    output_stem:     spec.result_stem,
-	    source_job:      spec.__id__,
-	    start_time_unix: start_ts,
-	    started_at:      started_at,
-	    end_time_unix:   end_ts,
-	    ended_at:        ended_at,
-	    signal:          :job_failure,
-	    contents:        py_result
-	  }
+	  {:run_error, _sig, py_result} ->
+	    Logger.info "Call to external command/executable density_count_ode: non-zero exit status:"
+	    Logger.info(inspect py_result)
+ 	    %__MODULE__{
+	      __id__:          new_id,
+	      job_type:        "density",
+	      output_format:   spec.result_format,
+	      output_stem:     spec.result_stem,
+	      source_job:      spec.__id__,
+	      start_time_unix: start_ts,
+	      started_at:      started_at,
+	      end_time_unix:   end_ts,
+	      ended_at:        ended_at,
+	      signal:          :job_failure,
+	      contents:        py_result
+	    }
 	  
-	{:call_error, py_error, py_result} ->
-	  Logger.info "Call to Python interpreter failed or system is locked up"
- 	  %__MODULE__{
-	    __id__:          new_id,
-	    job_type:        "density",
-	    output_format:   spec.result_format,
-	    output_stem:     spec.result_stem,
-	    source_job:      spec.__id__,
-	    start_time_unix: start_ts,
-	    started_at:      started_at,
-	    end_time_unix:   end_ts,
-	    ended_at:        ended_at,
-	    signal:          :python_error,
-	    contents:        py_result
-	  }
-       end
-     end
-    
+	  {:call_error, py_error, py_result} ->
+	    Logger.info "Call to Python interpreter failed or system is locked up"
+ 	    %__MODULE__{
+	      __id__:          new_id,
+	      job_type:        "density",
+	      output_format:   spec.result_format,
+	      output_stem:     spec.result_stem,
+	      source_job:      spec.__id__,
+	      start_time_unix: start_ts,
+	      started_at:      started_at,
+	      end_time_unix:   end_ts,
+	      ended_at:        ended_at,
+	      signal:          :python_error,
+	      contents:        py_result
+	    }
+	end
+      end
+    else
+      :error -> {:error, "Could not fetch keywords from RAP configuration"}
+    end
   end
 
-  def run_job(%JobSpec{} = bad_spec, _uuid, _cache_dir, _interpreter, base_prefix, _tz) do
-    source_id = bad_spec.__id__
-    new_id    = expand_id(source_id, base_prefix)
+  def run_job(%JobSpec{__id__: id, type: "ignore"} = spec, _uuid, base_prefix) do
     %__MODULE__{
-      __id__:        new_id,
-      job_type:      bad_spec.type,
-      source_job:    source_id,
+      __id__:      expand_id(id, base_prefix),
+      source_job:  id,
+      job_type:    "ignore",
+      signal:      :ignored,
+      contents:    "Dummy/ignored job"
+    }
+  end
+
+  def run_job(%JobSpec{__id__: id, type: invalid_type} = bad_spec, _uuid, base_prefix) do
+    %__MODULE__{
+      __id__:        expand_id(id, base_prefix),
+      job_type:      invalid_type,
+      source_job:    id,
       signal:        :bad_job_spec,
       contents:      "Unrecognised job spec"
     }

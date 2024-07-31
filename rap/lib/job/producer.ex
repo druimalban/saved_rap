@@ -70,8 +70,15 @@ defmodule RAP.Job.Producer do
     Logger.info "Job.Producer received objects with the following work defined: #{inspect input_work}"
     # Fix once we've got the GCP stuff nailed down
     processed = events
-    |> Enum.map(&invoke_manifest(&1, state.cache_directory, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher))
-    
+    |> Enum.map(
+      &invoke_manifest(
+	&1,
+	state.stage_invoked_at,
+	state.stage_type,
+	state.stage_subscriptions,
+	state.stage_dispatcher
+      )
+    )
     { :noreply, processed, state }
   end
   
@@ -294,22 +301,6 @@ defmodule RAP.Job.Producer do
 		   base_prefix:        prev.base_prefix }
   end
 
-  
-  # defstruct [ :uuid, :signal, :data_source,  :manifest_name, :manifest_yaml, :manifest_ttl, :resources ]
-  #def minimal_manifest(%MidRun{} = prev, curr_signal) do
-  #  %ManifestSpec{
-  #    name:               prev.manifest_name,
-  #    title:              prev.title,
-  #    description:        prev.description,
-  #    local_version:      prev.local_version,
-  #    uuid:               prev.uuid,
-  #    pre_signal:         prev.signal,
-  #    signal:             curr_signal,
-  #    manifest_base_ttl:  prev.manifest_ttl,
-  #    manifest_base_yaml: prev.manifest_yaml,
-  #  }
-  #end
-
   @doc """
   Invoke manifest based on signal from previous stage `RAP.Storage.GCP'.
 
@@ -353,11 +344,12 @@ defmodule RAP.Job.Producer do
   we can use, but it also implies that no jobs should be run, so don't
   try to run these, at least for now. Only pattern-match on `:working'.
   """
-  def invoke_manifest(%MidRun{signal: :working} = prev, cache_dir, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
+  def invoke_manifest(%MidRun{signal: :working} = prev, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
+    cache_dir          = Application.fetch_env!(:rap, :cache_directory) 
     target_dir         = "#{cache_dir}/#{prev.uuid}"
     manifest_full_path = "#{target_dir}/#{prev.manifest_ttl}"
     load_target        = RDF.iri(prev.manifest_iri)
-    work_started_at = DateTime.utc_now() |> DateTime.to_unix()
+    work_started_at    = DateTime.utc_now() |> DateTime.to_unix()
     
     #load_target = RAP.Vocabulary.RAP.RootManifest
     Logger.info "Building RDF graph from turtle manifest #{load_target} using data in #{target_dir}"
@@ -386,7 +378,7 @@ defmodule RAP.Job.Producer do
 	minimal_manifest(prev, :bad_manifest_tables, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     end
   end
-  def invoke_manifest(%MidRun{signal: pre_signal} = prev, _cache_dir, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
+  def invoke_manifest(%MidRun{signal: pre_signal} = prev, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     # We already have a notion of a well-known unique identifier (UUID),
     # so use it as fallback
     fallback_base = RAP.Vocabulary.RAP.__base_iri__
@@ -402,7 +394,7 @@ defmodule RAP.Job.Producer do
       base_prefix:     fallback_base,
       submitted_manifest_base_ttl:  prev.manifest_ttl,
       submitted_manifest_base_yaml: prev.manifest_yaml,
-      resource_bases:     prev.resources,
+      resource_bases: prev.resources,
       signal:          :see_pre,
       work:            new_work
     }

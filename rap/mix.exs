@@ -25,6 +25,7 @@ defmodule RAP.MixProject do
 	    cache_directory:    "./data_cache",
 	    bakery_directory:   "./bakery",
 	    linked_result_stem: "processed",
+	    result_stem:        "result",
 	    time_zone:          "GB-Eire",
 	    rap_uri_prefix:     "/saved/rap",
 	    rap_style_sheet:    "/saved/assets/rap.css", # Imports fira.css

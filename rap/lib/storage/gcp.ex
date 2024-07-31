@@ -54,7 +54,7 @@ defmodule RAP.Storage.GCP do
     { :noreply, processed, state }
   end
 
-  defp wrap_gcp_fetch(session, obj) do
+  defp wrap_gcp_fetch(obj, session) do
     GCPReqObjs.storage_objects_get(session, obj.gcp_bucket, obj.gcp_name, [alt: "media"], decode: false)
   end
 
@@ -79,14 +79,14 @@ defmodule RAP.Storage.GCP do
   purported structure but we have the benefit of the mnesia database to
   cache results.
   """
-  defp fetch_object(target_dir, obj) do
+  defp fetch_object(obj, target_dir) do
     target_base = obj.path
     # output_file => target_full
     target_full = "#{target_dir}/#{target_base}"
     Logger.info "Polling GCP storage bucket for flat object #{obj.gcp_name}, with target #{target_full}"
     with false <- File.exists?(target_full) && PreRun.dl_success?(obj.gcp_md5, File.read!(target_full), opts: [input_md5: true]),
          session <- GenStage.call(Monitor, :yield_session),
-	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(session, obj),
+	 {:ok, %Tesla.Env{body: body, status: 200}} <- wrap_gcp_fetch(obj, session),
 	 :ok <- File.write(target_full, body) do
       Logger.info "Successfully wrote #{target_full}, file base name is #{target_base}"
       {:ok, target_base}

@@ -138,9 +138,10 @@ defmodule RAP.Storage.PostRun do
   We do want to keep track of these somehow, and this may be the place,
   just not quite yet.
   """
-  def cache_manifest(%ManifestSpec{} = manifest, ets_table \\ :uuid) do
+  def cache_manifest(%ManifestSpec{} = manifest) do
     Logger.info "Cache processed manifest information in mnesia DB `Manifest' table"
     with {:ok, time_zone}   <- Application.fetch_env(:rap, :time_zone),
+         {:ok, ets_table}   <- Application.fetch_env(:rap, :ets_table),
 	 [{uuid, start_ts}] <- :ets.lookup(ets_table, manifest.uuid),
          true               <- :ets.delete(ets_table, manifest.uuid) do
 

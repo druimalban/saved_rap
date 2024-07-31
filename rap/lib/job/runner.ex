@@ -36,17 +36,25 @@ defmodule RAP.Job.Runner do
     Logger.info "Job.Runner received objects with the following work defined: #{inspect input_work}"
     
     target_events = events
-    |> Enum.map(&process_jobs(&1, state.cache_directory, state.python_call, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, state.time_zone))
-    
+    |> Enum.map(
+      &process_jobs(
+	&1,
+	state.stage_invoked_at,
+	state.stage_type,
+	state.stage_subscriptions,
+	state.stage_dispatcher
+      )
+    )
     { :noreply, target_events, state }
   end
   
-  def process_jobs(%ManifestSpec{signal: :working, jobs: staging} = spec, cache_directory, python_call, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do  
+  def process_jobs(%ManifestSpec{signal: :working, jobs: staging} = spec, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do  
     Logger.info "Staging jobs: #{inspect staging}"
+
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
     result_contents = staging
-    |> Enum.map(&Result.run_job(&1, spec.uuid, cache_directory, python_call, spec.base_prefix, tz))
+    |> Enum.map(&Result.run_job(&1, spec.uuid, spec.base_prefix))
 
     # Do need to have a notion of different signals
     overall_signal =
@@ -61,7 +69,7 @@ defmodule RAP.Job.Runner do
     %{ spec | signal: overall_signal, results: result_contents, work: overall_work }
   end
 
-  def process_jobs(%ManifestSpec{signal: :see_pre} = spec, _cache, _interpreter, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
+  def process_jobs(%ManifestSpec{signal: :see_pre} = spec, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     overall_work = Work.append_work(spec.work, __MODULE__, :see_pre, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     %{ spec | signal: :see_pre, work: overall_work }
@@ -81,7 +89,7 @@ defmodule RAP.Job.Runner do
 		   resource_bases:     prev.resources    }
   end
   """
-  def process_jobs(%ManifestSpec{} = spec, _cache, _interpreter, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, tz) do
+  def process_jobs(%ManifestSpec{} = spec, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     overall_work = Work.append_work(spec.work, __MODULE__, :see_producer, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
     %{ spec | signal: :see_producer, work: overall_work }
