@@ -138,15 +138,15 @@ defmodule RAP.Storage.PostRun do
   We do want to keep track of these somehow, and this may be the place,
   just not quite yet.
   """
-  def cache_manifest(%ManifestSpec{} = manifest, tz, ets_table \\ :uuid) do
+  def cache_manifest(%ManifestSpec{} = manifest, ets_table \\ :uuid) do
     Logger.info "Cache processed manifest information in mnesia DB `Manifest' table"
-    
-    with [{uuid, start_ts}] <- :ets.lookup(ets_table, manifest.uuid),
+    with {:ok, time_zone}   <- Application.fetch_env(:rap, :time_zone),
+	 [{uuid, start_ts}] <- :ets.lookup(ets_table, manifest.uuid),
          true               <- :ets.delete(ets_table, manifest.uuid) do
 
-      started_at = DateTime.utc_now() |> DateTime.shift_zone!(tz)
+      started_at = DateTime.utc_now() |> DateTime.shift_zone!(time_zone)
       end_ts     = DateTime.utc_now() |> DateTime.to_unix()
-      ended_at   = DateTime.utc_now() |> DateTime.shift_zone!(tz)
+      ended_at   = DateTime.utc_now() |> DateTime.shift_zone!(time_zone)
 
       annotated_manifest = %ManifestSpec{ manifest |
 					  start_time_unix: start_ts,
@@ -199,7 +199,9 @@ defmodule RAP.Storage.PostRun do
   defp inject_manifest(nil), do: nil
   defp inject_manifest(pre), do: %{ pre | __struct__: ManifestSpec }
 
-  def yield_manifests(invoked_after \\ -1, time_zone, owner \\ :any) do
+  def yield_manifests(invoked_after \\ -1, owner \\ :any) do
+    {:ok, time_zone} = Application.fetch_env(:rap, :time_zone)
+    
     date_proper = invoked_after |> Misc.format_time(time_zone)
     Logger.info "Retrieve all prepared manifests after #{date_proper}"
     

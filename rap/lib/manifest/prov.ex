@@ -140,21 +140,24 @@ defmodule RAP.Provenance.Work do
 
   Currently broken in the sense that sorting out what produces what is vague
   """  
-  def traverse_work(work, base_prefix, rap_invoked_at, app_atom, final_output_iris, tz, rap_prefix \\ RAP.Vocabulary.RAP.__base_iri__) do
+  def traverse_work(work, base_prefix, rap_invoked_at, app_atom, final_output_iris) do
+    rap_prefix = RAP.Vocabulary.RAP.__base_iri__
+    
     app_agent      = app_agent(app_atom, rap_prefix)
-    app_invocation = app_invocation_activity(app_atom, app_agent, base_prefix, rap_invoked_at, tz)
+    app_invocation = app_invocation_activity(app_atom, app_agent, base_prefix, rap_invoked_at)
     
     produce =
       fn({st, wd}, prev_prod) ->
 	stage_in_scope   = gen_stage_agent(st, rap_prefix)
+	
 	stage_invocation = gen_stage_invocation_activity(
-	  st, stage_in_scope, app_agent, base_prefix, rap_prefix, tz, wd
+	  st, stage_in_scope, app_agent, base_prefix, rap_prefix, wd
 	)
 	staged_work_output = gen_stage_output_entity(
 	  st, base_prefix, wd.stage_pid, prev_prod
 	)
 	staging_processing = gen_stage_processing_activity(
-	  st, base_prefix, rap_prefix, tz, wd, [staged_work_output.__id__]
+	  st, base_prefix, rap_prefix, wd, [staged_work_output.__id__]
 	)
 	%{ stage:      stage_in_scope,
 	   invocation: stage_invocation,
@@ -213,27 +216,34 @@ defmodule RAP.Provenance.Work do
     app_atom,
     app_agent,
     base_prefix,
-    invoked_at, tz,
-    local_version \\ "0.1"
+    invoked_at
   ) do
-    invocation_ts = invoked_at
-    |> DateTime.from_unix!()
-    |> DateTime.shift_zone!(tz)
 
-    invocation_iri = RDF.IRI.new(base_prefix <> uncase(app_atom) <> "_invocation")
-    
-    %RAPInvocation{
-      __id__:           invocation_iri,
-      label:            "#{app_atom} OTP application invocation activity",
-      version:          local_version,
-      beam_application: "RAP",
-      beam_node:        to_string(node()),
-      beam_module:      to_string(app_atom),
-      otp_version:      System.otp_release(),
-      elixir_version:   System.version(),
-      started_at:       invocation_ts,
-      associated_with:  [app_agent]
-    }
+    with {:ok, time_zone} <- Application.fetch_env(:rap, :time_zone),
+	 [_|_] = spec     <- Application.spec(:rap),
+         local_version    <- Keyword.get(spec, :vsn) do
+      
+      invocation_ts = invoked_at
+      |> DateTime.from_unix!()
+      |> DateTime.shift_zone!(time_zone)
+
+      invocation_iri = RDF.IRI.new(base_prefix <> uncase(app_atom) <> "_invocation")
+      
+      %RAPInvocation{
+	__id__:           invocation_iri,
+	label:            "#{app_atom} OTP application invocation activity",
+	version:          to_string(local_version),
+	beam_application: "RAP",
+	beam_node:        to_string(node()),
+	beam_module:      to_string(app_atom),
+	otp_version:      System.otp_release(),
+	elixir_version:   System.version(),
+	started_at:       invocation_ts,
+	associated_with:  [app_agent]
+      }
+    else
+      :error -> {:error, "Cannot fetch keys from RAP configuration"}
+    end
   end
 
   def gen_stage_subscription({target_module, min_demand: min, max_demand: max}, rap_prefix) do
@@ -249,72 +259,80 @@ defmodule RAP.Provenance.Work do
   def gen_stage_invocation_activity(
     stage_atom,
     stage_agent, app_agent,
-    base_prefix, rap_prefix, tz,
-    %{} = work,
-    local_version \\ "0.1"
+    base_prefix, rap_prefix,
+    %{} = work
   ) do
-    invocation_ts = work.stage_invoked_at
-    |> DateTime.from_unix!()
-    |> DateTime.shift_zone!(tz)
-
-    stage_norm    = uncase(stage_atom)
-    stage_inv_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_invocation")
-    stage_inv_lbl = "#{stage_atom} (#{work.stage_pid}) stage invocation activity"
-
-    subscriptions = work.stage_subscriptions
-    |> Enum.map(&gen_stage_subscription(&1, rap_prefix))
+    with {:ok, time_zone} <- Application.fetch_env(:rap, :time_zone),
+	 [_|_] = spec     <- Application.spec(:rap),
+         local_version    <- Keyword.get(spec, :vsn) do
     
-    %RAPInvocation{
-      __id__:                  stage_inv_iri,
-      label:                   stage_inv_lbl,
-      version:                 local_version,
-      beam_application:        "RAP",
-      beam_node:               to_string(node()),
-      beam_module:             to_string(stage_atom), # key provided as stage_atom arg, not in the work map
-      beam_module_pid:         work.stage_pid,
-      otp_version:             System.otp_release(),
-      gen_stage_type:          to_string(work.stage_type),
-      gen_stage_subscriptions: subscriptions,
-      gen_stage_dispatcher:    to_string(work.stage_dispatcher),
-      elixir_version:          System.version(),
-      started_at:              invocation_ts,
-      associated_with:         [app_agent, stage_agent]
-    }
+      invocation_ts = work.stage_invoked_at
+      |> DateTime.from_unix!()
+      |> DateTime.shift_zone!(time_zone)
+
+      stage_norm    = uncase(stage_atom)
+      stage_inv_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_invocation")
+      stage_inv_lbl = "#{stage_atom} (#{work.stage_pid}) stage invocation activity"
+      
+      subscriptions = work.stage_subscriptions
+      |> Enum.map(&gen_stage_subscription(&1, rap_prefix))
+    
+      %RAPInvocation{
+	__id__:                  stage_inv_iri,
+	label:                   stage_inv_lbl,
+	version:                 to_string(local_version),
+	beam_application:        "RAP", # FIXME
+	beam_node:               to_string(node()),
+	beam_module:             to_string(stage_atom), # key provided as stage_atom arg, not in the work map
+	beam_module_pid:         work.stage_pid,
+	otp_version:             System.otp_release(),
+	gen_stage_type:          to_string(work.stage_type),
+	gen_stage_subscriptions: subscriptions,
+	gen_stage_dispatcher:    to_string(work.stage_dispatcher),
+	elixir_version:          System.version(),
+	started_at:              invocation_ts,
+	associated_with:         [app_agent, stage_agent]
+      }
+    else
+      :error -> {:error, "Cannot RAP configuration fetch keywords"}
+    end
   end
   
   def gen_stage_processing_activity(
     stage_atom,
-    base_prefix, rap_prefix, tz,
+    base_prefix, rap_prefix,
     %{} = work,
     output_entities \\ []
   ) do
-    stage_norm     = uncase(stage_atom)
-    stage_iri      = RDF.IRI.new(rap_prefix <> "stage_" <> stage_norm)
-    stage_proc_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_processing")
-    stage_proc_lbl = "#{stage_atom} (#{work.stage_pid}) stage processing activity"
-
-    start_ts = work.work_started_at
-    |> DateTime.from_unix!() |> DateTime.shift_zone!(tz)
-    end_ts = work.work_ended_at
-    |> DateTime.from_unix!() |> DateTime.shift_zone!(tz)
-
-    work_input_all  = work.work_input
-    work_output_all = work.work_output ++ output_entities
-
-    signal_text = to_string(work.signal)
-    
-    #Logger.info("WORK OUTPUT FOR GENERATED ENTITIES: #{inspect work_output_all}")
-    
-    %RAPStageProcessing{
-      __id__:               stage_proc_iri,
-      label:                stage_proc_lbl,
-      started_at:           start_ts,
-      ended_at:             end_ts,
-      associated_with:      [stage_iri],
-      used_previous_output: work_input_all,
-      generated_entities:   work_output_all,
-      signal_text:          signal_text
-    }
+    with {:ok, time_zone} <- Application.fetch_env(:rap, :time_zone) do
+      stage_norm     = uncase(stage_atom)
+      stage_iri      = RDF.IRI.new(rap_prefix <> "stage_" <> stage_norm)
+      stage_proc_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_processing")
+      stage_proc_lbl = "#{stage_atom} (#{work.stage_pid}) stage processing activity"
+      
+      start_ts = work.work_started_at
+      |> DateTime.from_unix!() |> DateTime.shift_zone!(time_zone)
+      end_ts = work.work_ended_at
+      |> DateTime.from_unix!() |> DateTime.shift_zone!(time_zone)
+      
+      work_input_all  = work.work_input
+      work_output_all = work.work_output ++ output_entities
+      
+      signal_text = to_string(work.signal)
+            
+      %RAPStageProcessing{
+	__id__:               stage_proc_iri,
+	label:                stage_proc_lbl,
+	started_at:           start_ts,
+	ended_at:             end_ts,
+	associated_with:      [stage_iri],
+	used_previous_output: work_input_all,
+	generated_entities:   work_output_all,
+	signal_text:          signal_text
+      }
+    else
+      :error -> {:error, "Cannot RAP configuration fetch keywords"}
+    end
   end
 
   def gen_stage_output_entity(stage_atom, base_prefix, stage_pid, prev_output_iris) do

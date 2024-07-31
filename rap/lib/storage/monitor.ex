@@ -22,7 +22,6 @@ defmodule RAP.Storage.Monitor do
   alias GoogleApi.Storage.V1.Model.Objects, as: GCPObjs
   alias GoogleApi.Storage.V1.Api.Objects,   as: GCPReqObjs
 
-  alias RAP.Application
   alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.Monitor
 
@@ -49,24 +48,29 @@ defmodule RAP.Storage.Monitor do
   The idea is that any given store uses randomly generated UUIDs, which
   are de-facto unique, so there is no chance of conflict here.
   """
-  def init(%Application{} = initial_state) do
+  def init(%RAP.Application{} = initial_state) do
     Logger.info "Called Storage.Monitor.init (initial_state: #{inspect initial_state})"
-    :ets.new(:uuid, [:set, :public, :named_table])
-    with {:ok, initial_session} <- new_connection()
-      do
+    
+    with {:ok, gcp_bucket}       <- Application.fetch_env(:rap, :gcp_bucket),
+         {:ok, index_file}       <- Application.fetch_env(:rap, :index_file),
+	 {:ok, interval_seconds} <- Application.fetch_env(:rap, :interval_seconds),
+	 {:ok, ets_table}        <- Application.fetch_env(:rap, :ets_table),
+         _tab = ets_table        <- :ets.new(ets_table, [:set, :public, :named_table]),
+	 {:ok, initial_session}  <- new_connection() do
       curr_ts = DateTime.utc_now() |> DateTime.to_unix()
-      invocation_state = %{ initial_state |
-			    stage_invoked_at: curr_ts,
-			    stage_type:       :producer,
-			    gcp_session:      initial_session,
-			    stage_dispatcher: GenStage.DemandDispatcher
-			  }
+      invocation_state = %{
+	initial_state |
+	stage_invoked_at: curr_ts,
+	stage_type:       :producer,
+	gcp_session:      initial_session,
+	stage_dispatcher: GenStage.DemandDispatcher
+      }
       Task.start_link(fn() ->
 	monitor_gcp(
 	  invocation_state.gcp_session,
-	  invocation_state.gcp_bucket,
-	  invocation_state.index_file,
-	  invocation_state.interval_seconds * 1000,
+	  gcp_bucket,
+	  index_file,
+	  interval_seconds * 1000,
 	  invocation_state.stage_invoked_at,
 	  invocation_state.stage_type,
 	  invocation_state.stage_dispatcher
@@ -75,13 +79,14 @@ defmodule RAP.Storage.Monitor do
       {invocation_state.stage_type, invocation_state, dispatcher: invocation_state.stage_dispatcher }
     else
       {:error, _msg} = error -> error
+      :error -> { :error, "Could not fetch keywords from RAP configuration" }
     end
   end
 
   @doc """
   Update session state from our recursive `monitor_gcp/4' function
   """
-  def handle_call(:update_session, _from, %Application{} = state) do
+  def handle_call(:update_session, _from, state) do
     Logger.info "Received call :update_session"
     new_session = new_connection()
     new_state   = state |> Map.put(:gcp_session, new_session)
@@ -94,7 +99,7 @@ defmodule RAP.Storage.Monitor do
   This is necessary since including the session in each event is annoying
   and does not feel ideal.
   """
-  def handle_call(:yield_session, subscriber, %Application{} = state) do
+  def handle_call(:yield_session, subscriber, state) do
     Logger.info "Received call to produce return current session, from subscriber #{inspect subscriber}"
     {:reply, state.gcp_session, [], state}
   end
@@ -109,7 +114,7 @@ defmodule RAP.Storage.Monitor do
   computationally and in terms of the subscription to the GCP storage
   platform.
   """
-  def handle_cast({:stage_objects, additional}, %Application{staging_objects: extant} = state) do
+  def handle_cast({:stage_objects, additional}, %RAP.Application{staging_objects: extant} = state) do
     Logger.info "Received cast :stage_objects for objects #{inspect additional}"
     with [queue_head | queue_tail] <- extant ++ additional do
       new_state = state |> Map.put(:staging_objects, queue_tail)

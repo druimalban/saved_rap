@@ -12,10 +12,27 @@ defmodule RAP.MixProject do
   end
   
   # Run "mix help compile.app" to learn about applications.
+
+  # 
   def application do
     [
       extra_applications: [:logger, :grax],
-      mod: {RAP.Application, []}
+      mod: {RAP.Application, []},
+      env: [
+	    interval_seconds:   300,
+	    index_file:         ".index",
+	    local_directory:    "/var/db/saved",
+	    cache_directory:    "./data_cache",
+	    bakery_directory:   "./bakery",
+	    linked_result_stem: "processed",
+	    time_zone:          "GB-Eire",
+	    rap_uri_prefix:     "/saved/rap",
+	    rap_style_sheet:    "/saved/assets/rap.css", # Imports fira.css
+	    rap_js_lib_plotly:  "/saved/assets/plotly-2.32.0.min.js",
+	    rap_js_lib_d3:      "/saved/assets/d3.v7.min.js",
+	    html_directory:     "./html_fragments",
+	    ets_table:          :uuid
+      ]
     ]
   end
 

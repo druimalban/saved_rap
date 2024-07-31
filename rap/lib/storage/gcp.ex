@@ -13,7 +13,6 @@ defmodule RAP.Storage.GCP do
 
   alias GoogleApi.Storage.V1.Api.Objects, as: GCPReqObjs
 
-  alias RAP.Application
   alias RAP.Storage.{PreRun, MidRun, Monitor}
   alias RAP.Provenance.Work
 
@@ -37,13 +36,21 @@ defmodule RAP.Storage.GCP do
       dispatcher:   invocation_state.stage_dispatcher   }
   end
   
-  def handle_events(events, _from, %Application{} = state) do
+  def handle_events(events, _from, %RAP.Application{} = state) do
     Logger.info "Called `Storage.GCP.handle_events (events = #{inspect events}, …)'"
     input_work = events |> Enum.map(& &1.work)
     Logger.info "Storage.GCP received objects with the following work defined: #{inspect input_work}"
     
     processed = events
-    |> Enum.map(&coalesce_job(state.cache_directory, state.index_file, state.stage_invoked_at, state.stage_type, state.stage_subscriptions, state.stage_dispatcher, &1))
+    |> Enum.map(
+      &coalesce_job(
+	&1,
+	state.stage_invoked_at,
+	state.stage_type,
+	state.stage_subscriptions,
+	state.stage_dispatcher
+      )
+    )
     { :noreply, processed, state }
   end
 
@@ -96,13 +103,13 @@ defmodule RAP.Storage.GCP do
     end
   end
       
-  defp fetch_job_deps(cache_dir, %PreRun{} = job) do
+  defp fetch_job_deps(%PreRun{} = job, cache_dir) do
     Logger.info "Called `Storage.GCP.fetch_job_deps' for job with UUID #{job.uuid}"
     all_resources = [job.index | job.resources]
     target_dir = "#{cache_dir}/#{job.uuid}"
     
     with :ok     <- File.mkdir_p(target_dir),
-	 signals <- Enum.map(all_resources, &fetch_object(target_dir, &1)) do
+	 signals <- Enum.map(all_resources, &fetch_object(&1, target_dir)) do
 
       errors = signals
       |> Enum.reject(fn {:ok, _fp} -> true
@@ -121,13 +128,13 @@ defmodule RAP.Storage.GCP do
     end
   end
   
-  def coalesce_job(cache_dir, index_base, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher, %PreRun{} = job) do
+  def coalesce_job(%PreRun{} = job, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
-    target_dir = "#{cache_dir}/#{job.uuid}"
-    index_full = "#{target_dir}/#{index_base}"
-    with {:ok, uuid, file_bases}       <- fetch_job_deps(cache_dir, job),
-         {:ok, index_contents}         <- File.read(index_full),
+    with {:ok, cache_dir}  <- Application.fetch_env(:rap, :cache_directory),
+         {:ok, index_base} <- Application.fetch_env(:rap, :index_file),
+	 {:ok, uuid, file_bases}      <- fetch_job_deps(job, cache_dir),
+         {:ok, index_contents}        <- File.read("#{cache_dir}/#{job.uuid}/#{index_base}"),
          [m_yaml, m_ttl, base, m_uri] <- String.split(index_contents, "\n")
     do
       Logger.info "Index file is #{inspect index_base}"
@@ -153,16 +160,16 @@ defmodule RAP.Storage.GCP do
     else
       {:error, uuid, errors} -> {:error, uuid, errors}
       {:error, reason} ->
-	Logger.info "Could not read index file #{index_full}"
+	Logger.info "Could not read index"
 	new_work = Work.append_work(job.work, __MODULE__, reason, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
 	%MidRun{ uuid: job.uuid, signal: reason, work: new_work, data_source: "gcp" }
       [] ->
-	Logger.info "Index file #{index_full} is empty!"
+	Logger.info "Index file is empty!"
 	{:error, :empty_index, job.uuid}
 	new_work = Work.append_work(job.work, __MODULE__, :empty_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
         %MidRun{ uuid: job.uuid, signal: :empty_index, work: new_work, data_source: "gcp" }
       _ ->
-	Logger.info "Malformed index file #{index_full}!"
+	Logger.info "Malformed index file!"
 	new_work = Work.append_work(job.work, __MODULE__, :bad_index, work_started_at, stage_invoked_at, stage_type, stage_subscriptions, stage_dispatcher)
 	%MidRun{ uuid: job.uuid, signal: :bad_index, work: new_work, data_source: "gcp" }
     end
