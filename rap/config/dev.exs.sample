@@ -1,0 +1,7 @@
+# Sample config for Mix default 'dev' environment
+
+import Config
+
+config :rap,
+  gcp_bucket:       "saved-fisdat",
+  python_call:      "/usr/local/bin/python3"

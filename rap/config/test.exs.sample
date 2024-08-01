@@ -1,0 +1,16 @@
+# Sample config for the Mix 'test' enviroment 
+# (see `mix test' command)
+# Here, we override the cache and bakery directories
+# to use directories under `test/'.
+# Further set the ETS table to :test, which was just
+# to test that overriding this was productive. It's
+# an in-memory store so the actual name is unimportant.
+
+import Config
+
+config :rap,
+  gcp_bucket:       "saved-fisdat",
+  python_call:      "/usr/local/bin/python3",
+  cache_directory:  "./test/data_cache",
+  bakery_directory: "./test/bakery",
+  ets_table:        :test
