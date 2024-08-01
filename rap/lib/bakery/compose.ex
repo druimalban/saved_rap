@@ -360,10 +360,9 @@ defmodule RAP.Bakery.Compose do
 
   def write_html(%__MODULE__{} = result) do
     target_base = "#{result.output_stem}.#{result.output_ext}"
-    
+
     with {:ok, bakery_dir} <- Application.fetch_env(:rap, :bakery_directory),
 	 target_full <- "#{bakery_dir}/#{result.uuid}/#{target_base}",
-         :ok   <- File.mkdir_p(target_full),
 	 false <- File.exists?(target_full) && PreRun.dl_success?(
                     result.contents, File.read!(target_full), opts: [input_md5: false]),
          :ok   <- File.write(target_full, result.contents) do
