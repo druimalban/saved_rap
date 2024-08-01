@@ -42,8 +42,8 @@ defmodule RAP.Bakery.Compose do
     Logger.info "Bakery.Compose received objects with the following work defined: #{inspect input_work}"
 
     events
-    |> Enum.map(&compose_document/1)
-    |> Enum.map(&write_document/1)
+    |> Enum.map(&build_html/1)
+    |> Enum.map(&write_html/1)
 
     {:noreply, [], state}
   end
@@ -52,14 +52,14 @@ defmodule RAP.Bakery.Compose do
   # struct, since there's no way to guarantee these are constant across
   # runs, i.e. we could start the program with different parameters,
   # and then past generated HTML pages may break
-  #def compose_document(
+  #def build_html(
   #  html_directory,
   #  rap_uri,
   #  style_sheet,
   #  time_zone,
   #  %ManifestOutput{} = prepared 
   #) do
-  def compose_document(%ManifestSpec{signal: sig} = prepared) when sig in [:working, :job_errors] do
+  def build_html(%ManifestSpec{signal: sig} = prepared) when sig in [:working, :job_errors] do
     with {:ok, html_dir} <- Application.fetch_env(:rap, :html_directory),
 	 {:ok, style}    <- Application.fetch_env(:rap, :rap_style_sheet),
 	 {:ok, prefix}   <- Application.fetch_env(:rap, :rap_uri_prefix),
@@ -92,7 +92,7 @@ defmodule RAP.Bakery.Compose do
       :error -> {:error, "Failed to extract keywords from RAP configuration"}
     end
   end
-  def compose_document(%ManifestSpec{signal: _sig} = prepared) do
+  def build_html(%ManifestSpec{signal: _sig} = prepared) do
     with {:ok, html_dir} <- Application.fetch_env(:rap, :html_directory),
 	 {:ok, style}    <- Application.fetch_env(:rap, :rap_style_sheet),
 	 {:ok, prefix}   <- Application.fetch_env(:rap, :rap_uri_prefix),
@@ -358,11 +358,12 @@ defmodule RAP.Bakery.Compose do
     {working_contents, sig}
   end
 
-  def write_document(%__MODULE__{} = result) do
+  def write_html(%__MODULE__{} = result) do
     target_base = "#{result.output_stem}.#{result.output_ext}"
     
     with {:ok, bakery_dir} <- Application.fetch_env(:rap, :bakery_directory),
 	 target_full <- "#{bakery_dir}/#{result.uuid}/#{target_base}",
+         :ok   <- File.mkdir_p(target_full),
 	 false <- File.exists?(target_full) && PreRun.dl_success?(
                     result.contents, File.read!(target_full), opts: [input_md5: false]),
          :ok   <- File.write(target_full, result.contents) do
@@ -374,7 +375,7 @@ defmodule RAP.Bakery.Compose do
 	Logger.info "File #{target_base} already exists and matches checksum of result to be written"
 	target_base
       {:error, error} ->
-	Logger.info "Could not write to fully-qualified path #{target_base}: #{inspect error}"
+	Logger.info "Fully-qualified path #{target_base} is inaccessible: #{inspect error}"
         {:error, error}
     end
   end

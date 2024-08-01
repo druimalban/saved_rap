@@ -6,12 +6,14 @@ defmodule RAP.Job.Result do
 
   use Grax.Schema, depth: +5
   import RDF.Sigils
+  alias RDF.NS.RDFS
   alias RAP.Vocabulary.{DCAT, PROV, SAVED}
   alias RAP.Manifest.TableDesc
   alias RAP.Job.Producer
   alias RAP.Job.{ScopeSpec, JobSpec}
   
   schema SAVED.ResultOutput do
+    property :label,         RDFS.label,         type: :string
     property :job_type,      SAVED.job_type,     type: :string
     property :text_signal,   SAVED.job_signal,   type: :string # distinct from signal of stage
     property :download_url,  DCAT.downloadURL,   type: :iri    # fixme

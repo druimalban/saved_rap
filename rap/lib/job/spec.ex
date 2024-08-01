@@ -36,10 +36,12 @@ defmodule RAP.Job.ScopeSpec do
 
   use Grax.Schema, depth: +5
   import RDF.Sigils
+  alias RDF.NS.RDFS
   alias RAP.Vocabulary.SAVED
   alias RAP.Job.TableSpec
   
   schema SAVED.ScopeOutput do
+    property :label,       RDFS.label,     type: :string
     property :column,      SAVED.column,   type: :string
     property :variable_id, SAVED.variable, type: :iri
 
@@ -67,9 +69,11 @@ defmodule RAP.Job.ResourceSpec do
   
   use Grax.Schema, depth: +5
   import RDF.Sigils
+  alias RDF.NS.RDFS
   alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, PAV, SAVED}
 
   schema SAVED.ResourceOutput do
+    property :label,        RDFS.label,      type: :string
     property :created_with, PAV.createdWith, type: :iri
     property :created_on,   PAV.createdOn,   type: :integer
     property :resource_title,       DCTERMS.title,       type: :string
@@ -106,11 +110,13 @@ defmodule RAP.Job.TableSpec do
 
   use Grax.Schema, depth: +5
   import RDF.Sigils
+  alias RDF.NS.RDFS  
   alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, PAV, SAVED}
   alias RAP.Job.Producer
   alias RAP.Job.ResourceSpec
 
   schema SAVED.TableOutput do
+    property :label,           RDFS.label,          type: :string
     property :title,           DCTERMS.title,       type: :string
     property :description,     DCTERMS.description, type: :string
     property :submitted_table, PROV.wasDerivedFrom, type: :iri # :source_id above
@@ -125,10 +131,12 @@ defmodule RAP.Job.JobSpec do
 
   use Grax.Schema, depth: +5
   import RDF.Sigils
+  alias RDF.NS.RDFS
   alias RAP.Vocabulary.{DCTERMS, PAV, PROV, SAVED}
   alias RAP.Job.ScopeSpec
 
   schema SAVED.JobOutput do
+    property :label,         RDFS.label,          type: :string
     property :title,         DCTERMS.title,       type: :string
     property :description,   DCTERMS.description, type: :string
     property :created_with,  PAV.createdWith,     type: :iri
@@ -147,6 +155,7 @@ defmodule RAP.Job.ManifestSpec do
 
   use Grax.Schema, depth: +5
   import RDF.Sigils
+  alias RDF.NS.RDFS
   alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, PAV, SAVED}
   alias RAP.Manifest.{TableDesc, JobDesc}
   alias RAP.Job.{TableSpec, JobSpec, Result}
@@ -154,6 +163,7 @@ defmodule RAP.Job.ManifestSpec do
   #alias RAP.Manifest.{TableDesc, JobDesc}
 
   schema SAVED.ManifestOutput do
+    property :label,              RDFS.label,           type: :string
     property :uuid,               SAVED.uuid,           type: :string
     property :data_source,        SAVED.data_source,    type: :string
     property :title,              DCTERMS.title,        type: :string

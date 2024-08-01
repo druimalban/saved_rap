@@ -131,10 +131,15 @@ defmodule RAP.Bakery.Prepare do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     
     with {:ok, rap_invoked_at} <- Map.fetch(state, :rap_invoked_at),
-	 {:ok, cache_dir}  <- Application.fetch_env(:rap, :cache_directory),
-	 {:ok, bakery_dir} <- Application.fetch_env(:rap, :bakery_directory),
+	 {:ok, cache_dir}      <- Application.fetch_env(:rap, :cache_directory),
+	 {:ok, bakery_dir}     <- Application.fetch_env(:rap, :bakery_directory),
 	 :ok <- File.mkdir_p("#{bakery_dir}/#{processed.uuid}") do
 
+      Logger.info "RAP was invoked at #{inspect rap_invoked_at}"
+      Logger.info "RAP cache directory is #{cache_dir}"
+      Logger.info "RAP bakery directory is #{bakery_dir}"
+      Logger.info "Working in #{bakery_dir}/#{processed.uuid}…"
+      
       # default value is []
       cached_results = processed.results
       |> Enum.map(&write_result(&1, processed.base_prefix, bakery_dir, processed.uuid))
@@ -171,6 +176,9 @@ defmodule RAP.Bakery.Prepare do
       }
     else
       :error -> {:error, "Cannot fetch keywords or make new directory"}
+      error ->
+	Logger.info "Other error: #{error}"
+	error
     end
   end
 

@@ -23,6 +23,7 @@ defmodule RAP.Provenance.RAPStageSubscription do
   alias RAP.Vocabulary.{PAV, PROV, DCAT, SAVED}
 
   schema SAVED.RAPStageSubscription do
+    property :label,         RDFS.label,                 type: :string
     property :subscribed_to, SAVED.beam_module,          type: :iri
     property :min_demand,    SAVED.gen_stage_min_demand, type: :integer
     property :max_demand,    SAVED.gen_stage_max_demand, type: :integer

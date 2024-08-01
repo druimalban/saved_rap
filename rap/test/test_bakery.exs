@@ -7,6 +7,8 @@ defmodule RAP.Test.Bakery.Prepare do
   alias RAP.Job.{Runner, Result}
   alias RAP.Bakery.Prepare
 
+  require Logger
+
   @doc """
   The tests assume that the mnesia data-base is empty, since we want to test the data in isolation. These are unit tests. Of course, there is an assumption that the data-base exists, but that's reasonable.
 
@@ -21,19 +23,26 @@ defmodule RAP.Test.Bakery.Prepare do
   """
   test "Test bakery cache/moving" do
 
+    test_base = "https://marine.gov.scot/metadata/saved/rap/"
+    test_manifest_id = RDF.IRI.new(test_base <> "RootManifest_processed")
+    
     # See (1)
     uuid0 = UUID.uuid4()
     uuid1 = UUID.uuid4()
     curr_ts = DateTime.utc_now() |> DateTime.to_unix()
     
     # Pretend we've already checked these into ETS
-    :ets.new(:test, [:set, :public, :named_table])
     :ets.insert(:test, {uuid0, curr_ts})
     
     source0  = "test/manual_test/9a55d938-7f50-45b5-8960-08c78d73facc"
     cache0   = "test/data_cache/#{uuid0}"
     dest0    = "test/bakery/#{uuid0}"
     res0     = "{ \"result\": \"test\" }"
+    fake_state = %{rap_invoked_at:      0,
+		   stage_invoked_at:    300,
+		   stage_type:          :producer_consumer,
+                   stage_subscriptions: [],
+		   stage_dispatcher:    GenStage.DemandDispatcher }
 
     target_resources = [ "Sentinel_cage_station_info_6.csv",
 			 "sentinel_cages_site.ttl",
@@ -42,30 +51,32 @@ defmodule RAP.Test.Bakery.Prepare do
 			 "sentinel_cages_sampling.ttl",
 			 "sentinel_cages_sampling.yaml"    ]
     
-    test0 = %Runner{
+    test0 = %ManifestSpec{
+      __id__:             test_manifest_id,
+      base_prefix:        test_base,
       uuid:               uuid0,
       signal:             :working,
-      manifest_base_ttl:  "manifest.ttl",
-      manifest_base_yaml: "manifest.yaml",
       resource_bases:     target_resources,
+      submitted_manifest_base_ttl:  "manifest.ttl",
+      submitted_manifest_base_yaml: "manifest.yaml",
       results: [
 	%Result{
-	  name:        "test_result0",
-	  title:       "Test result 0 (ignored)",
+	  __id__:      RDF.IRI.new(test_base <> "test_result0"),
 	  source_job:  "test0",
-	  type:        "ignore",
-	  signal:      :ok,
-	  contents:    "Dummy/ignored job"
+	  job_type:    "ignore",
+	  signal:      :ignored,
+	  contents:    "Dummy/ignored job",
+	  label:       "Test result 0 (ignored)",
 	},
 	%Result{
-	  name:          "test_result1",
-	  title:         "Test result 1 (density)",
+	  __id__:         RDF.IRI.new(test_base <> "test_result1"),
 	  source_job:    "test1",
-	  type:          "density",
+	  job_type:      "density",
 	  signal:        :working,
 	  contents:      res0,
-	  output_format: "json",
-	  output_stem:   "density"
+	  output_format: "text/json",
+	  output_stem:   "density",
+	  label:         "Test result 1 (density)"
 	}
       ]
     }
@@ -75,16 +86,17 @@ defmodule RAP.Test.Bakery.Prepare do
 
     # See (3)
     #def bake_data(%Runner{} = processed, cache_dir, bakery_dir, _linked_stem) when processed.signal in [:working, :job_errors] do
-    Prepare.bake_data(test0, "test/data_cache", "test/bakery", "post", :test)
-
+    Prepare.bake_data(test0, fake_state)
+    
     # These should all have been copied over
     assert Enum.all?(target_resources, &File.exists?("#{dest0}/#{&1}"))
+    
     # This should not have been written (note catch-all extension is .txt)
     assert not File.exists?("#{dest0}/ignore_test_result0.txt")
     # This should exist as it's a valid job type which is run by Job.Runner
     assert File.exists?("#{dest0}/density_test_result1.json")
     # We could test that the file got removed altogether, but this isn't necessarily desirable. Better to clean up periodically, I think, since keeping a cache  enables us to avoid downloads from GCP unneccesarily.
-    #assert not File.exists?("#{cache0}")
+    ###assert not File.exists?("#{cache0}")
     
     # Clean up
     :ets.delete(:test, uuid0)
@@ -106,21 +118,10 @@ defmodule RAP.Test.Bakery.Compose do
   require Logger
 
   test "Test web page generation" do
-    # Note ,this is fairly manual, as far as tests go, since we're primarily looking to see if the HTML document generation is successful. 
+    # Note ,this is fairly manual, as far as tests go, since we're primarily looking to see if the HTML document generation is successful.
 
-    #    defstruct [ :uuid, :data_source,
-    #              :name, :title, :description,
-    #              :start_time, :end_time,
-    #              :manifest_pre_base_ttl,
-    #              :manifest_pre_base_yaml,
-    #              :resource_bases,
-    #              :pre_signal,
-    #              :producer_signal,
-    #              :runner_signal,
-    #              :result_bases,
-    #              :results,
-    #              :staged_tables,
-    #              :staged_jobs          ]
+    test_base = "https://marine.gov.scot/metadata/saved/rap/"
+    test_manifest_id = RDF.IRI.new(test_base <> "RootManifest_processed")
 
     uuids = for _ <- 1..20, do: UUID.uuid4()
     
@@ -136,18 +137,18 @@ defmodule RAP.Test.Bakery.Compose do
     # Need to process extant: true/false sensibly/consistently
     staging_tables = [
       %TableSpec{
-	name:      "time_density_simple",
-	title:     "Placeholder time/density description",
-	resource:  %ResourceSpec{ base: "density.csv", extant: true },
-	schema:    %ResourceSpec{ base: "density.ttl", extant: true },
-	source_id: RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/time_density_simple"
+	__id__:           RDF.IRI.new(test_base <> "time_density_simple"),
+	title:            "Placeholder time/density description",
+	resource:         %ResourceSpec{ base: "density.csv", extant: true },
+	schema_ttl:       %ResourceSpec{ base: "density.ttl", extant: true },
+	submitted_table:  RDF.IRI.new(test_base <> "time_density_simple")
       },
       %TableSpec{
-	name:     "sampling",
-	title:    "Sentinel cages sampling: known-good test table",
-	resource: %ResourceSpec{ base: "cagedata-10.csv",             extant: true },
-	schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true },
-	RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/sampling"
+	__id__:          RDF.IRI.new(test_base <> "sampling"),
+	title:           "Sentinel cages sampling: known-good test table",
+	resource:        %ResourceSpec{ base: "cagedata-10.csv",             extant: true },
+	schema_ttl:      %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true },
+	submitted_table: RDF.IRI.new(test_base <> "time_density_simple")
       }
     ]
 
@@ -162,113 +163,114 @@ defmodule RAP.Test.Bakery.Compose do
     #	      :resource_name, :resource_base ]
 
     job_ignore = %JobSpec{
-      name:          "job_example_ignore",
+      __id__:        RDF.IRI.new(test_base <> "job_example_ignore_annotated"),
       title:         "Example empty/ignored job",
       result_format: "text/plain",
       result_stem:   "result_ignore",
       type:          "ignore",
-      source_id:     RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/job_example_ignore")
+      submitted_job: RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/job_example_ignore")
     }
     
     job_dens_working = %JobSpec{
-      name:          "job_example_time_density_simple",
+      __id__:        RDF.IRI.new(test_base <> "job_example_time_density_simple_annotated"),
       title:         "Example job time_density_simple",
       result_format: "text/json",
       result_stem:   "result_density",
       type:          "density",
-      source_id:     RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/job_example_time_density_simple"
+      submitted_job: RDF.IRI.new(test_base <> "job_example_time_density_simple"),
       scope_collected: [
 	%ScopeSpec{
+	  __id__:         RDF.BlankNode.new(),
 	  column:         "TOTAL",
 	  resource_name:  "sampling",
 	  resource_base:  "cagedata-10.csv",
 	  variable_curie: "saved:lice_af_total",
-	  variable_uri:   "https://marine.gov.scot/metadata/saved/schema/lice_af_total"
+	  variable_id:   "https://marine.gov.scot/metadata/saved/schema/lice_af_total"
 	}
       ],
       scope_modelled: [
 	%ScopeSpec{
+	  __id__:         RDF.BlankNode.new(),
 	  column:         "time",
 	  resource_name:  "time_density_simple",
 	  resource_base:  "density.csv",
 	  variable_curie: "saved:time",
-	  variable_uri:   "https://marine.gov.scot/metadata/saved/schema/time"
+	  variable_id:   "https://marine.gov.scot/metadata/saved/schema/time"
 	},
 	%ScopeSpec{
+	  __id__:         RDF.BlankNode.new(),
 	  column:         "density",
 	  resource_name:  "time_density_simple",
 	  resource_base:  "density.csv",
 	  variable_curie: "saved:density",
-	  variable_uri:   "https://marine.gov.scot/metadata/saved/schema/density"
+	  variable_id:   "https://marine.gov.scot/metadata/saved/schema/density"
 	}
       ]
     }
     job_dens_job_err = %JobSpec{
-      name:          "job_example_time_density_simple",
+      __id__:    RDF.IRI.new(test_base <> "job_example_time_density_simple_annotated"),
       title:         "Example job time_density_simple",
       result_format: "text/json",
       result_stem:   "result_density",
       type:          "density",
-      source_id:     RDF.IRI.new("https://marine.gov.scot/metadata/saved/rap/job_dens_job_err"
+      submitted_job: RDF.IRI.new(test_base <> "job_example_time_density_simple"),
       scope_collected: [
 	%ScopeSpec{
+	  __id__:         RDF.BlankNode.new(),
 	  column:         "TOTAL",
 	  resource_name:  "sampling",
 	  resource_base:  "cagedata-10.csv",
 	  variable_curie: "saved:lice_af_total",
-	  variable_uri:   "https://marine.gov.scot/metadata/saved/schema/lice_af_total"
+	  variable_id:   "https://marine.gov.scot/metadata/saved/schema/lice_af_total"
 	}
       ]
     }
 
-    
-
-
     res_ignore = %Result{
-      name:        "result_job_example_ignore",
-      title:       "Test result 0 (ignored; working)",
-      source_job:  "job_example_ignore",
-      type:        "ignore",
+      __id__:      RDF.IRI.new(test_base <> "result_job_example_ignore"),
+      label:       "Test result 0 (ignored; working)",
+      source_job:  RDF.IRI.new(test_base <> "job_example_ignore"),
+      job_type:    "ignore",
       signal:      :ignored,
       contents:    "Dummy/ignored job",
-      start_time:  fake_ts+10,
-      end_time:    fake_ts+90
+      start_time_unix:  fake_ts+10,
+      end_time_unix:    fake_ts+90
     }
     res_dens_working = %Result{
-      name:          "result_job_example_time_density_simple",
-      title:         "Test result 1 (density; working)",
-      source_job:    "job_example_time_density_simple",
-      type:          "density",
+      __id__:        RDF.IRI.new(test_base <> "result_job_example_time_density_simple"),
+      label:         "Test result 1 (density; working)",
+      source_job:    RDF.IRI.new(test_base <> "job_example_time_density_simple"),
+      job_type:      "density",
       signal:        :working,
       contents:      res0,
-      output_format: "json",
+      output_format: "text/json",
       output_stem:   "density",
-      start_time:    fake_ts+91,
-      end_time:      curr_ts-90
+      start_time_unix:    fake_ts+91,
+      end_time_unix:      curr_ts-90
     }
     res_dens_job_err = %Result{
-      name:          "result_job_example_time_density_simple",
-      title:         "Test result 2 (density; job error)",
-      source_job:    "job_example_time_density_simple",
-      type:          "density",
+      __id__:        RDF.IRI.new(test_base <> "result_job_example_time_density_simple"),
+      label:         "Test result 2 (density; job error)",
+      source_job:    RDF.IRI.new(test_base <> "job_example_time_density_simple"),
+      job_type:      "density",
       signal:        :job_error,
       contents:      nil,
-      output_format: "json",
+      output_format: "text/json",
       output_stem:   "density",
-      start_time:    fake_ts+91,
-      end_time:      curr_ts-90
+      start_time_unix:    fake_ts+91,
+      end_time_unix:      curr_ts-90
     }
     res_dens_py_err = %Result{
-      name:          "result_job_example_time_density_simple",
-      title:         "Test result 3 (density; Python error)",
-      source_job:    "job_example_time_density_simple",
-      type:          "density",
+      __id__:    RDF.IRI.new(test_base <> "result_job_example_time_density_simple"),
+      label:         "Test result 3 (density; Python error)",
+      source_job:    RDF.IRI.new(test_base <> "job_example_time_density_simple"),
+      job_type:      "density",
       signal:        :python_error,
       contents:      nil,
-      output_format: "json",
+      output_format: "text/json",
       output_stem:   "density",
-      start_time:    fake_ts+91,
-      end_time:      curr_ts-90
+      start_time_unix:    fake_ts+91,
+      end_time_unix:      curr_ts-90
     }
 
     staging_jobs_working   = [ job_ignore, job_dens_working ]
@@ -278,58 +280,62 @@ defmodule RAP.Test.Bakery.Compose do
     target_results_errors  = [ res_ignore, res_dens_working, res_dens_job_err, res_dens_py_err ]
       
     # compose_document(html_directory, rap_uri, style_sheet, time_zone, prep) -> %{uuid:_, contents:_}
-    desc_full_working = %Prepare{
-      uuid:                   Enum.at(uuids, 0),
-      data_source:            :gcp,
-      name:                   "LeafManifest0",
-      title:                  "Fully filled out manifest for testing",
-      description:            "Longer-form description",
-      start_time:             fake_ts,
-      end_time:               curr_ts,
-      manifest_pre_base_ttl:  "prepared_manifest1_pre.ttl", ## Not renamed as we're copying from source dir
-      manifest_pre_base_yaml: "prepared_manifest1_pre.yaml",
-      resource_bases:         target_resources,
-      pre_signal:             :working,
-      producer_signal:        :working,
-      runner_signal:          :working,
-      result_bases:           "results_job_example_time_density_simple.json",
-      results:                target_results_working,
-      staged_tables:          staging_tables,
-      staged_jobs:            staging_jobs_working
+    desc_full_working = %ManifestSpec{
+      __id__:          RDF.IRI.new(test_base <> "LeafManifest0"),
+      uuid:            Enum.at(uuids, 0),
+      data_source:     :gcp,
+      title:           "Fully filled out manifest for testing",
+      description:     "Longer-form description",
+      start_time_unix: fake_ts,
+      end_time_unix:   curr_ts,
+      resource_bases:  target_resources,
+      signal:          :working,
+      result_bases:    ["results_job_example_time_density_simple.json"],
+      results:         target_results_working,
+      tables:          staging_tables,
+      jobs:            staging_jobs_working,
+      ## Not renamed as we're copying from source dir:
+      submitted_manifest_base_ttl:  "prepared_manifest1_pre.ttl", 
+      submitted_manifest_base_yaml: "prepared_manifest1_pre.yaml",
+      work: [{RAP.Storage.GCP,  %{signal: :working}},
+	     {RAP.Job.Producer, %{signal: :working}},
+	     {RAP.Job.Runner,   %{signal: :working}}]
     }
-    desc_full_job_errors = %Prepare{
-      uuid:                   Enum.at(uuids, 1),
-      data_source:            :gcp,
-      name:                   "LeafManifest1",
-      title:                  "Nominally fully filled out manifest for testing",
-      description:            "Failure signal :job_errors",
-      start_time:             fake_ts,
-      end_time:               curr_ts,
-      manifest_pre_base_ttl:  "prepared_manifest1_pre.ttl", ## Not renamed as we're copying from source dir
-      manifest_pre_base_yaml: "prepared_manifest1_pre.yaml",
-      resource_bases:         target_resources,
-      pre_signal:             :working,
-      producer_signal:        :working,
-      runner_signal:          :job_errors,
-      result_bases:           "results_job_example_time_density_simple.json",
-      results:                target_results_errors,
-      staged_tables:          staging_tables,
-      staged_jobs:            staging_jobs_errors
+    desc_full_job_errors = %ManifestSpec{
+      __id__:          RDF.IRI.new(test_base <> "LeafManifest1"),
+      uuid:            Enum.at(uuids, 1),
+      data_source:     :gcp,
+      title:           "Nominally fully filled out manifest for testing",
+      description:     "Failure signal :job_errors",
+      start_time_unix: fake_ts,
+      end_time_unix:   curr_ts,
+      resource_bases:  target_resources,
+      signal:          :job_errors,
+      result_bases:    ["results_job_example_time_density_simple.json"],
+      results:         target_results_errors,
+      tables:          staging_tables,
+      jobs:            staging_jobs_errors,
+      submitted_manifest_base_ttl:  "prepared_manifest1_pre.ttl",
+      submitted_manifest_base_yaml: "prepared_manifest1_pre.yaml",
+      work: [{RAP.Storage.GCP,  %{signal: :working}},
+	     {RAP.Job.Producer, %{signal: :working}},
+	     {RAP.Job.Runner,   %{signal: :job_errors}}]
     }
     
     prep_up_to_producer = fn u, sig ->
-       %Prepare{
-	 uuid:                   Enum.at(uuids, u),
-	 data_source:            :gcp,
-	 name:                   "LeafManifest#{u}",
-	 title:                  "Partially filled out manifest for testing",
-	 description:            "Up to producer",
-	 manifest_pre_base_ttl:  "prepared_manifest1_pre.ttl", ## Not renamed as we're copying from source dir
-	 manifest_pre_base_yaml: "prepared_manifest1_pre.yaml",
-	 resource_bases:         target_resources,
-	 runner_signal:          :see_producer,
-	 producer_signal:        sig,
-	 pre_signal:             :working
+      %ManifestSpec{
+	__id__:          RDF.IRI.new(test_base <> "LeafManifest#{u}"),
+	uuid:           Enum.at(uuids, u),
+	data_source:    :gcp,
+	label:          "Partially filled out manifest for testing",
+	description:    "Up to producer",
+	resource_bases: target_resources,
+	signal:         :see_producer,
+	submitted_manifest_base_ttl:  "prepared_manifest1_pre.ttl",
+	submitted_manifest_base_yaml: "prepared_manifest1_pre.yaml",
+	work: [{RAP.Storage.GCP,  %{signal: :working}},
+	       {RAP.Job.Producer, %{signal: sig}},
+	       {RAP.Job.Runner,   %{signal: :see_producer}}]
        }
     end
     
@@ -341,15 +347,16 @@ defmodule RAP.Test.Bakery.Compose do
     desc_up_to_producer5 = prep_up_to_producer.(7, :some_other_error)
     
     prep_up_to_pre = fn u, sig ->
-      %Prepare{
+      %ManifestSpec{
+	__id__:          RDF.IRI.new(test_base <> "LeafManifest#{u}"),
 	uuid:            Enum.at(uuids, u),
 	data_source:     :gcp,
-	name:            "LeafManifest3",
 	title:           "Partially filled out manifest for testing",
 	description:     "Up to pre-producer",
-	runner_signal:   :see_pre,
-	producer_signal: :see_pre,
-	pre_signal:      sig
+	signal:          :see_pre,
+	work: [{RAP.Storage.GCP,  %{signal: sig}},
+	       {RAP.Job.Producer, %{signal: :see_pre}},
+	       {RAP.Job.Runner,   %{signal: :see_pre}}]
       }
     end
 
@@ -364,44 +371,28 @@ defmodule RAP.Test.Bakery.Compose do
     quick_lhs_inject = fn
       u, :see_producer, err ->
 	%Compose{
-	  uuid:               Enum.at(uuids, u),
-	  output_stem:        "index",
-	  output_format:      "html",
-	  runner_signal:      :see_producer,
-	  runner_signal_full: "Reading the manifest file failed: #{err}"
+	  uuid:        Enum.at(uuids, u),
+	  output_stem: "index",
+	  output_ext:  "html",
+	  signal:      :see_producer,
+	  signal_full: "Reading the manifest file failed: #{err}"
         }
       u, :see_pre, err ->
 	%Compose{
-	  uuid:               Enum.at(uuids, u),
-	  output_stem:        "index",
-	  output_format:      "html",
-	  runner_signal:      :see_pre,
-	  runner_signal_full: "Reading the index file failed: #{err}"
+	  uuid:        Enum.at(uuids, u),
+	  output_stem: "index",
+	  output_ext:  "html",
+	  signal:      :see_pre,
+	  signal_full: "Reading the index file failed: #{err}"
         }
       u, sig, fsig ->
 	%Compose{
-	  uuid:               Enum.at(uuids, u),
-	  output_stem:        "index",
-	  output_format:      "html",
-	  runner_signal:      sig,
-	  runner_signal_full: fsig
+	  uuid:        Enum.at(uuids, u),
+	  output_stem: "index",
+	  output_ext:  "html",
+	  signal:      sig,
+	  signal_full: fsig
         }
-    end
-    
-    
-    quick_rhs_compose = fn desc ->
-      fake_state = %Application{
-        local_directory:   "/var/db/saved",
-	cache_directory:   "./data_cache",
-	bakery_directory:  "./bakery",
-	time_zone:         "GB-Eire",
-	rap_uri_prefix:    "/saved/rap",
-	rap_style_sheet:   "/saved/rap/assets/app.css",
-	rap_js_lib_plotly: "/saved/rap/assets/plotly-2.32.0.min.js",
-	rap_js_lib_d3:     "/saved/rap/assets/d3.v7.min.js",
-	html_directory:    "./html_fragments"
-      }
-      Compose.compose_document(fake_state, desc)
     end
 
     # Simple all stages succeeded &c.
@@ -412,7 +403,7 @@ defmodule RAP.Test.Bakery.Compose do
     
     lhs_up_to_producer0 = quick_lhs_inject.(2, :see_producer, "Name/IRI of manifest was malformed")
     lhs_up_to_producer1 = quick_lhs_inject.(3, :see_producer, "RDF graph was valid, but referenced tables were malformed")
-    lhs_up_to_producer2 = quick_lhs_inject.(4, :see_producer, "RDF graph was malformed and could not be load at all")
+    lhs_up_to_producer2 = quick_lhs_inject.(4, :see_producer, "RDF graph was malformed and could not be loaded at all")
     lhs_up_to_producer3 = quick_lhs_inject.(5, :see_producer, "Passing loaded manifest to job runner stage failed")
     lhs_up_to_producer4 = quick_lhs_inject.(6, :see_producer, "Other error loading manifest: unspecified signal")
     lhs_up_to_producer5 = quick_lhs_inject.(7, :see_producer, "Other error loading manifest: some_other_error")
@@ -432,19 +423,19 @@ defmodule RAP.Test.Bakery.Compose do
 		    lhs_up_to_pre2, lhs_up_to_pre3,
 		    lhs_up_to_pre4 ]
     
-    rhs_full_working    = quick_rhs_compose.(desc_full_working)
-    rhs_full_job_errors = quick_rhs_compose.(desc_full_job_errors)
-    rhs_up_to_producer0 = quick_rhs_compose.(desc_up_to_producer0)
-    rhs_up_to_producer1 = quick_rhs_compose.(desc_up_to_producer1)
-    rhs_up_to_producer2 = quick_rhs_compose.(desc_up_to_producer2)
-    rhs_up_to_producer3 = quick_rhs_compose.(desc_up_to_producer3)
-    rhs_up_to_producer4 = quick_rhs_compose.(desc_up_to_producer4)
-    rhs_up_to_producer5 = quick_rhs_compose.(desc_up_to_producer5)
-    rhs_up_to_pre0      = quick_rhs_compose.(desc_up_to_pre0)
-    rhs_up_to_pre1      = quick_rhs_compose.(desc_up_to_pre1)
-    rhs_up_to_pre2      = quick_rhs_compose.(desc_up_to_pre2)
-    rhs_up_to_pre3      = quick_rhs_compose.(desc_up_to_pre3)
-    rhs_up_to_pre4      = quick_rhs_compose.(desc_up_to_pre4)
+    rhs_full_working    = Compose.build_html(desc_full_working)
+    rhs_full_job_errors = Compose.build_html(desc_full_job_errors)
+    rhs_up_to_producer0 = Compose.build_html(desc_up_to_producer0)
+    rhs_up_to_producer1 = Compose.build_html(desc_up_to_producer1)
+    rhs_up_to_producer2 = Compose.build_html(desc_up_to_producer2)
+    rhs_up_to_producer3 = Compose.build_html(desc_up_to_producer3)
+    rhs_up_to_producer4 = Compose.build_html(desc_up_to_producer4)
+    rhs_up_to_producer5 = Compose.build_html(desc_up_to_producer5)
+    rhs_up_to_pre0      = Compose.build_html(desc_up_to_pre0)
+    rhs_up_to_pre1      = Compose.build_html(desc_up_to_pre1)
+    rhs_up_to_pre2      = Compose.build_html(desc_up_to_pre2)
+    rhs_up_to_pre3      = Compose.build_html(desc_up_to_pre3)
+    rhs_up_to_pre4      = Compose.build_html(desc_up_to_pre4)
     
     rhs_to_test = [ rhs_full_working, rhs_full_job_errors,
 		    rhs_up_to_producer0, rhs_up_to_producer1,
@@ -462,8 +453,8 @@ defmodule RAP.Test.Bakery.Compose do
       Logger.info "Testing UUID ##{i}"
       Logger.info "LHS was #{inspect lhs}"
       Logger.info "RHS was #{inspect rhs}"
-      assert lhs.runner_signal      == rhs.runner_signal
-      assert lhs.runner_signal_full == rhs.runner_signal_full
+      assert lhs.signal      == rhs.signal
+      assert lhs.signal_full == rhs.signal_full
     end
     
   end

@@ -295,7 +295,7 @@ defmodule RAP.Test.Job.Result do
   
   test "Test handling of dummy/ignored jobs" do
 
-     test_base = "https://marine.gov.scot/metadata/saved/rap/"
+    test_base = "https://marine.gov.scot/metadata/saved/rap/"
 
     test_uuid = "9a55d938-7f50-45b5-8960-08c78d73facc"
     
