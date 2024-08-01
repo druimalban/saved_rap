@@ -10,7 +10,8 @@ defmodule RAP.Test.Storage.PreRun do
   alias RAP.Storage.PreRun
 
   test "Put/read UUID into ETS (`Storage.PreRun.ets_feasible?/2')" do
-    :ets.new(:test, [:set, :public, :named_table])
+    # Test envirnoment ETS table set in config/test.exs
+    #:ets.new(:test, [:set, :public, :named_table])
     
     fake_uuids = [ "c7c69380-0dfe-4361-a09b-002f40234662",
 		   "33f7c11e-fc03-4ee6-8038-2a51fad0f68b",
@@ -23,9 +24,9 @@ defmodule RAP.Test.Storage.PreRun do
     fake_pairs |> Enum.each(fn k -> :ets.insert(:test, k) end)
 
     # Already extant/cached in temporary ETS, i.e. not feasible
-    assert not PreRun.ets_feasible?(extant_uuid, :test)
+    assert not PreRun.ets_feasible?(extant_uuid)
     # Not already extant/cached in temporary ETS, i.e. feasible
-    assert PreRun.ets_feasible?(non_extant_uuid, :test)
+    assert PreRun.ets_feasible?(non_extant_uuid)
   end
 
   test "Put/read UUID in Amnesia DB (`Storage.PreRun.mnesia_feasible?/1')" do
@@ -114,9 +115,9 @@ defmodule RAP.Test.Storage.PostRun do
     uuid1 = UUID.uuid4()
     uuid2 = UUID.uuid4()
 
-    struct0 = %ManifestTable{ uuid: uuid0, start_time: curr_ts - 450 }
-    struct1 = %ManifestTable{ uuid: uuid1, start_time: curr_ts - 300 }
-    struct2 = %ManifestTable{ uuid: uuid2, start_time: curr_ts - 10 }
+    struct0 = %ManifestTable{ uuid: uuid0, start_time_unix: curr_ts - 450 }
+    struct1 = %ManifestTable{ uuid: uuid1, start_time_unix: curr_ts - 300 }
+    struct2 = %ManifestTable{ uuid: uuid2, start_time_unix: curr_ts - 10 }
     
     Amnesia.transaction do
       Logger.info "DB initially has the following keys: #{inspect(ManifestTable.keys())}"
@@ -126,10 +127,10 @@ defmodule RAP.Test.Storage.PostRun do
       Logger.info "Added #{inspect(ManifestTable.keys())} to the manifest table"
     end
 
-    res_exp_none  = PostRun.yield_manifests(curr_ts, "GB-Eire")
-    res_exp_uuid2 = PostRun.yield_manifests(curr_ts - 100, "GB-Eire")
-    res_exp_all0  = PostRun.yield_manifests("GB-Eire")
-    res_exp_all1  = PostRun.yield_manifests(curr_ts - 3000, "GB-Eire")
+    res_exp_none  = PostRun.yield_manifests(curr_ts)
+    res_exp_uuid2 = PostRun.yield_manifests(curr_ts - 100)
+    res_exp_all0  = PostRun.yield_manifests()
+    res_exp_all1  = PostRun.yield_manifests(curr_ts - 3000)
 
     Logger.info ("Result #1 (expected none):    #{inspect res_exp_none}")
     Logger.info ("Result #2 (expected UUID #2): #{inspect res_exp_uuid2}")

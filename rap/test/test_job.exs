@@ -1,6 +1,6 @@
 defmodule RAP.Test.Job.Producer do
   use Amnesia
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   use RDF
   doctest RAP.Job.Producer
   
@@ -63,9 +63,13 @@ defmodule RAP.Test.Job.Producer do
 
   test "Test table-checking" do
 
-    id_sampling = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/")
-    id_stations = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/")
+    test_base = "https://marine.gov.scot/metadata/saved/rap/"
     
+    id_sampling = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling")
+    id_stations = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_site")
+
+    lhs_id_sampling = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling_processed")
+    lhs_id_stations = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_site_processed")
     
     table_sampling = %TableDesc{
       __id__:           id_sampling,
@@ -115,42 +119,42 @@ defmodule RAP.Test.Job.Producer do
 
     # LHSen
     lhs_table_sampling = %TableSpec{
-      name:     "sentinel_cages_sampling",
+      __id__:   lhs_id_sampling,
       title:    "Sentinel cages sampling: known-good test table",
       resource: %ResourceSpec{ base: "sentinel_cages_cleaned.csv",  extant: true },
-      schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true } 
+      schema_ttl:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true } 
     }
     lhs_table_stations = %TableSpec{
-      name:     "sentinel_cages_site",
+      __id__:   lhs_id_stations,
       title:    "Sentinel cages site: known-good test table",
       resource: %ResourceSpec{ base: "Sentinel_cage_station_info_6.csv", extant: true },
-      schema:   %ResourceSpec{ base: "sentinel_cages_site.ttl",          extant: true }
+      schema_ttl:   %ResourceSpec{ base: "sentinel_cages_site.ttl",          extant: true }
     }
     lhs_table_bad_resource = %TableSpec{
-      name:     "sentinel_cages_sampling",
+      __id__:   lhs_id_sampling,
       title:    "Sentinel cages sampling: test variant with bad resource",
       resource: %ResourceSpec{ base: "cleaned.csv",                 extant: false },
-      schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true  }
+      schema_ttl:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true  }
     }
     lhs_table_bad_schemata = %TableSpec{
-      name:     "sentinel_cages_sampling",
+      __id__:   lhs_id_sampling,
       title:    "Sentinel cages sampling: test variant with bad schemata",
       resource: %ResourceSpec{ base: "sentinel_cages_cleaned.csv",  extant: true  },
-      schema:   %ResourceSpec{ base: "sampling.ttl",                extant: false }
+      schema_ttl:   %ResourceSpec{ base: "sampling.ttl",                extant: false }
     }
     lhs_table_bad_misc = %TableSpec{
-      name:     "sentinel_cages_site",
+      __id__:   lhs_id_stations,
       title:    "Sentinel cages site: test variant with various non-existent resources",
       resource: %ResourceSpec{ base: "station_info.csv",  extant: false },
-      schema:   %ResourceSpec{ base: "stations.ttl", extant: false}
+      schema_ttl:   %ResourceSpec{ base: "stations.ttl", extant: false}
     }
 
     #RHSen
-    rhs_table_sampling     = Producer.check_table(table_sampling,     resources)
-    rhs_table_stations     = Producer.check_table(table_stations,     resources)
-    rhs_table_bad_resource = Producer.check_table(table_bad_resource, resources)
-    rhs_table_bad_schemata = Producer.check_table(table_bad_schemata, resources)
-    rhs_table_bad_misc     = Producer.check_table(table_bad_general,  resources)
+    rhs_table_sampling     = Producer.check_table(table_sampling,     resources, test_base)
+    rhs_table_stations     = Producer.check_table(table_stations,     resources, test_base)
+    rhs_table_bad_resource = Producer.check_table(table_bad_resource, resources, test_base)
+    rhs_table_bad_schemata = Producer.check_table(table_bad_schemata, resources, test_base)
+    rhs_table_bad_misc     = Producer.check_table(table_bad_general,  resources, test_base)
   
     assert match?(lhs_table_sampling,     rhs_table_sampling)
     assert match?(lhs_table_stations,     rhs_table_stations)
@@ -162,21 +166,27 @@ defmodule RAP.Test.Job.Producer do
 
   # Can flesh this out later…
   test "Test load/injection of empty manifest" do
-    assert match?({:error, :empty_manifest}, Producer.check_manifest(%ManifestDesc{}, nil, nil))
+    assert match?({:error, :empty_manifest}, Producer.check_manifest(%ManifestDesc{}, nil, nil, nil, %{}))
   end
   
   test "Test load/injection of manifest" do
+    test_base = "https://marine.gov.scot/metadata/saved/rap/"
+
+    id_sampling = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling_processed")
+    id_stations = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_site_processed")
+
+    
     table_sampling = %TableSpec{
-      name:     "sentinel_cages_sampling",
+      __id__:   id_sampling,
       title:    "Sentinel cages sampling: known-good test table",
       resource: %ResourceSpec{ base: "sentinel_cages_cleaned.csv",  extant: true },
-      schema:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true } 
+      schema_ttl:   %ResourceSpec{ base: "sentinel_cages_sampling.ttl", extant: true } 
     }
     table_stations = %TableSpec{
-      name:     "sentinel_cages_site",
+      __id__:   id_stations,
       title:    "Sentinel cages site: known-good test table",
       resource: %ResourceSpec{ base: "Sentinel_cage_station_info_6.csv", extant: true },
-      schema:   %ResourceSpec{ base: "sentinel_cages_site.ttl",          extant: true }
+      schema_ttl:   %ResourceSpec{ base: "sentinel_cages_site.ttl",          extant: true }
     }
     
     test_resources = [ "Sentinel_cage_station_info_6.csv",
@@ -193,21 +203,24 @@ defmodule RAP.Test.Job.Producer do
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
       manifest_iri:  manifest_iri_good,
       manifest_ttl:  "manifest.ttl",
-      resources:     test_resources
+      resources:     test_resources,
+      base_prefix:   test_base
     }
     desc_bad_cardinality = %MidRun{
       signal:        :working,
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
       manifest_iri:  manifest_iri_good,
       manifest_ttl:  "manifest.bad_cardinality.ttl",
-      resources:     test_resources
+      resources:     test_resources,
+      base_prefix:   test_base
     }
     desc_bad_tables = %MidRun{
       signal:        :working,
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
       manifest_iri:  manifest_iri_good,
       manifest_ttl:  "manifest.bad_tables.ttl",
-      resources:     test_resources
+      resources:     test_resources,
+      base_prefix:   test_base
     }
     desc_alt_base = %MidRun{
       # A valid RDF graph, but with different base
@@ -215,13 +228,19 @@ defmodule RAP.Test.Job.Producer do
       uuid:          "9a55d938-7f50-45b5-8960-08c78d73facc",
       manifest_iri:  manifest_iri_alt,
       manifest_ttl:  "manifest.alt_base.ttl",
-      resources:     test_resources
+      resources:     test_resources,
+      base_prefix:   test_base
     }
+
+    fake_state = %{stage_invoked_at:    300,
+		   stage_type:          :producer_consumer,
+                   stage_subscriptions: [],
+		   stage_dispatcher:    GenStage.DemandDispatcher }
     
-    rhs_working         = Producer.invoke_manifest(desc_working,         "test/manual_test")
-    rhs_bad_cardinality = Producer.invoke_manifest(desc_bad_cardinality, "test/manual_test")
-    rhs_bad_tables      = Producer.invoke_manifest(desc_bad_tables,      "test/manual_test")
-    rhs_alt_base        = Producer.invoke_manifest(desc_alt_base, "test/manual_test")
+    rhs_working         = Producer.invoke_manifest(desc_working,         fake_state)
+    rhs_bad_cardinality = Producer.invoke_manifest(desc_bad_cardinality, fake_state)
+    rhs_bad_tables      = Producer.invoke_manifest(desc_bad_tables,      fake_state)
+    rhs_alt_base        = Producer.invoke_manifest(desc_alt_base,        fake_state)
     #rhs_empty           = Producer.invoke_manifest(desc_empty,           "test/manual_test")
 
     assert match?(%ManifestSpec{signal: :working},             rhs_working)
@@ -248,21 +267,21 @@ defmodule RAP.Test.Job.Result do
     file_path_density = "test/manual_test/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/density.csv"
     
     # Case 1: Exits cleanly with expected status 0
-    res0 = Result.cmd_wrapper("python3.12", "contrib/density_count_ode.py", [
+    res0 = Result.cmd_wrapper("python3.12", "contrib/bin/density_count_ode.py", [
 	  file_path_count,   "TOTAL",
 	  file_path_density, "time",  "density"
 	])
     # Case 2: Exits uncleanly with a different status
-    res1 = Result.cmd_wrapper("python3.12", "contrib/density_count_ode.py", [
+    res1 = Result.cmd_wrapper("python3.12", "contrib/bin/density_count_ode.py", [
 	  file_path_count,   "total",
 	  file_path_density, "time",  "density"
 	])
-    res2 = Result.cmd_wrapper("python3.12", "contrib/ode.py", [
+    res2 = Result.cmd_wrapper("python3.12", "contrib/bin/ode.py", [
 	  file_path_count,   "TOTAL",
 	  file_path_density, "time",  "density"
 	])
     # Case 3: Throw an ErlangError with :enoent
-    res3 = Result.cmd_wrapper("python3.4", "contrib/density_count_ode.py", [
+    res3 = Result.cmd_wrapper("python3.4", "contrib/bin/density_count_ode.py", [
 	  file_path_count,   "TOTAL",
 	  file_path_density, "time",  "density"
 	])
@@ -276,27 +295,33 @@ defmodule RAP.Test.Job.Result do
   
   test "Test handling of dummy/ignored jobs" do
 
-    test_uuid = "9a55d938-7f50-45b5-8960-08c78d73facc"
-    cache_dir = "test/manual_test"
-    
-    desc_ignore = %JobSpec{ type: "ignore" }
-    desc_fake   = %JobSpec{ type: "fake"   }
+     test_base = "https://marine.gov.scot/metadata/saved/rap/"
 
+    test_uuid = "9a55d938-7f50-45b5-8960-08c78d73facc"
+    
+    spec_ignore  = %JobSpec{
+      __id__: RDF.IRI.new(test_base <> "ignore_me_please"),
+      type: "ignore"
+    }
+    spec_invalid = %JobSpec{
+      __id__: RDF.IRI.new(test_base <> "fail_for_me_please"),
+      type: "fake"
+    }
     lhs_ignore = %Result{
-      type:     "ignore",
-      signal:   :ok,
+      job_type: "ignore",
+      signal:   :ignored,
       contents: "Dummy/ignored job"
     }
-    lhs_fake = %Result{
-      type:     "fake",
-      signal:   :error,
+    lhs_invalid = %Result{
+      job_type:  "fake",
+      signal:    :bad_job_spec,
       contents: "Fake/unrecognised job"
     }
-    rhs_ignore = Result.run_job(test_uuid, cache_dir, desc_ignore)
-    rhs_fake   = Result.run_job(test_uuid, cache_dir, desc_fake)
+    rhs_ignore  = Result.run_job(spec_ignore, test_uuid, test_base)
+    rhs_invalid = Result.run_job(spec_ignore, test_uuid, test_base)
     
-    assert match?(lhs_ignore, rhs_ignore)
-    assert match?(lhs_fake,   rhs_fake)
+    assert match?(lhs_ignore,  rhs_ignore)
+    assert match?(lhs_invalid, rhs_invalid)
 
   end
   

@@ -146,19 +146,31 @@ defmodule RAP.Storage.Monitor do
   defp prep_job(uuid, grouped_objects, index_file) do
     target_files = grouped_objects |> Map.get(uuid)
     find_index   = fn(k) -> k.path == index_file end
+    curr_ts      = DateTime.utc_now() |> DateTime.to_unix()
 
-    with %__MODULE__{} = index <- Enum.find(target_files, find_index),
-         resources <- List.delete(target_files, index) do
-      curr = DateTime.utc_now() |> DateTime.to_unix()
-      :ets.insert(:uuid, {uuid, curr})
+    with {:ok, ets_table}      <- Application.fetch_env(:rap, :ets_table),
+	 %__MODULE__{} = index <- Enum.find(target_files, find_index),
+         resources             <- List.delete(target_files, index),
+	 true                  <- :ets.insert(ets_table, {uuid, curr_ts}) do
+      
+      Logger.info("Inserted #{uuid} and current UNIX time-stamp #{inspect curr_ts} into ETS table #{ets_table}")
       ds = %PreRun{uuid: uuid, index: index, resources: resources}
-      Logger.info("Inserted #{uuid} and current UNIX time stamp #{inspect curr} into Erlang term storage (:ets)")
+
       Logger.info("UUID/content map: #{Misc.pretty_print_object ds}")
       {:ok, ds}
     else
-      nil ->
-	Logger.info "Job (UUID #{uuid}) not associated with index (file `#{index_file}')"
-	:error
+      :error ->
+	msg = "Could not fetch keywords from RAP configuration"
+        Logger.info msg
+	{:error, msg}
+      false  ->
+	msg = "Could not insert UUID #{uuid} and current UNIX time-stamp #{inspect curr_ts} into ETS"
+        Logger.info msg
+	{:error, msg}
+      nil    ->
+	msg = "Job (UUID #{uuid}) not associated with index (file `#{index_file}')"
+        Logger.info msg
+	{:error, msg}
     end
   end
 
@@ -235,7 +247,7 @@ defmodule RAP.Storage.Monitor do
       
       staging_objects = staging_uuids
       |> Enum.map(&prep_job(&1, grouped_objects, index_file))
-      |> Enum.reject(& &1 == :error)
+      |> Enum.reject(&match?({:error, _msg}, &1))
       |> Enum.map(annotate)
 
       Logger.info "RAP.Storage.Monitor.monitor_gcp/4: casting staged objects and sleeping for #{interval_ms} milliseconds"

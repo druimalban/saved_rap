@@ -5,21 +5,6 @@ defmodule RAP.Application do
   
   use Application
   
-  @doc
-  """
-  Initial / global pipeline state
-
-  Define a number of hard-coded attributes here, this makes it very easy
-  to be able to read these later as CLI arguments. There are quite a few
-  of these and the named struct makes pattern matching work well, and can
-  also accept nil values - e.g. we don't define a connection here, but in
-  the `RAP.Storage.Monitor' producer stage.
-
-  Use a single GCP bucket for now, because in practice, if we want to
-  monitor more than one, this would imply a distinct stages, since it is
-  presumed that the reason behind using multiple buckets is to treat the
-  data contained within differently.
-  """
   @impl true
   def start(_type, _args) do
     current_ts = DateTime.utc_now() |> DateTime.to_unix()

@@ -33,11 +33,12 @@ defmodule RAP.Storage.PreRun do
   @doc """
   Simple wrapper around Erlang term storage table of UUIDs with 
   """
-  def ets_feasible?(uuid, table \\ :uuid) do
-    case :ets.lookup(table, uuid) do
+  def ets_feasible?(uuid) do
+    {:ok, ets_table} = Application.fetch_env(:rap, :ets_table)
+    case :ets.lookup(ets_table, uuid) do
       [] -> true
       _  ->
-	Logger.info("Job UUID #{uuid} is already running, cannot add to ETS (table #{table}).")
+	Logger.info("Job UUID #{uuid} is already running, cannot add to ETS (table #{ets_table}).")
 	false
     end
   end
@@ -200,16 +201,22 @@ defmodule RAP.Storage.PostRun do
   defp inject_manifest(nil), do: nil
   defp inject_manifest(pre), do: %{ pre | __struct__: ManifestSpec }
 
-  def yield_manifests(invoked_after \\ -1, owner \\ :any) do
-    {:ok, time_zone} = Application.fetch_env(:rap, :time_zone)
+  def yield_manifests(after_unix_ts \\ -1, owner \\ :any) do
+    with {:ok, time_zone}  <- Application.fetch_env(:rap, :time_zone),
+         {:ok, after_time} <- DateTime.from_unix(after_unix_ts) do
+      date_proper = Misc.format_time(after_time, time_zone)
+      Logger.info "Retrieve all prepared manifests after #{date_proper}"
     
-    date_proper = invoked_after |> Misc.format_time(time_zone)
-    Logger.info "Retrieve all prepared manifests after #{date_proper}"
-    
-    Amnesia.transaction do
-      ManifestTable.where(start_time_unix > invoked_after)
-      |> Amnesia.Selection.values()
-      |> Enum.map(&inject_manifest/1)
+      Amnesia.transaction do
+	ManifestTable.where(start_time_unix > after_unix_ts)
+	|> Amnesia.Selection.values()
+	|> Enum.map(&inject_manifest/1)
+      end
+    else
+      :error ->
+	{:error, "Could not fetch time zone keyword from RAP configuration"}
+      {:error, _msg} = error ->
+	error
     end
   end
   

@@ -9,9 +9,9 @@ defmodule RAP.Provenance.RAPProcess do
     property :label, RDFS.label, type: :string
   end
 
-  #def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
-  #  {:ok, RDF.Graph.add(graph, [id, RDF.type(), PROV.SoftwareAgent])}
-  #end
+  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+    {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.SoftwareAgent))}
+  end
 end
 
 defmodule RAP.Provenance.RAPStageSubscription do
@@ -54,6 +54,10 @@ defmodule RAP.Provenance.RAPInvocation do
     link associated_with:           PROV.wasAssociatedWith,       type: list_of(RAPProcess)
     link gen_stage_subscriptions:   SAVED.gen_stage_subscription, type: list_of(RAPStageSubscription)
   end
+
+  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+    {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.Activity))}
+  end
 end
 
 defmodule RAP.Provenance.RAPStageProcessing do
@@ -74,6 +78,10 @@ defmodule RAP.Provenance.RAPStageProcessing do
     property :signal_text,          SAVED.stage_signal,     type: :string
     link generated_entities: PROV.generated, type: list_of(RAPStageResponse)
   end
+
+  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+    {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.Activity))}
+  end
 end
 
 defmodule RAP.Provenance.RAPStageResponse do
@@ -88,14 +96,11 @@ defmodule RAP.Provenance.RAPStageResponse do
     property :label,        RDFS.label,          type: :string
     property :derived_from, PROV.wasDerivedFrom, type: list_of(:iri)
   end
-end
 
-# a saved:LocalUtilitiesInstance, prov:SoftwareAgent
-# a saved:RAPInvocation, prov:Activity
-# a saved:RAPStage, prov:SoftwareAgent
-# a saved:RAPStageInvocation, prov:Activity
-# a saved:RAPStageProcessing, prov:Activity
-# a saved:RAPStageResponse, prov:Entity
+  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+    {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.Entity))}
+  end
+end
 
 defmodule RAP.Provenance.Work do
 
@@ -201,8 +206,8 @@ defmodule RAP.Provenance.Work do
   
   def app_agent(rap_prefix) do
     # RAP.Application -> "rap_application"
-    agent_iri = RDF.IRI.new(rap_prefix <> " OTP application")
-    agent_lbl = "RAP application agent"
+    agent_iri = RDF.IRI.new(rap_prefix <> "application")
+    agent_lbl = "RAP OTP application agent"
     %RAPProcess{ __id__: agent_iri, label:  agent_lbl }
   end
   def gen_stage_agent(stage_atom, rap_prefix) do
@@ -222,14 +227,14 @@ defmodule RAP.Provenance.Work do
       |> DateTime.shift_zone!(time_zone)
 
       invocation_iri = RDF.IRI.new(base_prefix <> "application_invocation")
+      invocation_lbl = "OTP application invocation activity"
       
       %RAPInvocation{
 	__id__:           invocation_iri,
-	label:            "OTP application invocation activity",
+	label:            invocation_lbl,
 	version:          to_string(local_version),
 	beam_application: "rap",
 	beam_node:        to_string(node()),
-	beam_module:      "RAP",
 	otp_version:      System.otp_release(),
 	elixir_version:   System.version(),
 	started_at:       invocation_ts,
@@ -275,7 +280,7 @@ defmodule RAP.Provenance.Work do
 	__id__:                  stage_inv_iri,
 	label:                   stage_inv_lbl,
 	version:                 to_string(local_version),
-	beam_application:        "RAP", # FIXME
+	beam_application:        "rap", #:rap
 	beam_node:               to_string(node()),
 	beam_module:             to_string(stage_atom), # key provided as stage_atom arg, not in the work map
 	beam_module_pid:         work.stage_pid,

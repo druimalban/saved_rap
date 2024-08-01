@@ -30,10 +30,7 @@ defmodule RAP.Manifest.ExtColumnDesc do
   alias RAP.Manifest.ExtColumnDesc
   alias RAP.Vocabulary.{DCTERMS, SAVED}
 
-  # Avoid having to pass the entire graph over
-  # Avoid defining a term which does not exist in the vocabulary
   schema SAVED.ExtColumnDesc do
-    #property :title, DCTERMS.title, type: :string
     field :compact_uri
   end
 
@@ -54,11 +51,7 @@ defmodule RAP.Manifest.ScopeDesc do
   alias RAP.Vocabulary.SAVED
   alias RAP.Manifest.{ExtColumnDesc, TableDesc}
 
-  # To-do: Make all three of these link to the schema
   schema SAVED.ScopeDesc do
-    #property :column,   SAVED.column,   type: :any_uri, required: true
-    #property :variable, SAVED.variable, type: :any_uri, required: true
-    #property :table,    SAVED.table,    type: :any_uri, required: true
     
     property :column,   SAVED.column,   type: :string, required: true
 
@@ -79,30 +72,26 @@ defmodule RAP.Manifest.JobDesc do
     property :title,       DCTERMS.title,       type: :string,  required: false
     property :description, DCTERMS.description, type: :string,  required: false
     property :job_type,    SAVED.job_type,      type: :string,  required: true
-
-    field :job_result_stem
-    field :job_result_format
     
     link job_scope_descriptive: SAVED.job_scope_descriptive, type: list_of(ScopeDesc), depth: +5
     link job_scope_collected:   SAVED.job_scope_collected,   type: list_of(ScopeDesc), depth: +5
     link job_scope_modelled:    SAVED.job_scope_modelled,    type: list_of(ScopeDesc), depth: +5
+
+    field :job_result_format
+    field :job_result_extension
+    field :job_result_stem
   end
 
   def on_load(%JobDesc{job_type: job_type} = job_desc, _graph, _opts) do
-    fmt =
+    {fmt, ext, stem} =
       case job_type do
-	"density" -> "text/json"
-	_         -> "text/plain"
+	"density" -> {"text/json", "json", "result_density"}
+	_         -> {"text/plain", "txt", "result_misc"}
       end
-    stem =
-      case job_type do
-	"density" -> "result_density"
-	_         -> "result_misc"
-      end
-
-    new_desc = job_desc
-    |> Map.put(:job_result_format, fmt)
-    |> Map.put(:job_result_stem,   stem)
+    new_desc = %{ job_desc |
+		  job_result_format:    fmt,
+		  job_result_extension: ext,
+		  job_result_stem:      stem}
     {:ok, new_desc}
   end
 end
