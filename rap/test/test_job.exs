@@ -174,7 +174,6 @@ defmodule RAP.Test.Job.Producer do
 
     id_sampling = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling_processed")
     id_stations = RDF.iri("https://marine.gov.scot/metadata/saved/rap/sentinel_cages_site_processed")
-
     
     table_sampling = %TableSpec{
       __id__:   id_sampling,
@@ -247,7 +246,7 @@ defmodule RAP.Test.Job.Producer do
     assert match?(%ManifestSpec{signal: :working},             rhs_alt_base)
     assert match?(%ManifestSpec{signal: :bad_input_graph},     rhs_bad_cardinality)
     assert match?(%ManifestSpec{signal: :bad_manifest_tables}, rhs_bad_tables)
-    #assert match?(%ManifestSpec{signal: :empty_manifest},      rhs_empty)
+    #assert match?(%ManifestSpec{signal: :empty_manifest},     rhs_empty)
   end
   
 end
@@ -263,25 +262,27 @@ defmodule RAP.Test.Job.Result do
 
   test "Test external command wrapper error behaviour" do
 
+    {:ok, python_call} = Application.fetch_env(:rap, :python_call)
+
     file_path_count   = "test/manual_test/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/cagedata-10.csv"
     file_path_density = "test/manual_test/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/density.csv"
     
     # Case 1: Exits cleanly with expected status 0
-    res0 = Result.cmd_wrapper("python3.12", "contrib/bin/density_count_ode.py", [
+    res0 = Result.cmd_wrapper(python_call, "contrib/bin/density_count_ode.py", [
 	  file_path_count,   "TOTAL",
 	  file_path_density, "time",  "density"
 	])
     # Case 2: Exits uncleanly with a different status
-    res1 = Result.cmd_wrapper("python3.12", "contrib/bin/density_count_ode.py", [
+    res1 = Result.cmd_wrapper(python_call, "contrib/bin/density_count_ode.py", [
 	  file_path_count,   "total",
 	  file_path_density, "time",  "density"
 	])
-    res2 = Result.cmd_wrapper("python3.12", "contrib/bin/ode.py", [
+    res2 = Result.cmd_wrapper(python_call, "contrib/bin/ode.py", [
 	  file_path_count,   "TOTAL",
 	  file_path_density, "time",  "density"
 	])
     # Case 3: Throw an ErlangError with :enoent
-    res3 = Result.cmd_wrapper("python3.4", "contrib/bin/density_count_ode.py", [
+    res3 = Result.cmd_wrapper("/usr/local/bin/python3.4", "contrib/bin/density_count_ode.py", [
 	  file_path_count,   "TOTAL",
 	  file_path_density, "time",  "density"
 	])
