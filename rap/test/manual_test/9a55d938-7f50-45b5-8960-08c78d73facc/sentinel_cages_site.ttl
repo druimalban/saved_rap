@@ -1,0 +1,530 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix linkml: <https://w3id.org/linkml/> .
+@prefix mssite: <https://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> .
+@prefix oslc: <http://open-services.net/ns/core#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix rap: <https://marine.gov.scot/metadata/saved/rap/> .
+@prefix saved: <https://marine.gov.scot/metadata/saved/schema/> .
+@prefix schema1: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix shex: <http://www.w3.org/ns/shex#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+mssite:sentinel_cages_site a saved:SchemaDefinition ;
+    oslc:modifiedBy mssite:saved ;
+    dcterms:license "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" ;
+    dcterms:title "Sentinel cages station information schema" ;
+    pav:createdBy mssite:mssite ;
+    pav:lastUpdatedOn "2024-04-26T00:00:00"^^xsd:dateTime ;
+    schema1:keywords "sea lice",
+        "site data" ;
+    sh:declare [ sh:namespace linkml: ;
+            sh:prefix "linkml" ],
+        [ sh:namespace rap: ;
+            sh:prefix "rap" ],
+        [ sh:namespace mssite: ;
+            sh:prefix "mssite" ],
+        [ sh:namespace saved: ;
+            sh:prefix "saved" ] ;
+    saved:default_prefix "mssite" ;
+    saved:metamodel_version "1.7.0" ;
+    linkml:classes mssite:TableSchema ;
+    linkml:default_range mssite:string ;
+    linkml:generation_date "2024-06-14T12:19:17"^^xsd:dateTime ;
+    linkml:id <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:imports saved:core,
+        saved:types,
+        linkml:types ;
+    linkml:slots mssite:Cage.Lat.DDM,
+        mssite:Cage.Long.DDM,
+        mssite:Cage.X.DD,
+        mssite:Cage.Y.DD,
+        mssite:Cage.easting,
+        mssite:Cage.northing,
+        mssite:Cage.number,
+        mssite:Depth.m,
+        mssite:NGR,
+        mssite:Site.name,
+        mssite:Survey.Series,
+        mssite:Year,
+        mssite:column_collected,
+        mssite:column_descriptive,
+        mssite:column_modelled,
+        mssite:description,
+        mssite:provenance,
+        mssite:title,
+        mssite:type ;
+    linkml:types mssite:LatLonType,
+        mssite:boolean,
+        mssite:curie,
+        mssite:date,
+        mssite:date_or_datetime,
+        mssite:datetime,
+        mssite:decimal,
+        mssite:double,
+        mssite:float,
+        mssite:integer,
+        mssite:jsonpath,
+        mssite:jsonpointer,
+        mssite:ncname,
+        mssite:nodeidentifier,
+        mssite:objectidentifier,
+        mssite:sparqlpath,
+        mssite:string,
+        mssite:time,
+        mssite:uri,
+        mssite:uriorcurie .
+
+mssite:boolean a saved:TypeDefinition ;
+    dcterms:description "A binary (true or false) value" ;
+    skos:exactMatch schema1:Boolean ;
+    skos:inScheme linkml:types ;
+    saved:base "Bool" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"boolean\"." ;
+    saved:repr "bool" ;
+    linkml:definition_uri linkml:Boolean ;
+    linkml:uri xsd:boolean .
+
+mssite:column_collected a saved:SlotDefinition ;
+    dcterms:description "Column describes collected data" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    linkml:definition_uri saved:column_collected ;
+    linkml:range mssite:string ;
+    linkml:slot_uri saved:column_collected .
+
+mssite:column_modelled a saved:SlotDefinition ;
+    dcterms:description "Column describes modelled data" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    linkml:definition_uri saved:column_modelled ;
+    linkml:range mssite:string ;
+    linkml:slot_uri saved:column_modelled .
+
+mssite:curie a saved:TypeDefinition ;
+    dcterms:conformsTo "https://www.w3.org/TR/curie/" ;
+    dcterms:description "a compact URI" ;
+    skos:inScheme linkml:types ;
+    skos:note "in RDF serializations this MUST be expanded to a URI",
+        "in non-RDF serializations MAY be serialized as the compact representation" ;
+    saved:base "Curie" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"curie\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Curie ;
+    linkml:uri xsd:string .
+
+mssite:date a saved:TypeDefinition ;
+    dcterms:description "a date (year, month and day) in an idealized calendar" ;
+    skos:exactMatch schema1:Date ;
+    skos:inScheme linkml:types ;
+    saved:base "XSDDate" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date\".",
+        "URI is dateTime because OWL reasoners don't work with straight date or time" ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Date ;
+    linkml:uri xsd:date .
+
+mssite:date_or_datetime a saved:TypeDefinition ;
+    dcterms:description "Either a date or a datetime" ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date_or_datetime\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:DateOrDatetime ;
+    linkml:uri linkml:DateOrDatetime .
+
+mssite:datetime a saved:TypeDefinition ;
+    dcterms:description "The combination of a date and time" ;
+    skos:exactMatch schema1:DateTime ;
+    skos:inScheme linkml:types ;
+    saved:base "XSDDateTime" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"datetime\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Datetime ;
+    linkml:uri xsd:dateTime .
+
+mssite:decimal a saved:TypeDefinition ;
+    dcterms:description "A real number with arbitrary precision that conforms to the xsd:decimal specification" ;
+    skos:broadMatch schema1:Number ;
+    skos:inScheme linkml:types ;
+    saved:base "Decimal" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"decimal\"." ;
+    linkml:definition_uri linkml:Decimal ;
+    linkml:uri xsd:decimal .
+
+mssite:description a saved:SlotDefinition ;
+    dcterms:description "Human-readable description of the element" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    skos:mappingRelation dcterms:description ;
+    linkml:definition_uri saved:description ;
+    linkml:range mssite:string ;
+    linkml:slot_uri dcterms:description .
+
+mssite:double a saved:TypeDefinition ;
+    dcterms:description "A real number that conforms to the xsd:double specification" ;
+    skos:closeMatch schema1:Float ;
+    skos:inScheme linkml:types ;
+    saved:base "float" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"double\"." ;
+    linkml:definition_uri linkml:Double ;
+    linkml:uri xsd:double .
+
+mssite:jsonpath a saved:TypeDefinition ;
+    dcterms:conformsTo "https://www.ietf.org/archive/id/draft-goessner-dispatch-jsonpath-00.html" ;
+    dcterms:description "A string encoding a JSON Path. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded in tree form." ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpath\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Jsonpath ;
+    linkml:uri xsd:string .
+
+mssite:jsonpointer a saved:TypeDefinition ;
+    dcterms:conformsTo "https://datatracker.ietf.org/doc/html/rfc6901" ;
+    dcterms:description "A string encoding a JSON Pointer. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to a valid object within the current instance document when encoded in tree form." ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpointer\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Jsonpointer ;
+    linkml:uri xsd:string .
+
+mssite:ncname a saved:TypeDefinition ;
+    dcterms:description "Prefix part of CURIE" ;
+    skos:inScheme linkml:types ;
+    saved:base "NCName" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"ncname\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Ncname ;
+    linkml:uri xsd:string .
+
+mssite:nodeidentifier a saved:TypeDefinition ;
+    dcterms:description "A URI, CURIE or BNODE that represents a node in a model." ;
+    skos:inScheme linkml:types ;
+    saved:base "NodeIdentifier" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"nodeidentifier\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Nodeidentifier ;
+    linkml:uri shex:nonLiteral .
+
+mssite:objectidentifier a saved:TypeDefinition ;
+    dcterms:description "A URI or CURIE that represents an object in the model." ;
+    skos:inScheme linkml:types ;
+    skos:note "Used for inheritance and type checking" ;
+    saved:base "ElementIdentifier" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"objectidentifier\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Objectidentifier ;
+    linkml:uri shex:iri .
+
+mssite:provenance a saved:SlotDefinition ;
+    dcterms:description "Provenance of an element, or a set of elements. This is distinct from Dublin Core's notion of provenance, which concerns any changes in ownership/custody of the resource since its creation." ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    skos:narrowMatch dcterms:provenance,
+        saved:notes ;
+    linkml:definition_uri saved:provenance ;
+    linkml:range mssite:string ;
+    linkml:slot_uri saved:provenance .
+
+mssite:sparqlpath a saved:TypeDefinition ;
+    dcterms:conformsTo "https://www.w3.org/TR/sparql11-query/#propertypaths" ;
+    dcterms:description "A string encoding a SPARQL Property Path. The value of the string MUST conform to SPARQL syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded as RDF." ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"sparqlpath\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Sparqlpath ;
+    linkml:uri xsd:string .
+
+mssite:time a saved:TypeDefinition ;
+    dcterms:description "A time object represents a (local) time of day, independent of any particular day" ;
+    skos:exactMatch schema1:Time ;
+    skos:inScheme linkml:types ;
+    saved:base "XSDTime" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"time\".",
+        "URI is dateTime because OWL reasoners do not work with straight date or time" ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Time ;
+    linkml:uri xsd:time .
+
+mssite:title a saved:SlotDefinition ;
+    dcterms:description "Concise human-readable name for the element" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    skos:mappingRelation dcterms:title ;
+    linkml:definition_uri saved:title ;
+    linkml:range mssite:string ;
+    linkml:slot_uri dcterms:title .
+
+mssite:type a saved:SlotDefinition ;
+    dcterms:description "Nature or genre of the element" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    skos:mappingRelation dcterms:type ;
+    linkml:definition_uri saved:type ;
+    linkml:range mssite:string ;
+    linkml:slot_uri dcterms:type .
+
+mssite:uri a saved:TypeDefinition ;
+    dcterms:conformsTo "https://www.ietf.org/rfc/rfc3987.txt" ;
+    dcterms:description "a complete URI" ;
+    skos:closeMatch schema1:URL ;
+    skos:inScheme linkml:types ;
+    skos:note "in RDF serializations a slot with range of uri is treated as a literal or type xsd:anyURI unless it is an identifier or a reference to an identifier, in which case it is translated directly to a node" ;
+    saved:base "URI" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uri\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Uri ;
+    linkml:uri xsd:anyURI .
+
+mssite:uriorcurie a saved:TypeDefinition ;
+    dcterms:description "a URI or a CURIE" ;
+    skos:inScheme linkml:types ;
+    saved:base "URIorCURIE" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uriorcurie\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Uriorcurie ;
+    linkml:uri xsd:anyURI .
+
+mssite:LatLonType a saved:TypeDefinition ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/types/> ;
+    saved:base "str" ;
+    saved:pattern "[0-9]+o [0-9]+.[0-9]+[N|W]" ;
+    saved:repr "str" ;
+    linkml:definition_uri saved:LatLonType ;
+    linkml:uri saved:LatLon .
+
+mssite:integer a saved:TypeDefinition ;
+    dcterms:description "An integer" ;
+    skos:exactMatch schema1:Integer ;
+    skos:inScheme linkml:types ;
+    saved:base "int" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"integer\"." ;
+    linkml:definition_uri linkml:Integer ;
+    linkml:uri xsd:integer .
+
+mssite:Cage.Lat.DDM a saved:SlotDefinition ;
+    dcterms:description "Latitude of the cage" ;
+    skos:exactMatch saved:latitude ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:Cage.Lat.DDM ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:LatLonType ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Cage.Lat.DDM .
+
+mssite:Cage.Long.DDM a saved:SlotDefinition ;
+    dcterms:description "Longitude of the cage" ;
+    skos:exactMatch saved:longitude ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:Cage.Long.DDM ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:LatLonType ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Cage.Long.DDM .
+
+mssite:Cage.X.DD a saved:SlotDefinition ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:Cage.X.DD ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:float ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Cage.X.DD .
+
+mssite:Cage.Y.DD a saved:SlotDefinition ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:Cage.Y.DD ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:float ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Cage.Y.DD .
+
+mssite:Cage.easting a saved:SlotDefinition ;
+    dcterms:description "Easting of the cage" ;
+    skos:exactMatch saved:easting ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:Cage.easting ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:float ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Cage.easting .
+
+mssite:Cage.northing a saved:SlotDefinition ;
+    dcterms:description "Northing of the cage" ;
+    skos:exactMatch saved:northing ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:Cage.northing ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:float ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Cage.northing .
+
+mssite:Cage.number a saved:SlotDefinition ;
+    dcterms:description "A unique identifier for each cage which links back to station information. Not necessarily a number." ;
+    skos:exactMatch saved:cage_id ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:any_of [ a saved:AnonymousSlotExpression ;
+            linkml:range mssite:integer ],
+        [ a saved:AnonymousSlotExpression ;
+            linkml:range mssite:string ] ;
+    linkml:definition_uri mssite:Cage.number ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:string ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Cage.number .
+
+mssite:Depth.m a saved:SlotDefinition ;
+    dcterms:description "Depth (m)" ;
+    skos:exactMatch saved:depth ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:any_of [ a saved:AnonymousSlotExpression ;
+            linkml:range mssite:string ],
+        [ a saved:AnonymousSlotExpression ;
+            linkml:range mssite:float ] ;
+    linkml:definition_uri mssite:Depth.m ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:string ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Depth.m .
+
+mssite:NGR a saved:SlotDefinition ;
+    dcterms:description "National grid reference of the cage" ;
+    skos:exactMatch saved:national_grid_reference ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:NGR ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:string ;
+    linkml:required true ;
+    linkml:slot_uri mssite:NGR .
+
+mssite:Site.name a saved:SlotDefinition ;
+    dcterms:description "Local name of the site in which the cage is situated" ;
+    skos:exactMatch saved:site_name ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:Site.name ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:string ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Site.name .
+
+mssite:Survey.Series a saved:SlotDefinition ;
+    dcterms:description "An identifying name for the survey series" ;
+    skos:exactMatch saved:series ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:definition_uri mssite:Survey.Series ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:string ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Survey.Series .
+
+mssite:Year a saved:SlotDefinition ;
+    dcterms:description "Year" ;
+    skos:exactMatch saved:year ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:any_of [ a saved:AnonymousSlotExpression ;
+            linkml:range mssite:integer ],
+        [ a saved:AnonymousSlotExpression ;
+            linkml:range mssite:string ] ;
+    linkml:definition_uri mssite:Year ;
+    linkml:domain_of mssite:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssite:column_descriptive ;
+    linkml:owner mssite:TableSchema ;
+    linkml:range mssite:string ;
+    linkml:required true ;
+    linkml:slot_uri mssite:Year .
+
+mssite:float a saved:TypeDefinition ;
+    dcterms:description "A real number that conforms to the xsd:float specification" ;
+    skos:exactMatch schema1:Float ;
+    skos:inScheme linkml:types ;
+    saved:base "float" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"float\"." ;
+    linkml:definition_uri linkml:Float ;
+    linkml:uri xsd:float .
+
+mssite:column_descriptive a saved:SlotDefinition ;
+    dcterms:description "Column describes data about the world" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    linkml:definition_uri saved:column_descriptive ;
+    linkml:range mssite:string ;
+    linkml:slot_uri saved:column_descriptive .
+
+mssite:string a saved:TypeDefinition ;
+    dcterms:description "A character string" ;
+    skos:exactMatch schema1:Text ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "In RDF serializations, a slot with range of string is treated as a literal or type xsd:string.   If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"string\"." ;
+    linkml:definition_uri linkml:String ;
+    linkml:uri xsd:string .
+
+mssite:TableSchema a saved:ClassDefinition ;
+    skos:inScheme <http://marine.gov.scot/metadata/saved/rap/sentinel_cages_site/> ;
+    linkml:class_uri mssite:TableSchema ;
+    linkml:definition_uri mssite:TableSchema ;
+    linkml:implements linkml:ColumnOrderedArray,
+        linkml:TwoDimensionalArray ;
+    linkml:slot_usage [ ] ;
+    linkml:slots mssite:Cage.Lat.DDM,
+        mssite:Cage.Long.DDM,
+        mssite:Cage.X.DD,
+        mssite:Cage.Y.DD,
+        mssite:Cage.easting,
+        mssite:Cage.northing,
+        mssite:Cage.number,
+        mssite:Depth.m,
+        mssite:NGR,
+        mssite:Site.name,
+        mssite:Survey.Series,
+        mssite:Year .
+

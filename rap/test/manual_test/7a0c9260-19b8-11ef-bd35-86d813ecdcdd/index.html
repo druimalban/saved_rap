@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Manifest 7a0c9260-19b8-11ef-bd35-86d813ecdcdd</title>
+  <link rel="stylesheet" href="/saved/rap/assets/app.css">
+</head>
+<body>
+<h1>Manifest information</h1>
+<ul>
+  <li>Title: <i></i></li>
+  <li>Description: <i></i></li>
+  <li>UUID: <tt>7a0c9260-19b8-11ef-bd35-86d813ecdcdd</tt></li>
+  <li>Submitted TTL manifest: <a href=http://localhost/saved/rap/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/prepared_manifest1_pre.ttl><tt>prepared_manifest1_pre.ttl</tt></a></li>
+  <li>Begin: <u>Saturday, 24 June 2024, 13:09 (GMT)</u></li>
+  <li>End: <u>Saturday, 24 June 2024, 13:09 (GMT)</u></li>
+</ul>
+<h1>Specified tables</h1>
+<h2 id="sampling">Sentinel cages sampling information schema</h2>
+<ul>
+  <li>Atomic name/identifier: <tt>sampling</tt></li>
+  <li>Title: <i>Sentinel cages sampling information schema</i></li>
+  <li>Description: <i></i></li>
+  <li>Data file: <a href=http://localhost/saved/rap/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/cagedata-10.csv><tt>cagedata-10.csv</tt></a></li>
+  <li>Converted TTL schema: <a href=http://localhost/saved/rap/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/sentinel_cages_sampling.ttl><tt>sentinel_cages_sampling.ttl</tt></a></li>
+</ul>
+
+<h2 id="time_density_simple">placeholder time/density description</h2>
+<ul>
+  <li>Atomic name/identifier: <tt>time_density_simple</tt></li>
+  <li>Title: <i>placeholder time/density description</i></li>
+  <li>Description: <i></i></li>
+  <li>Data file: <a href=http://localhost/saved/rap/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/density.csv><tt>density.csv</tt></a></li>
+  <li>Converted TTL schema: <a href=http://localhost/saved/rap/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/density.ttl><tt>density.ttl</tt></a></li>
+</ul>
+<h1>Specified jobs</h1>
+<h2>Example job time_density_simple</h2>
+<ul>
+  <li>Atomic name/identifier: <tt>job_example_time_density_simple</tt></li>
+  <li>Title: <i>Example job time_density_simple</i></li>
+  <li>Description: <i></i></li>
+  <li>Job type: <u>density</u></li>
+  <li>‘Descriptive’ columns in scope:
+<ul></ul>
+
+  <li>‘Collected’ columns in scope:
+<ul>  <li><tt>TOTAL</tt>
+    <ul>
+      <li>Source table name: <a href="#sampling"><tt>sampling</tt></a></li>
+      <li>Source data file: <a href="#cagedata-10.csv"><tt>cagedata-10.csv</tt></a></li>
+      <li>Underlying variable: <a href=https://marine.gov.scot/metadata/saved/schema/lice_af_total><tt>saved:lice_af_total</tt></a></li>
+    </ul>
+  </li>
+</ul>
+
+  <li>‘Modelled’ columns in scope:
+<ul>  <li><tt>density</tt>
+    <ul>
+      <li>Source table name: <a href="#time_density_simple"><tt>time_density_simple</tt></a></li>
+      <li>Source data file: <a href="#density.csv"><tt>density.csv</tt></a></li>
+      <li>Underlying variable: <a href=https://marine.gov.scot/metadata/saved/schema/density><tt>saved:density</tt></a></li>
+    </ul>
+  </li>
+
+  <li><tt>time</tt>
+    <ul>
+      <li>Source table name: <a href="#time_density_simple"><tt>time_density_simple</tt></a></li>
+      <li>Source data file: <a href="#density.csv"><tt>density.csv</tt></a></li>
+      <li>Underlying variable: <a href=https://marine.gov.scot/metadata/saved/schema/time><tt>saved:time</tt></a></li>
+    </ul>
+  </li>
+</ul>
+
+</ul>
+<h1>Results</h1>
+<h2>Example job time_density_simple</h2>
+<ul>
+  <li>Source job atomic name/identifier: <tt>name</tt></li>
+  <li>Title: <i>Example job time_density_simple</i></li>
+  <li>Description: <i></i></li>
+  <li>Signal: <tt>ok</tt></li>
+  <li>Begin: <u>Saturday, 24 June 2024, 13:09 (GMT)</u></li>
+  <li>End: <u>Saturday, 24 June 2024, 13:09 (GMT)</u></li>
+  <li>Raw results:<a href=http://localhost/saved/rap/7a0c9260-19b8-11ef-bd35-86d813ecdcdd/results_job_example_time_density_simple.json><tt>results_job_example_time_density_simple.json</tt></a></li>
+  <li>Generated results:
+    <ul>
+      
+    </ul>
+  </li>
+</ul>
+</body>
+</html>

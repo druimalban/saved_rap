@@ -1,0 +1,45 @@
+@base <https://marine.gov.scot/metadata/saved/rap/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix job: <https://marine.gov.scot/metadata/saved/schema/job_> .
+@prefix p_base: <https://marine.gov.scot/metadata/saved/rap/> .
+@prefix saved: <https://marine.gov.scot/metadata/saved/schema/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<RootManifest> a saved:ManifestDesc ;
+    saved:jobs <job_example_time_density_simple> ;
+    saved:local_version "0.5+1.g9b9f5ab.dirty" ;
+    saved:tables <sampling>,
+        <time_density_simple> .
+
+<job_example_time_density_simple> a saved:JobDesc ;
+    dcterms:title "Example job time_density_simple" ;
+    job:scope_collected [ a saved:ScopeDesc ;
+            saved:column "TOTAL" ;
+            saved:table <sampling> ;
+            saved:variable saved:lice_af_total ] ;
+    job:scope_modelled [ a saved:ScopeDesc ;
+            saved:column "time" ;
+            saved:table <time_density_simple> ;
+            saved:variable saved:time ],
+        [ a saved:ScopeDesc ;
+            saved:column "density" ;
+            saved:table <time_density_simple> ;
+            saved:variable saved:density ] ;
+    job:type "density" .
+
+<sampling> a saved:TableDesc ;
+    dcterms:description "" ;
+    dcterms:title "Sentinel cages sampling information schema" ;
+    saved:resource_hash "5b75481628cfaf3206721491c906a95348f7abd32a9c70a82f57821add8169fb7abd174314a669bed9612183345a295f" ;
+    saved:resource_path "cagedata-10.csv"^^xsd:anyURI ;
+    saved:schema_path_ttl "sentinel_cages_sampling.ttl"^^xsd:anyURI ;
+    saved:schema_path_yaml "sentinel_cages_sampling.yaml"^^xsd:anyURI .
+
+<time_density_simple> a saved:TableDesc ;
+    dcterms:description "" ;
+    dcterms:title "placeholder time/density description" ;
+    saved:resource_hash "1974c2dbefaeaaa425a789142e405f7b8074bb96348b24003fe36bf4098e6b58e2227680bcf72634c4553b214f33acb4" ;
+    saved:resource_path "density.csv"^^xsd:anyURI ;
+    saved:schema_path_ttl "density.ttl"^^xsd:anyURI ;
+    saved:schema_path_yaml "density.yaml"^^xsd:anyURI .
+

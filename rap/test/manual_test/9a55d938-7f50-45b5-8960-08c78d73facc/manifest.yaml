@@ -1,0 +1,26 @@
+atomic_name: rap:RootManifest
+tables:
+- atomic_name: rap:sentinel_cages_sampling
+  resource_path: sentinel_cages_cleaned.csv
+  resource_hash: 01512e62e56f3cb5b46ff453ac434ee0946fbccd4c36604960e0fee9a84fbe8816229ece8a2be3a68042e3d14fdc5ae0
+  schema_path_yaml: sentinel_cages_sampling.yaml
+  title: Sentinel cages sampling information schema
+  description: ''
+- atomic_name: sentinel_cages_site
+  resource_path: Sentinel_cage_station_info_6.csv
+  resource_hash: 1bc2d590faa0093562e87dc01037afb83c186940737d87b0d74c498f2305c024e6847bc527bd09b2de9adafe9da3c124
+  schema_path_yaml: sentinel_cages_site.yaml
+  title: Sentinel cages station information schema
+  description: ''
+jobs:
+- atomic_name: rap:job_example_sentinel_cages_sampling
+  job_type: ignore
+  title: Empty job template for sentinel_cages_sampling
+  job_scope_descriptive:
+  - column: Easting
+    variable: saved:easting
+    table: rap:sentinel_cages_sampling
+  - column: Northing
+    variable: saved:northing
+    table: rap:sentinel_cages_sampling
+local_version: 0.5+8.gd65124d.dirty

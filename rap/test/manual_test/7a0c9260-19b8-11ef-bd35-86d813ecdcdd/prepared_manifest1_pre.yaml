@@ -1,0 +1,30 @@
+atomic_name: RootManifest
+tables:
+- atomic_name: time_density_simple
+  resource_path: density.csv
+  resource_hash: 1974c2dbefaeaaa425a789142e405f7b8074bb96348b24003fe36bf4098e6b58e2227680bcf72634c4553b214f33acb4
+  schema_path_yaml: density.yaml
+  title: placeholder time/density description
+  description: ''
+- atomic_name: sampling
+  resource_path: cagedata-10.csv
+  resource_hash: 5b75481628cfaf3206721491c906a95348f7abd32a9c70a82f57821add8169fb7abd174314a669bed9612183345a295f
+  schema_path_yaml: sentinel_cages_sampling.yaml
+  title: Sentinel cages sampling information schema
+  description: ''
+jobs:
+- atomic_name: job_example_time_density_simple
+  job_type: density
+  title: Example job time_density_simple
+  job_scope_collected:
+    - column: TOTAL
+      table:  sampling
+      variable: saved:lice_af_total
+  job_scope_modelled:
+    - column: time
+      table: time_density_simple
+      variable: saved:time
+    - column: density
+      table: time_density_simple
+      variable: saved:density
+local_version: 0.5+1.g9b9f5ab.dirty

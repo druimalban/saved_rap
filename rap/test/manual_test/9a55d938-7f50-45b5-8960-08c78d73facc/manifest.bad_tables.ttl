@@ -1,0 +1,41 @@
+@base <https://marine.gov.scot/metadata/saved/rap/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix job: <https://marine.gov.scot/metadata/saved/schema/job_> .
+@prefix p_base: <https://marine.gov.scot/metadata/saved/rap/> .
+@prefix saved: <https://marine.gov.scot/metadata/saved/schema/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<RootManifest> a saved:ManifestDesc ;
+    saved:jobs <job_example_sentinel_cages_sampling> ;
+    saved:local_version "0.5+8.gd65124d.dirty" ;
+    saved:tables <sentinel_cages_sampling>,
+        <sentinel_cages_site> .
+
+<job_example_sentinel_cages_sampling> a saved:JobDesc ;
+    dcterms:title "Empty job template for sentinel_cages_sampling" ;
+    job:scope_descriptive [ a saved:ScopeDesc ;
+            saved:column "Northing" ;
+            saved:table <sentinel_cages_sampling> ;
+            saved:variable saved:northing ],
+        [ a saved:ScopeDesc ;
+            saved:column "Easting" ;
+            saved:table <sentinel_cages_sampling> ;
+            saved:variable saved:easting ] ;
+    job:type "ignore" .
+
+<sentinel_cages_site> a saved:TableDesc ;
+    dcterms:description "" ;
+    dcterms:title "Sentinel cages station information schema" ;
+    saved:resource_hash "1bc2d590faa0093562e87dc01037afb83c186940737d87b0d74c498f2305c024e6847bc527bd09b2de9adafe9da3c124" ;
+    saved:resource_path "stations.csv"^^xsd:anyURI ;
+    saved:schema_path_ttl "stations.ttl"^^xsd:anyURI ;
+    saved:schema_path_yaml "stations.yaml"^^xsd:anyURI .
+
+<sentinel_cages_sampling> a saved:TableDesc ;
+    dcterms:description "" ;
+    dcterms:title "Sentinel cages sampling information schema" ;
+    saved:resource_hash "01512e62e56f3cb5b46ff453ac434ee0946fbccd4c36604960e0fee9a84fbe8816229ece8a2be3a68042e3d14fdc5ae0" ;
+    saved:resource_path "sentinel_cages_cleaned.csv"^^xsd:anyURI ;
+    saved:schema_path_ttl "sentinel_cages_sampling.ttl"^^xsd:anyURI ;
+    saved:schema_path_yaml "sentinel_cages_sampling.yaml"^^xsd:anyURI .
+

@@ -1,0 +1,666 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix linkml: <https://w3id.org/linkml/> .
+@prefix mssamp: <https://marine.gov.scot/metadata/saved/rap/sentinel_cages_sampling/> .
+@prefix oslc: <http://open-services.net/ns/core#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix rap: <https://marine.gov.scot/metadata/saved/rap/> .
+@prefix saved: <https://marine.gov.scot/metadata/saved/schema/> .
+@prefix schema1: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix shex: <http://www.w3.org/ns/shex#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+mssamp:sentinel_cages_sampling a saved:SchemaDefinition ;
+    oslc:modifiedBy mssamp:saved ;
+    dcterms:license "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" ;
+    dcterms:title "Sentinel cages sampling information schema" ;
+    pav:createdBy mssamp:marinescot ;
+    pav:lastUpdatedOn "2024-04-26T00:00:00"^^xsd:dateTime ;
+    schema1:keywords "sampling data",
+        "sea lice" ;
+    sh:declare [ sh:namespace linkml: ;
+            sh:prefix "linkml" ],
+        [ sh:namespace saved: ;
+            sh:prefix "saved" ],
+        [ sh:namespace mssamp: ;
+            sh:prefix "mssamp" ],
+        [ sh:namespace rap: ;
+            sh:prefix "rap" ] ;
+    saved:default_prefix "mssamp" ;
+    saved:metamodel_version "1.7.0" ;
+    linkml:classes mssamp:TableSchema ;
+    linkml:default_range mssamp:string ;
+    linkml:generation_date "2024-06-14T12:19:15"^^xsd:dateTime ;
+    linkml:id mssamp: ;
+    linkml:imports saved:core,
+        linkml:types ;
+    linkml:slots mssamp:ADIPOSE,
+        mssamp:ANAL,
+        mssamp:ANT.DORS,
+        mssamp:ANT.VENT,
+        mssamp:BAG,
+        mssamp:BIN,
+        mssamp:CAUDAL,
+        mssamp:Cage.Number,
+        mssamp:DORSAL,
+        mssamp:Deployment.date,
+        mssamp:Fish.Length.mm,
+        mssamp:Fish.Species,
+        mssamp:Fish.Weight.g,
+        mssamp:HEAD_OPER,
+        mssamp:MOUTH_GILLS,
+        mssamp:PECTORAL,
+        mssamp:PELVIC,
+        mssamp:POST.DORS,
+        mssamp:POST.VENT,
+        mssamp:Recovery.date,
+        mssamp:Sampled.Fish.Number,
+        mssamp:Sampling.Note,
+        mssamp:Survey.series,
+        mssamp:TOTAL,
+        mssamp:column_collected,
+        mssamp:column_descriptive,
+        mssamp:column_modelled,
+        mssamp:description,
+        mssamp:provenance,
+        mssamp:title,
+        mssamp:type ;
+    linkml:types mssamp:boolean,
+        mssamp:curie,
+        mssamp:date,
+        mssamp:date_or_datetime,
+        mssamp:datetime,
+        mssamp:decimal,
+        mssamp:double,
+        mssamp:float,
+        mssamp:integer,
+        mssamp:jsonpath,
+        mssamp:jsonpointer,
+        mssamp:ncname,
+        mssamp:nodeidentifier,
+        mssamp:objectidentifier,
+        mssamp:sparqlpath,
+        mssamp:string,
+        mssamp:time,
+        mssamp:uri,
+        mssamp:uriorcurie .
+
+mssamp:boolean a saved:TypeDefinition ;
+    dcterms:description "A binary (true or false) value" ;
+    skos:exactMatch schema1:Boolean ;
+    skos:inScheme linkml:types ;
+    saved:base "Bool" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"boolean\"." ;
+    saved:repr "bool" ;
+    linkml:definition_uri linkml:Boolean ;
+    linkml:uri xsd:boolean .
+
+mssamp:column_modelled a saved:SlotDefinition ;
+    dcterms:description "Column describes modelled data" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    linkml:definition_uri saved:column_modelled ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri saved:column_modelled .
+
+mssamp:curie a saved:TypeDefinition ;
+    dcterms:conformsTo "https://www.w3.org/TR/curie/" ;
+    dcterms:description "a compact URI" ;
+    skos:inScheme linkml:types ;
+    skos:note "in RDF serializations this MUST be expanded to a URI",
+        "in non-RDF serializations MAY be serialized as the compact representation" ;
+    saved:base "Curie" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"curie\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Curie ;
+    linkml:uri xsd:string .
+
+mssamp:date a saved:TypeDefinition ;
+    dcterms:description "a date (year, month and day) in an idealized calendar" ;
+    skos:exactMatch schema1:Date ;
+    skos:inScheme linkml:types ;
+    saved:base "XSDDate" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date\".",
+        "URI is dateTime because OWL reasoners don't work with straight date or time" ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Date ;
+    linkml:uri xsd:date .
+
+mssamp:date_or_datetime a saved:TypeDefinition ;
+    dcterms:description "Either a date or a datetime" ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date_or_datetime\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:DateOrDatetime ;
+    linkml:uri linkml:DateOrDatetime .
+
+mssamp:datetime a saved:TypeDefinition ;
+    dcterms:description "The combination of a date and time" ;
+    skos:exactMatch schema1:DateTime ;
+    skos:inScheme linkml:types ;
+    saved:base "XSDDateTime" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"datetime\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Datetime ;
+    linkml:uri xsd:dateTime .
+
+mssamp:decimal a saved:TypeDefinition ;
+    dcterms:description "A real number with arbitrary precision that conforms to the xsd:decimal specification" ;
+    skos:broadMatch schema1:Number ;
+    skos:inScheme linkml:types ;
+    saved:base "Decimal" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"decimal\"." ;
+    linkml:definition_uri linkml:Decimal ;
+    linkml:uri xsd:decimal .
+
+mssamp:description a saved:SlotDefinition ;
+    dcterms:description "Human-readable description of the element" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    skos:mappingRelation dcterms:description ;
+    linkml:definition_uri saved:description ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri dcterms:description .
+
+mssamp:double a saved:TypeDefinition ;
+    dcterms:description "A real number that conforms to the xsd:double specification" ;
+    skos:closeMatch schema1:Float ;
+    skos:inScheme linkml:types ;
+    saved:base "float" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"double\"." ;
+    linkml:definition_uri linkml:Double ;
+    linkml:uri xsd:double .
+
+mssamp:jsonpath a saved:TypeDefinition ;
+    dcterms:conformsTo "https://www.ietf.org/archive/id/draft-goessner-dispatch-jsonpath-00.html" ;
+    dcterms:description "A string encoding a JSON Path. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded in tree form." ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpath\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Jsonpath ;
+    linkml:uri xsd:string .
+
+mssamp:jsonpointer a saved:TypeDefinition ;
+    dcterms:conformsTo "https://datatracker.ietf.org/doc/html/rfc6901" ;
+    dcterms:description "A string encoding a JSON Pointer. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to a valid object within the current instance document when encoded in tree form." ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpointer\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Jsonpointer ;
+    linkml:uri xsd:string .
+
+mssamp:ncname a saved:TypeDefinition ;
+    dcterms:description "Prefix part of CURIE" ;
+    skos:inScheme linkml:types ;
+    saved:base "NCName" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"ncname\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Ncname ;
+    linkml:uri xsd:string .
+
+mssamp:nodeidentifier a saved:TypeDefinition ;
+    dcterms:description "A URI, CURIE or BNODE that represents a node in a model." ;
+    skos:inScheme linkml:types ;
+    saved:base "NodeIdentifier" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"nodeidentifier\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Nodeidentifier ;
+    linkml:uri shex:nonLiteral .
+
+mssamp:objectidentifier a saved:TypeDefinition ;
+    dcterms:description "A URI or CURIE that represents an object in the model." ;
+    skos:inScheme linkml:types ;
+    skos:note "Used for inheritance and type checking" ;
+    saved:base "ElementIdentifier" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"objectidentifier\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Objectidentifier ;
+    linkml:uri shex:iri .
+
+mssamp:provenance a saved:SlotDefinition ;
+    dcterms:description "Provenance of an element, or a set of elements. This is distinct from Dublin Core's notion of provenance, which concerns any changes in ownership/custody of the resource since its creation." ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    skos:narrowMatch dcterms:provenance,
+        saved:notes ;
+    linkml:definition_uri saved:provenance ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri saved:provenance .
+
+mssamp:sparqlpath a saved:TypeDefinition ;
+    dcterms:conformsTo "https://www.w3.org/TR/sparql11-query/#propertypaths" ;
+    dcterms:description "A string encoding a SPARQL Property Path. The value of the string MUST conform to SPARQL syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded as RDF." ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"sparqlpath\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Sparqlpath ;
+    linkml:uri xsd:string .
+
+mssamp:time a saved:TypeDefinition ;
+    dcterms:description "A time object represents a (local) time of day, independent of any particular day" ;
+    skos:exactMatch schema1:Time ;
+    skos:inScheme linkml:types ;
+    saved:base "XSDTime" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"time\".",
+        "URI is dateTime because OWL reasoners do not work with straight date or time" ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Time ;
+    linkml:uri xsd:time .
+
+mssamp:title a saved:SlotDefinition ;
+    dcterms:description "Concise human-readable name for the element" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    skos:mappingRelation dcterms:title ;
+    linkml:definition_uri saved:title ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri dcterms:title .
+
+mssamp:type a saved:SlotDefinition ;
+    dcterms:description "Nature or genre of the element" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    skos:mappingRelation dcterms:type ;
+    linkml:definition_uri saved:type ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri dcterms:type .
+
+mssamp:uri a saved:TypeDefinition ;
+    dcterms:conformsTo "https://www.ietf.org/rfc/rfc3987.txt" ;
+    dcterms:description "a complete URI" ;
+    skos:closeMatch schema1:URL ;
+    skos:inScheme linkml:types ;
+    skos:note "in RDF serializations a slot with range of uri is treated as a literal or type xsd:anyURI unless it is an identifier or a reference to an identifier, in which case it is translated directly to a node" ;
+    saved:base "URI" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uri\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Uri ;
+    linkml:uri xsd:anyURI .
+
+mssamp:uriorcurie a saved:TypeDefinition ;
+    dcterms:description "a URI or a CURIE" ;
+    skos:inScheme linkml:types ;
+    saved:base "URIorCURIE" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uriorcurie\"." ;
+    saved:repr "str" ;
+    linkml:definition_uri linkml:Uriorcurie ;
+    linkml:uri xsd:anyURI .
+
+mssamp:float a saved:TypeDefinition ;
+    dcterms:description "A real number that conforms to the xsd:float specification" ;
+    skos:exactMatch schema1:Float ;
+    skos:inScheme linkml:types ;
+    saved:base "float" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"float\"." ;
+    linkml:definition_uri linkml:Float ;
+    linkml:uri xsd:float .
+
+mssamp:ADIPOSE a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the adipose tissue" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:ADIPOSE ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:ADIPOSE .
+
+mssamp:ANAL a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the anus" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:ANAL ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:ANAL .
+
+mssamp:ANT.DORS a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the anterior dorsum" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:ANT.DORS ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:ANT.DORS .
+
+mssamp:ANT.VENT a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the anterior ventrum" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:ANT.VENT ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:ANT.VENT .
+
+mssamp:BAG a saved:SlotDefinition ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:BAG ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:BAG .
+
+mssamp:BIN a saved:SlotDefinition ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:BIN ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:BIN .
+
+mssamp:CAUDAL a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the caudal tissue" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:CAUDAL ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:CAUDAL .
+
+mssamp:Cage.Number a saved:SlotDefinition ;
+    dcterms:description "A unique identifier for each cage which links back to station information. Not necessarily a number." ;
+    skos:exactMatch saved:cage_id ;
+    skos:inScheme mssamp: ;
+    linkml:any_of [ a saved:AnonymousSlotExpression ;
+            linkml:range mssamp:string ],
+        [ a saved:AnonymousSlotExpression ;
+            linkml:range mssamp:integer ] ;
+    linkml:definition_uri mssamp:Cage.Number ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_descriptive ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:string ;
+    linkml:required true ;
+    linkml:slot_uri mssamp:Cage.Number .
+
+mssamp:DORSAL a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the dorsum" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:DORSAL ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:DORSAL .
+
+mssamp:Deployment.date a saved:SlotDefinition ;
+    dcterms:description "Date cage was stocked with fish" ;
+    skos:exactMatch saved:date,
+        saved:deployment_date ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:Deployment.date ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_descriptive ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:string ;
+    linkml:required true ;
+    linkml:slot_uri mssamp:Deployment.date .
+
+mssamp:Fish.Length.mm a saved:SlotDefinition ;
+    dcterms:description "Length of fish expressed in mm" ;
+    skos:exactMatch saved:fish_length ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:Fish.Length.mm ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:float ;
+    linkml:slot_uri mssamp:Fish.Length.mm .
+
+mssamp:Fish.Species a saved:SlotDefinition ;
+    dcterms:description "Common name of species sampled (in this case, Salmon refers to Salmosalar only)" ;
+    skos:broadMatch saved:fish_species_scientific ;
+    skos:exactMatch saved:fish_species_common ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:Fish.Species ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri mssamp:Fish.Species .
+
+mssamp:Fish.Weight.g a saved:SlotDefinition ;
+    dcterms:description "Weight of fish expressed in grams" ;
+    skos:exactMatch saved:fish_mass ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:Fish.Weight.g ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:float ;
+    linkml:slot_uri mssamp:Fish.Weight.g .
+
+mssamp:HEAD_OPER a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the head of the fish" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:HEAD_OPER ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:HEAD_OPER .
+
+mssamp:MOUTH_GILLS a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the mouth or gills of the fish" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:MOUTH_GILLS ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:MOUTH_GILLS .
+
+mssamp:PECTORAL a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the pectorum" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:PECTORAL ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:PECTORAL .
+
+mssamp:PELVIC a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the pelvis" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:PELVIC ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:PELVIC .
+
+mssamp:POST.DORS a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the posterior dorsum" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:POST.DORS ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:POST.DORS .
+
+mssamp:POST.VENT a saved:SlotDefinition ;
+    dcterms:description "Count of lice on the posterior ventrum" ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:POST.VENT ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:POST.VENT .
+
+mssamp:Recovery.date a saved:SlotDefinition ;
+    dcterms:description "Date samples were taken from cage" ;
+    skos:exactMatch saved:date,
+        saved:recovery_date ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:Recovery.date ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_descriptive ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:string ;
+    linkml:required true ;
+    linkml:slot_uri mssamp:Recovery.date .
+
+mssamp:Sampled.Fish.Number a saved:SlotDefinition ;
+    dcterms:description "Numeric identifier within a cage of sampled fish" ;
+    skos:inScheme mssamp: ;
+    linkml:any_of [ a saved:AnonymousSlotExpression ;
+            linkml:range mssamp:integer ],
+        [ a saved:AnonymousSlotExpression ;
+            linkml:range mssamp:string ] ;
+    linkml:definition_uri mssamp:Sampled.Fish.Number ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri mssamp:Sampled.Fish.Number .
+
+mssamp:Sampling.Note a saved:SlotDefinition ;
+    dcterms:description "Notes on issues with sampling" ;
+    skos:exactMatch saved:notes ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:Sampling.Note ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_descriptive ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri mssamp:Sampling.Note .
+
+mssamp:Survey.series a saved:SlotDefinition ;
+    dcterms:description "An identifying name for the survey series" ;
+    skos:exactMatch saved:series ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:Survey.series ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_descriptive ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:string ;
+    linkml:required true ;
+    linkml:slot_uri mssamp:Survey.series .
+
+mssamp:TOTAL a saved:SlotDefinition ;
+    dcterms:description "Total number of lice on the fish" ;
+    skos:exactMatch saved:lice_count_total ;
+    skos:inScheme mssamp: ;
+    linkml:definition_uri mssamp:TOTAL ;
+    linkml:domain_of mssamp:TableSchema ;
+    linkml:implements linkml:elements ;
+    linkml:is_a mssamp:column_collected ;
+    linkml:owner mssamp:TableSchema ;
+    linkml:range mssamp:integer ;
+    linkml:slot_uri mssamp:TOTAL .
+
+mssamp:column_descriptive a saved:SlotDefinition ;
+    dcterms:description "Column describes data about the world" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    linkml:definition_uri saved:column_descriptive ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri saved:column_descriptive .
+
+mssamp:integer a saved:TypeDefinition ;
+    dcterms:description "An integer" ;
+    skos:exactMatch schema1:Integer ;
+    skos:inScheme linkml:types ;
+    saved:base "int" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"integer\"." ;
+    linkml:definition_uri linkml:Integer ;
+    linkml:uri xsd:integer .
+
+mssamp:string a saved:TypeDefinition ;
+    dcterms:description "A character string" ;
+    skos:exactMatch schema1:Text ;
+    skos:inScheme linkml:types ;
+    saved:base "str" ;
+    saved:imported_from "linkml:types" ;
+    saved:notes "In RDF serializations, a slot with range of string is treated as a literal or type xsd:string.   If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"string\"." ;
+    linkml:definition_uri linkml:String ;
+    linkml:uri xsd:string .
+
+mssamp:column_collected a saved:SlotDefinition ;
+    dcterms:description "Column describes collected data" ;
+    skos:inScheme <https://marine.gov.scot/metadata/saved/schema/core/> ;
+    linkml:definition_uri saved:column_collected ;
+    linkml:range mssamp:string ;
+    linkml:slot_uri saved:column_collected .
+
+mssamp:TableSchema a saved:ClassDefinition ;
+    skos:inScheme mssamp: ;
+    linkml:class_uri mssamp:TableSchema ;
+    linkml:definition_uri mssamp:TableSchema ;
+    linkml:implements linkml:ColumnOrderedArray,
+        linkml:TwoDimensionalArray ;
+    linkml:slot_usage [ ] ;
+    linkml:slots mssamp:ADIPOSE,
+        mssamp:ANAL,
+        mssamp:ANT.DORS,
+        mssamp:ANT.VENT,
+        mssamp:BAG,
+        mssamp:BIN,
+        mssamp:CAUDAL,
+        mssamp:Cage.Number,
+        mssamp:DORSAL,
+        mssamp:Deployment.date,
+        mssamp:Fish.Length.mm,
+        mssamp:Fish.Species,
+        mssamp:Fish.Weight.g,
+        mssamp:HEAD_OPER,
+        mssamp:MOUTH_GILLS,
+        mssamp:PECTORAL,
+        mssamp:PELVIC,
+        mssamp:POST.DORS,
+        mssamp:POST.VENT,
+        mssamp:Recovery.date,
+        mssamp:Sampled.Fish.Number,
+        mssamp:Sampling.Note,
+        mssamp:Survey.series,
+        mssamp:TOTAL .
+
