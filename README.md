@@ -14,7 +14,7 @@ The civil service's conception of RAP is a set of working practices emphasising 
 
 1. Our [data model/ontology](https://marine.gov.scot/metadata/saved/schema/), which we developed to describe data in an agreed, common way;
 2. Our [local Python upload utilities](https://github.com/saved-models/data-utilities), (`fisdat(1)` and `fisup(1)`), which let us validate data against schemata written in YAML (using [LinkML](https://w3id.org/linkml/));
-3. This model validation pipeline program (the "RAP service"), implemented using Elixxir and Erlang/OTP, which we use to validate dispersal model output against observations, such as the [2011-2013 sentinel cages sampling exercise](https://data.marine.gov.scot/dataset/loch-linnhe-biological-sampling-data-products-2011-2013-0).
+3. This model validation pipeline program (the "RAP service"), implemented using Elixir and Erlang/OTP, which we use to validate dispersal model output against observations, such as the [2011-2013 sentinel cages sampling exercise](https://data.marine.gov.scot/dataset/loch-linnhe-biological-sampling-data-products-2011-2013-0).
 
 ## Pipeline technical design
 
@@ -24,11 +24,11 @@ The pipeline is written in Elixir, which is a fairly new programming language im
 
 ## Modelling work and results
 
-As well as model validation results, the pipeline outputs a description of **processing** or work done by the pipeline, as an RDF graph. This uses the [PROV ontolog](https://www.w3.org/TR/2013/REC-prov-o-20130430/), which is particularly neat, as its semantics map remarkably well to Elixir and Erlang/OTP. Specifically:
+As well as model validation results, the pipeline outputs a description of **processing** or work done by the pipeline, as an RDF graph. This uses the [PROV ontology](https://www.w3.org/TR/2013/REC-prov-o-20130430/), which is particularly neat, as its semantics map remarkably well to Elixir and Erlang/OTP. Specifically:
 
-1. PROV [Agents](https://www.w3.org/TR/2013/REC-prov-o-20130430/#Agent) (specifically, [SoftwareAgents](https://www.w3.org/TR/2013/REC-prov-o-20130430/#SoftwareAgent)) maps to GenStage's stages. It may apply even more generally than this, e.g. GenServer or even any process running on the Erlang BEAM.
-2. PROV [Activities](https://www.w3.org/TR/2013/REC-prov-o-20130430/#Activity) model work/processing done by stages on an event. 
-3. PROV [Entities](https://www.w3.org/TR/2013/REC-prov-o-20130430/#Entity) model output produced by activities, as well as results of jobs.
+1. PROV [Agents](https://www.w3.org/TR/2013/REC-prov-o-20130430/#Agent) (specifically, [SoftwareAgents](https://www.w3.org/TR/2013/REC-prov-o-20130430/#SoftwareAgent)) map closely to GenStage's stages, as well as the pipeline OTP application. It may apply even more generally than this, probably to GenServer, and perhaps any process running on the Erlang BEAM VM.
+2. PROV [Activities](https://www.w3.org/TR/2013/REC-prov-o-20130430/#Activity) model work/processing done by stages on an event, as well as invocation of stages and the pipeline OTP application.
+3. PROV [Entities](https://www.w3.org/TR/2013/REC-prov-o-20130430/#Entity) model final output produced by a pass through the pipeline of a submitted data manifest, in addition to output produced by individual stages, and results of jobs.
 
 Output is ['baked'](https://simonwillison.net/2021/Jul/28/baked-data/) into a web page, which is the primary way that end-users receive feedback. This web page describes data which were submitted, and results and any descriptive statistics are visualised, depending on the job type.
 
