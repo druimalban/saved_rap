@@ -2,7 +2,7 @@
 
 ## Sustainable Aquaculture: Validating Sea Lice Dispersal [models]
 
-SAVED is an effort led by the Scottish Government Marine Directorate with academic and industrial partners. The aim is to develop a standardised way to validate sea lice dispersal models.
+[SAVED](https://marine.gov.scot/metadata/saved/) is an effort led by the Scottish Government Marine Directorate with academic and industrial partners. The aim is to develop a standardised way to validate sea lice dispersal models.
 
 ## RAP
 
@@ -13,7 +13,7 @@ This repository hosts the pipeline component of the RAP, which we're using to va
 The civil service's conception of RAP is a set of working practices emphasising use of open source tools and collaboration. For SAVED, we consider our RAP to be the entire set of tooling we developed from start to finish: 
 
 1. Our [data model/ontology](https://marine.gov.scot/metadata/saved/schema/), which we developed to describe data in an agreed, common way;
-2. Our local Python upload utilities, which let us validate data against schemata written in YAML (using [LinkML](https://w3id.org/linkml/));
+2. Our [local Python upload utilities](https://github.com/saved-models/data-utilities), (`fisdat(1)` and `fisup(1)`), which let us validate data against schemata written in YAML (using [LinkML](https://w3id.org/linkml/));
 3. This model validation pipeline program (the "RAP service"), implemented using Elixxir and Erlang/OTP, which we use to validate dispersal model output against observations, such as the [2011-2013 sentinel cages sampling exercise](https://data.marine.gov.scot/dataset/loch-linnhe-biological-sampling-data-products-2011-2013-0).
 
 ## Pipeline technical design
