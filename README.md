@@ -1,16 +1,14 @@
 # SAVED RAP service: data ingestion and model validation pipeline
 
-## Sustainable Aquaculture: Validating Sea Lice Dispersal [models]
+## SAVED: Sustainable Aquaculture: Validating Sea Lice Dispersal [models]
 
-[SAVED](https://marine.gov.scot/metadata/saved/) is an effort led by the Scottish Government Marine Directorate with academic and industrial partners. The aim is to develop a standardised way to validate sea lice dispersal models.
+[SAVED](https://www.sustainableaquaculture.com/news-events/new-tool-being-developed-to-validate-sea-lice-dispersion-models/) is a [SAIC](https://www.sustainableaquaculture.com/)-funded effort led by the Scottish Government Marine Directorate with academic and industrial partners. The aim is to develop a standardised way to validate sea lice dispersal models.
 
 ## RAP
 
 "RAP" stands for reproducible analytical pipeline. This is a term commonly used in the civil service and public sector, and it is useful as it is largely self-explanatory and succint. The term is typically used to refer to the process of producing statistical reports and producing website documentation, whereas our use here is somewhat more expansive.
 
-This repository hosts the pipeline component of the RAP, which we're using to validate dispersal models; but it also depends on the  which we developed to describe data in a common way, and a set of Python programs which describe data and specify validation jobs prior to uploading.
-
-The civil service's conception of RAP is a set of working practices emphasising use of open source tools and collaboration. For SAVED, we consider our RAP to be the entire set of tooling we developed from start to finish: 
+This repository hosts the pipeline component of the RAP, which we're using to validate dispersal models. The civil service's conception of RAP is a set of working practices emphasising use of open source tools and collaboration. For SAVED, we consider our RAP to be the entire set of tooling we developed from start to finish: 
 
 1. Our [data model/ontology](https://marine.gov.scot/metadata/saved/schema/), which we developed to describe data in an agreed, common way;
 2. Our [local Python upload utilities](https://github.com/saved-models/data-utilities), (`fisdat(1)` and `fisup(1)`), which let us validate data against schemata written in YAML (using [LinkML](https://w3id.org/linkml/));
