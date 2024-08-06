@@ -33,13 +33,23 @@ defmodule RAP.Job.Producer do
   """
 
   alias RAP.Manifest.{TableDesc, ScopeDesc, JobDesc, ManifestDesc}
-  alias RAP.Storage.{PreRun, MidRun, GCP}
+  alias RAP.Storage.{MidRun, GCP}
   alias RAP.Job.{ScopeSpec, ResourceSpec, TableSpec, JobSpec, ManifestSpec}
   alias RAP.Provenance.Work
     
   use GenStage
   require Logger
 
+  @type stage_dispatcher   :: GenStage.BroadcastDispatcher | GenStage.DemandDispatcher | GenStage.PartitionDispatcher
+  @type stage_type         :: :consumer | :producer_consumer | :producer
+  @type stage_subscription :: {atom(), min_demand: integer(), max_demand: integer()}
+  @type stage_state :: %{
+    stage_dispatcher:    stage_dispatcher(),
+    stage_invoked_at:    integer(),
+    stage_subscriptions: [stage_subscription()],
+    stage_type:          atom()
+  }
+  
   def start_link([] = initial_state) do
     Logger.info "Start link to Job.Producer"
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
@@ -96,6 +106,7 @@ defmodule RAP.Job.Producer do
   resource available, given it's highly specific to the given manifest
   file.
   """
+  @spec extract_uri(nil | %URI{}) :: String.t() | nil
   def extract_uri(nil), do: nil
   def extract_uri(%URI{path: path, scheme: nil, userinfo: nil,
 		       host: nil,  port:   nil, query:    nil,
@@ -106,6 +117,8 @@ defmodule RAP.Job.Producer do
     |> String.split("/")
     |> Enum.at(-1)
   end
+
+  @spec extract_id(nil | RDF.IRI.t()) :: String.t() | nil
   def extract_id(nil), do: nil
   def extract_id(id) do
     id
@@ -123,12 +136,13 @@ defmodule RAP.Job.Producer do
   fisdat/fisup which should also generate an input resource, rather than
   just including the file names as strings in the table description.
   """
+  @spec check_resource(%URI{}, [String.t()], String.t()) :: %ResourceSpec{}
   def check_resource(nominal_uri, all_resources, base_prefix) do
     referenced_resource = extract_uri(nominal_uri)
     resource_id =
       case referenced_resource do
 	nil -> RDF.BlankNode.new()
-	res -> RDF.IRI.new(base_prefix <> referenced_resource)
+	_   -> RDF.IRI.new(base_prefix <> referenced_resource)
       end
     %ResourceSpec{
       __id__: resource_id,
@@ -144,6 +158,7 @@ defmodule RAP.Job.Producer do
   LinkML, i.e. they only serve as input data, just as we don't validate
   anything about any input YAML manifest files.
   """
+  @spec check_table(%TableDesc{}, [String.t()], String.t()) :: %TableSpec{}
   def check_table(%TableDesc{} = desc, resources, base_prefix) do
 
     source_id = desc.__id__
@@ -164,6 +179,7 @@ defmodule RAP.Job.Producer do
   Nonetheless, may consider a possible error case where this is nil.
   This is a blank node so there's no notion of a source IRI
   """
+  @spec check_column(%ScopeDesc{}) :: %ScopeSpec{}
   def check_column(%ScopeDesc{column:   column,
                               variable: underlying,
                               table: %RAP.Manifest.TableDesc{
@@ -193,7 +209,8 @@ defmodule RAP.Job.Producer do
   which we want to do is to preserve both the error columns and the non-
   error columns, and to be able to warn, or issue errors which highlight
   any errors *which are applicable*.
-  """
+ """
+ @spec check_job(%JobDesc{}, [any()]) :: %JobSpec{}
   def check_job(%JobDesc{} = desc, _tables) do
     sub = fn(%ScopeSpec{variable_curie: var0}, %ScopeSpec{variable_curie: var1}) ->
      var0 < var1
@@ -224,6 +241,7 @@ defmodule RAP.Job.Producer do
   @doc """
   Check the injected manifest against the previous stage
   """
+  @spec check_manifest(%ManifestDesc{}, %MidRun{}, atom(), integer(), stage_state()) :: {:ok, %ManifestSpec{}} | {:error, atom()} | {:error, atom(), [%TableDesc{}]}
   def check_manifest(%ManifestDesc{ description:   nil, title: nil,
 				    tables:        [],  jobs:  [],
 				    local_version: nil},
@@ -275,11 +293,11 @@ defmodule RAP.Job.Producer do
     end
   end
 
+  @spec minimal_manifest(%MidRun{}, atom(), integer(), stage_state()) :: %ManifestSpec{}
   def minimal_manifest(%MidRun{} = prev, curr_signal, work_started_at, %{} = stage_state) do
     source_id = prev.manifest_iri
     new_id    = RDF.IRI.append(source_id, "_processed")
-    manifest_name = extract_id source_id
-    new_work = Work.append_work(prev.work, __MODULE__, curr_signal, work_started_at, stage_state)
+    new_work  = Work.append_work(prev.work, __MODULE__, curr_signal, work_started_at, stage_state)
     %ManifestSpec{ __id__:             new_id,
 		   uuid:               prev.uuid,
 		   data_source:        prev.data_source,
@@ -335,6 +353,7 @@ defmodule RAP.Job.Producer do
   we can use, but it also implies that no jobs should be run, so don't
   try to run these, at least for now. Only pattern-match on `:working'.
   """
+  @spec invoke_manifest(%MidRun{}, stage_state()) :: %ManifestSpec{} | {:error, atom()} | {:error, atom(), [%TableDesc{}]}
   def invoke_manifest(%MidRun{signal: :working} = prev, %{} = stage_state) do
     cache_dir          = Application.fetch_env!(:rap, :cache_directory) 
     target_dir         = "#{cache_dir}/#{prev.uuid}"
@@ -369,7 +388,7 @@ defmodule RAP.Job.Producer do
 	minimal_manifest(prev, :bad_manifest_tables, work_started_at, stage_state)
     end
   end
-  def invoke_manifest(%MidRun{signal: pre_signal} = prev, %{} = stage_state) do
+  def invoke_manifest(%MidRun{} = prev, %{} = stage_state) do
     # We already have a notion of a well-known unique identifier (UUID),
     # so use it as fallback
     fallback_base = RAP.Vocabulary.RAP.__base_iri__

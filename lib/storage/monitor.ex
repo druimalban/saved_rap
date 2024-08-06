@@ -23,13 +23,24 @@ defmodule RAP.Storage.Monitor do
   alias GoogleApi.Storage.V1.Api.Objects,   as: GCPReqObjs
 
   alias RAP.Miscellaneous, as: Misc
-  alias RAP.Storage.Monitor
 
   alias RAP.Storage.PreRun
   alias RAP.Provenance.Work
   
   defstruct [:owner, :uuid, :path,
 	     :gcp_name, :gcp_id, :gcp_bucket, :gcp_md5]
+
+  @type stage_dispatcher   :: GenStage.BroadcastDispatcher | GenStage.DemandDispatcher | GenStage.PartitionDispatcher
+  @type stage_type         :: :consumer | :producer_consumer | :producer
+  @type stage_subscription :: {atom(), min_demand: integer(), max_demand: integer()}
+  @type stage_state :: %{  
+    gcp_session:         Tesla.Client.t(),
+    staging_objects:     [GCPObj.t()],
+    stage_dispatcher:    stage_dispatcher(),
+    stage_invoked_at:    integer(),
+    stage_subscriptions: [stage_subscription()],
+    stage_type:          atom()
+  }
 
   # There are no circumstances in which this ought to be configurable.
   # It's very much tied to API usage, and it's only necessary for
@@ -55,7 +66,7 @@ defmodule RAP.Storage.Monitor do
          {:ok, index_file}       <- Application.fetch_env(:rap, :index_file),
 	 {:ok, interval_seconds} <- Application.fetch_env(:rap, :interval_seconds),
 	 {:ok, ets_table}        <- Application.fetch_env(:rap, :ets_table),
-         _tab = ets_table        <- :ets.new(ets_table, [:set, :public, :named_table]),
+         ^ets_table              <- :ets.new(ets_table, [:set, :public, :named_table]),
 	 {:ok, initial_session}  <- new_connection() do
       curr_ts = DateTime.utc_now() |> DateTime.to_unix()
 
@@ -83,22 +94,15 @@ defmodule RAP.Storage.Monitor do
     end
   end
 
-  @doc """
-  Update session state from our recursive `monitor_gcp/4' function
-  """
+  # Update session state from our recursive `monitor_gcp/4' function
   def handle_call(:update_session, _from, state) do
     Logger.info "Received call :update_session"
     new_session = new_connection()
     new_state   = state |> Map.put(:gcp_session, new_session)
     {:reply, new_session, [], new_state}
   end
-  
-  @doc """
-  Allows us to retrieve the current session from the producer.
 
-  This is necessary since including the session in each event is annoying
-  and does not feel ideal.
-  """
+  # Allows us to retrieve the current session from the producer
   def handle_call(:yield_session, subscriber, state) do
     Logger.info "Received call to produce return current session, from subscriber #{inspect subscriber}"
     {:reply, state.gcp_session, [], state}
@@ -143,7 +147,9 @@ defmodule RAP.Storage.Monitor do
   Effectual retrieval of object associated with UUID, storing the assumed
   valid UUID in Erlang term storage.
   """
-  defp prep_job(uuid, grouped_objects, index_file) do
+  @type grouped_map :: %{required(String.t()) => [String.t(), ...]}
+  @spec prep_job(String.t(), grouped_map(), String.t()) :: {:ok, %PreRun{}} | {:error, String.t()}
+  def prep_job(uuid, grouped_objects, index_file) do
     target_files = grouped_objects |> Map.get(uuid)
     find_index   = fn(k) -> k.path == index_file end
     curr_ts      = DateTime.utc_now() |> DateTime.to_unix()
@@ -208,7 +214,7 @@ defmodule RAP.Storage.Monitor do
   of files associated with the UUID.
 
   There are certain well-founded assumptions which are governed by the
-[]  functionality of `fisdat' and/or `fisup'. Firstly, there is at most one
+  functionality of `fisdat' and/or `fisup'. Firstly, there is at most one
   manifest per UUID, because that's the single file we fed into `fisup'
   in order to upload the files (and a unique UUID is created per
   invocation of `fisup'). The original idea was to have the manifest file
@@ -219,7 +225,8 @@ defmodule RAP.Storage.Monitor do
   other files into this index file is unneccesary because the manifest
   describes these.
   """
-  defp monitor_gcp(session, bucket, index_file, interval_ms, %{} = stage_state) do
+  @spec monitor_gcp(Tesla.Client.t(), String.t(), String.t(), integer(), stage_state()) :: nil | {:error, String.t(), integer(), String.t()}
+  def monitor_gcp(session, bucket, index_file, interval_ms, %{} = stage_state) do
     with {:ok, objects} <- wrap_gcp_request(session, bucket) do
       Logger.info "Called RAP.Storage.Monitor.monitor_gcp/4 with interval #{interval_ms} milliseconds"
       work_started_at = DateTime.utc_now() |> DateTime.to_unix()
@@ -266,10 +273,8 @@ defmodule RAP.Storage.Monitor do
     end
   end
   
-  @doc """
-  Added this for testing with statements, but it was still productive to
-  keep it around as informative messages in the log are good.
-  """
+  # The {:error, any()} type specification derives from GoogleApi.Storage.V1.Objects.storage_objects_list/4.
+  @spec wrap_gcp_request(Tesla.Client.t(), String.t()) :: {:ok, [%GCPObj{}]} | {:error, any()}
   defp wrap_gcp_request(session, bucket) do
     Logger.info "Polling GCP storage bucket #{bucket} for flat objects"
     case GCPReqObjs.storage_objects_list(session, bucket) do
@@ -279,9 +284,7 @@ defmodule RAP.Storage.Monitor do
     end
   end
 
-  @doc """
-  Initiate a new connection
-  """
+  @spec new_connection() :: {:ok, Tesla.Client.t()} | {:error, String.t()}
   defp new_connection() do
     with {:ok, token} <- Goth.Token.for_scope(@gcp_scope),
          session      <- GCPConn.new(token.token) do
@@ -305,6 +308,7 @@ defmodule RAP.Storage.Monitor do
   have `text/plain' for directories, `application/octet_stream' for empty
   files.
   """
+  @spec uuid_helper(%GCPObj{}) :: %__MODULE__{} | nil
   def uuid_helper(%GCPObj{name: nil}), do: nil
   def uuid_helper(%GCPObj{name: nom} = gcp_object) do
     atom_pattern = "[^\\/]+"

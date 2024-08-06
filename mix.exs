@@ -7,7 +7,13 @@ defmodule RAP.MixProject do
       version: "0.1.0",
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      dialyzer: [
+	plt_add_deps: :apps_direct,
+	plt_add_apps: [:amnesia, :eex, :exquisite, :mnesia, :tesla]#,
+	#plt_ignore_apps: [:amnesia]
+	#plt_add_apps: [:grax, :rdf, :mnesia, :gen_stage, :google_api_storage,
+      ]
     ]
   end
   
@@ -40,16 +46,16 @@ defmodule RAP.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:amnesia,             "~> 0.2.8" },
+      { :amnesia,            "~> 0.2.8" },
       { :gen_stage,          "~> 1.2"   },
       { :google_api_storage, "~> 0.37"  },
       { :goth,               "~> 1.4"   },
       { :grax,               "~> 0.4"   },
-      { :hackney,            "~> 1.20"  },
       { :math,               "~> 0.7"   },
       { :rdf,                "~> 1.2"   },
       { :uuid,               "~> 1.1.8" },
-      { :zoneinfo,           "~> 0.1.0" }
+      { :zoneinfo,           "~> 0.1.0" },
+      { :dialyxir, "~> 1.4", only: [:dev, :test], runtime: false }
       # {:explorer, "~> 0.8"},
       # {:nx, "~> 0.7"}
     ]
@@ -57,7 +63,7 @@ defmodule RAP.MixProject do
 
   defp package do
     [
-      files:       ["lib", "mix.exs", "README.md", "LICENSE", "config", "priv"],
+      files:       ["lib", "mix.exs", "README.md", "LICENSE", "config", "priv", "test"],
       maintainers: ["Duncan Guthrie"],
       licenses:    [" AGPL-3.0-or-later"]
     ]

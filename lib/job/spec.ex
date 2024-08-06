@@ -35,7 +35,6 @@ defmodule RAP.Job.ScopeSpec do
   """
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RDF.NS.RDFS
   alias RAP.Vocabulary.SAVED
   alias RAP.Job.TableSpec
@@ -68,9 +67,8 @@ defmodule RAP.Job.ResourceSpec do
   """
   
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, PAV, SAVED}
+  alias RAP.Vocabulary.{DCTERMS, DCAT, PAV, SAVED}
 
   schema SAVED.ResourceOutput do
     property :label,        RDFS.label,      type: :string
@@ -90,7 +88,7 @@ end
 
 
 defmodule RAP.Job.TableSpec do
-  @defmodule """
+  @moduledoc """
   The `resource' and `schema' attributes are named resource structs as
   above, analoguous to columns. 
 
@@ -103,16 +101,14 @@ defmodule RAP.Job.TableSpec do
   Unlike the columns, which are blank nodes, tables are named and so can
   be associated with a name (the struct's generated `__id__' attribute).
 
-`  The `resource' and `schema' attributes are not fully qualified file
+  The `resource' and `schema' attributes are not fully qualified file
   names or base file names, but instances of the above `%ResourceSpec{}'
   struct.
   """
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RDF.NS.RDFS  
-  alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, PAV, SAVED}
-  alias RAP.Job.Producer
+  alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, SAVED}
   alias RAP.Job.ResourceSpec
 
   schema SAVED.TableOutput do
@@ -130,7 +126,6 @@ end
 defmodule RAP.Job.JobSpec do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RDF.NS.RDFS
   alias RAP.Vocabulary.{DCTERMS, PAV, PROV, SAVED}
   alias RAP.Job.ScopeSpec
@@ -154,10 +149,8 @@ end
 defmodule RAP.Job.ManifestSpec do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, PAV, SAVED}
-  alias RAP.Manifest.{TableDesc, JobDesc}
+  alias RAP.Vocabulary.{DCTERMS, DCAT, PROV, SAVED}
   alias RAP.Job.{TableSpec, JobSpec, Result}
   alias RAP.Provenance.{RAPProcess, RAPInvocation, RAPStageProcessing}
   #alias RAP.Manifest.{TableDesc, JobDesc}
@@ -200,7 +193,7 @@ defmodule RAP.Job.ManifestSpec do
     field :base_prefix
   end
 
-  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+  def on_to_rdf(%__MODULE__{__id__: id}, graph, _opts) do
     {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.Entity))}
   end
 end

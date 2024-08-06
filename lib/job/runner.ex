@@ -2,11 +2,20 @@ defmodule RAP.Job.Runner do
 
   use GenStage
   require Logger
-
-  alias RAP.Storage.PreRun
+  
   alias RAP.Job.{Producer, Result}
   alias RAP.Job.ManifestSpec
   alias RAP.Provenance.Work
+
+  @type stage_dispatcher   :: GenStage.BroadcastDispatcher | GenStage.DemandDispatcher | GenStage.PartitionDispatcher
+  @type stage_type         :: :consumer | :producer_consumer | :producer
+  @type stage_subscription :: {atom(), min_demand: integer(), max_demand: integer()}
+  @type stage_state :: %{
+    stage_dispatcher:    stage_dispatcher(),
+    stage_invoked_at:    integer(),
+    stage_subscriptions: [stage_subscription()],
+    stage_type:          atom()
+  }
 
   def start_link([] = initial_state) do
     Logger.info "Start link to Job.Runner"
@@ -35,7 +44,8 @@ defmodule RAP.Job.Runner do
     |> Enum.map(&process_jobs(&1, stage_state))
     { :noreply, target_events, stage_state }
   end
-  
+
+  @spec process_jobs(%ManifestSpec{}, stage_state()) :: %ManifestSpec{}
   def process_jobs(%ManifestSpec{signal: :working, jobs: staging} = spec, stage_state) do  
     Logger.info "Staging jobs: #{inspect staging}"
 

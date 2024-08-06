@@ -16,6 +16,16 @@ defmodule RAP.Storage.GCP do
   alias RAP.Storage.{PreRun, MidRun, Monitor}
   alias RAP.Provenance.Work
 
+  @type stage_dispatcher   :: GenStage.BroadcastDispatcher | GenStage.DemandDispatcher | GenStage.PartitionDispatcher
+  @type stage_type         :: :consumer | :producer_consumer | :producer
+  @type stage_subscription :: {atom(), min_demand: integer(), max_demand: integer()}
+  @type stage_state :: %{
+    stage_dispatcher:    stage_dispatcher(),
+    stage_invoked_at:    integer(),
+    stage_subscriptions: [stage_subscription()],
+    stage_type:          atom()
+  }
+
   def start_link([] = initial_state) do
     Logger.info "Start link to Storage.GCP"
     GenStage.start_link __MODULE__, initial_state, name: __MODULE__
@@ -47,6 +57,7 @@ defmodule RAP.Storage.GCP do
     { :noreply, processed, stage_state }
   end
 
+  @spec wrap_gcp_fetch(%Monitor{}, Tesla.Client.t()) :: {:ok, Tesla.Env.t()} | {:error, any()}
   defp wrap_gcp_fetch(obj, session) do
     GCPReqObjs.storage_objects_get(session, obj.gcp_bucket, obj.gcp_name, [alt: "media"], decode: false)
   end
@@ -72,7 +83,8 @@ defmodule RAP.Storage.GCP do
   purported structure but we have the benefit of the mnesia database to
   cache results.
   """
-  defp fetch_object(obj, target_dir) do
+  @spec fetch_object(%Monitor{}, String.t()) :: {:ok, String.t()} | {:error, String.t()} | {:error, String.t(), integer(), String.t()}
+  def fetch_object(obj, target_dir) do
     target_base = obj.path
     # output_file => target_full
     target_full = "#{target_dir}/#{target_base}"
@@ -95,8 +107,9 @@ defmodule RAP.Storage.GCP do
         {:error, reason}
     end
   end
-      
-  defp fetch_job_deps(%PreRun{} = job, cache_dir) do
+
+  @spec fetch_job_deps(%PreRun{}, String.t()) :: {:ok, String.t(), [String.t()]} | {:error, String.t()} | {:error, String.t(), [String.t()]}
+  def fetch_job_deps(%PreRun{} = job, cache_dir) do
     Logger.info "Called `Storage.GCP.fetch_job_deps' for job with UUID #{job.uuid}"
     all_resources = [job.index | job.resources]
     target_dir = "#{cache_dir}/#{job.uuid}"
@@ -120,7 +133,8 @@ defmodule RAP.Storage.GCP do
       error -> error
     end
   end
-  
+
+  @spec coalesce_job(%PreRun{}, stage_state()) :: %MidRun{}
   def coalesce_job(%PreRun{} = job, %{} = stage_state) do
     work_started_at = DateTime.utc_now() |> DateTime.to_unix()
     

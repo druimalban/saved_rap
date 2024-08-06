@@ -5,23 +5,21 @@ defmodule RAP.Job.Result do
   require Logger
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RDF.NS.RDFS
   alias RAP.Vocabulary.{DCAT, PROV, SAVED}
-  alias RAP.Manifest.TableDesc
   alias RAP.Job.Producer
   alias RAP.Job.{ScopeSpec, JobSpec}
   
   schema SAVED.ResultOutput do
     property :label,         RDFS.label,         type: :string
     property :job_type,      SAVED.job_type,     type: :string
-    property :text_signal,   SAVED.job_signal,   type: :string # distinct from signal of stage
-    property :download_url,  DCAT.downloadURL,   type: :iri    # fixme
-    #property :source_job,    SAVED.source_job,   type: JobSpec
-    property :started_at,    PROV.startedAtTime, type: :date_time # fixme - use proper timestamp type
+    property :text_signal,   SAVED.job_signal,   type: :string
+    property :download_url,  DCAT.downloadURL,   type: :iri
+    property :started_at,    PROV.startedAtTime, type: :date_time
     property :ended_at,      PROV.endedAtTime,   type: :date_time
 
     link source_job: SAVED.source_job, type: JobSpec
+
     field :signal
     field :start_time_unix
     field :end_time_unix
@@ -29,7 +27,8 @@ defmodule RAP.Job.Result do
     field :output_stem
     field :contents
   end
-  
+
+  @spec expand_id(RDF.IRI.t(), String.t()) :: RDF.IRI.t() | {:error, String.t()}
   defp expand_id(source_job_id, base_prefix) do
     with {:ok, result_stem} <- Application.fetch_env(:rap, :result_stem) do
       source_job_name = Producer.extract_id(source_job_id)
@@ -45,6 +44,7 @@ defmodule RAP.Job.Result do
     b) Command cannot be run at all (throw `ErlangError' with various codes,
        most commonly :enoent).
   """
+  @spec cmd_wrapper(String.t(), String.t(), [String.t()]) :: {atom(), integer(), String.t()}
   def cmd_wrapper(shell, command, args) do
     cmd_result =
       try do
@@ -70,6 +70,7 @@ defmodule RAP.Job.Result do
     end
   end
 
+  @spec run_job(%JobSpec{}, String.t(), String.t()) :: %__MODULE__{} | {:error, String.t()}
   def run_job(
     %JobSpec{
       __id__:          source_job_id,
@@ -165,7 +166,7 @@ defmodule RAP.Job.Result do
 	      contents:        py_result
 	    }
 	  
-	  {:call_error, py_error, py_result} ->
+	  {:call_error, _py_error, py_result} ->
 	    Logger.info "Call to Python interpreter failed or system is locked up"
  	    %__MODULE__{
 	      __id__:          new_id,
@@ -187,7 +188,7 @@ defmodule RAP.Job.Result do
     end
   end
 
-  def run_job(%JobSpec{__id__: id, type: "ignore"} = spec, _uuid, base_prefix) do
+  def run_job(%JobSpec{__id__: id, type: "ignore"}, _uuid, base_prefix) do
     %__MODULE__{
       __id__:      expand_id(id, base_prefix),
       source_job:  id,
@@ -197,7 +198,7 @@ defmodule RAP.Job.Result do
     }
   end
 
-  def run_job(%JobSpec{__id__: id, type: invalid_type} = bad_spec, _uuid, base_prefix) do
+  def run_job(%JobSpec{__id__: id, type: invalid_type}, _uuid, base_prefix) do
     %__MODULE__{
       __id__:        expand_id(id, base_prefix),
       job_type:      invalid_type,

@@ -1,7 +1,6 @@
 defmodule RAP.Manifest.TableDesc do
   
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RAP.Vocabulary.{DCTERMS, SAVED}
   
   schema SAVED.TableDesc do
@@ -26,10 +25,8 @@ defmodule RAP.Manifest.ExtColumnDesc do
   corresponding to that resource description.
   """
   use Grax.Schema, depth: +5
-  import RDF
-  alias RAP.Manifest.ExtColumnDesc
-  alias RAP.Vocabulary.{DCTERMS, SAVED}
-
+  alias RAP.Vocabulary.SAVED
+  
   schema SAVED.ExtColumnDesc do
     field :compact_uri
   end
@@ -43,11 +40,8 @@ defmodule RAP.Manifest.ExtColumnDesc do
 end
 
 defmodule RAP.Manifest.ScopeDesc do
-
-  require Logger
   
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RAP.Vocabulary.SAVED
   alias RAP.Manifest.{ExtColumnDesc, TableDesc}
 
@@ -64,7 +58,6 @@ end
 defmodule RAP.Manifest.JobDesc do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   alias RAP.Vocabulary.{DCTERMS, SAVED}
   alias RAP.Manifest.{JobDesc, ScopeDesc}
 
@@ -99,7 +92,6 @@ end
 defmodule RAP.Manifest.ManifestDesc do
 
   use Grax.Schema, depth: +2
-  import RDF.Sigils
   alias RAP.Vocabulary.{DCTERMS, SAVED}
   alias RAP.Manifest.{TableDesc, JobDesc}
 
@@ -107,7 +99,6 @@ defmodule RAP.Manifest.ManifestDesc do
     property :title,         DCTERMS.title,       type: :string, required: false, required: false
     property :description,   DCTERMS.description, type: :string, required: false, required: false
     property :local_version, SAVED.local_version, type: :string, required: false, required: true
-    # property :gcp_source,    SAVED.gcp_source,    type: :string, required: false, required: false
 
     link tables: SAVED.tables, type: list_of(TableDesc), depth: +5, required: true
     link jobs:   SAVED.jobs,   type: list_of(JobDesc),   depth: +5, required: true

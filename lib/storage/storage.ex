@@ -13,7 +13,20 @@ defmodule RAP.Storage do
       :resource_bases,
       :signal,
       :result_bases
-    ]
+    ] do
+      @type t :: %Manifest{
+	uuid: String.t(),
+	data_source: atom(),
+	start_time_unix: integer(),
+	end_time_unix: integer(),
+	submitted_manifest_base_ttl: String.t(),
+	submitted_manifest_base_yaml: String.t(),
+	processed_manifest_base_ttl: String.t(),
+	resource_bases: [String.t()],
+	signal: atom(),
+	result_bases: [String.t()]
+      }
+    end
   end
   
 end
@@ -33,13 +46,15 @@ defmodule RAP.Storage.PreRun do
   @doc """
   Simple wrapper around Erlang term storage table of UUIDs with 
   """
+  @type uuid() :: String.t()
+  @spec ets_feasible?(uuid()) :: boolean()
   def ets_feasible?(uuid) do
     {:ok, ets_table} = Application.fetch_env(:rap, :ets_table)
     case :ets.lookup(ets_table, uuid) do
       [] -> true
       _  ->
 	Logger.info("Job UUID #{uuid} is already running, cannot add to ETS (table #{ets_table}).")
-	false
+        false
     end
   end
 
@@ -53,6 +68,7 @@ defmodule RAP.Storage.PreRun do
   Further note that in `fetch_job_deps/3', sets `:decode' to false, as
   there may be a risk that the decoding breaks this workflow.
   """
+  @spec dl_success?(String.t(), String.t(), [input_md5: boolean()]) :: boolean()
   def dl_success?(purported_md5, body, opts: [input_md5: true]) do
     actual_md5 = :crypto.hash(:md5, body) |> Base.encode64()
     purported_md5 == actual_md5
@@ -61,11 +77,13 @@ defmodule RAP.Storage.PreRun do
     body0_md5 = :crypto.hash(:md5, body0) |> Base.encode64()
     body1_md5 = :crypto.hash(:md5, body1) |> Base.encode64()
     body0_md5 == body1_md5
-  end  
+  end
+  @spec dl_success?(String.t(), String.t()) :: boolean()
   def dl_success?(purported_md5, body) do
     dl_success?(purported_md5, body, opts: [input_md5: true])
   end
-  
+
+  @spec mnesia_feasible?(uuid()) :: boolean()
   def mnesia_feasible?(uuid) do
     Amnesia.transaction do
       case ManifestTable.read!(uuid) do
@@ -107,7 +125,6 @@ defmodule RAP.Storage.PostRun do
   require RAP.Storage.DB.Manifest, as: ManifestTable
 
   alias RAP.Miscellaneous, as: Misc
-  alias RAP.Job.{Result, Runner}
   alias RAP.Job.ManifestSpec
 
   @doc """
@@ -139,6 +156,7 @@ defmodule RAP.Storage.PostRun do
   We do want to keep track of these somehow, and this may be the place,
   just not quite yet.
   """
+  @spec cache_manifest(%ManifestSpec{}) :: %ManifestSpec{} | {:error, :ets_no_uuid} | {:error, :ets_multiple_uuids, [{String.t(), integer()}]}
   def cache_manifest(%ManifestSpec{} = manifest) do
     Logger.info "Cache processed manifest information in mnesia DB `Manifest' table"
     with {:ok, time_zone}   <- Application.fetch_env(:rap, :time_zone),
@@ -160,16 +178,16 @@ defmodule RAP.Storage.PostRun do
       #transformed_manifest = %{ annotated_manifest | __struct__: ManifestTable }
       transformed_manifest =
 	%ManifestTable{
-	  uuid:        manifest.uuid,
-	  data_source: manifest.data_source,
+	  uuid:            uuid,
+	  data_source:     manifest.data_source,
 	  start_time_unix: start_ts,
 	  end_time_unix:   end_ts,
+	  resource_bases:  manifest.resource_bases,
+	  result_bases:    manifest.result_bases,
+	  signal:          manifest.signal,
 	  submitted_manifest_base_ttl:  manifest.submitted_manifest_base_ttl,
 	  submitted_manifest_base_yaml: manifest.submitted_manifest_base_yaml,
-	  processed_manifest_base_ttl:  manifest.processed_manifest_base,
-	  resource_bases: manifest.resource_bases,
-	  result_bases:   manifest.result_bases,
-	  signal:         manifest.signal
+	  processed_manifest_base_ttl:  manifest.processed_manifest_base
 	}
       Logger.info "Transformed annotated manifest into: #{inspect transformed_manifest}"
       Amnesia.transaction do
@@ -191,6 +209,8 @@ defmodule RAP.Storage.PostRun do
     end
   end
 
+  @type uuid() :: String.t()
+  @spec retrieve_manifest(uuid()) :: %ManifestSpec{}
   def retrieve_manifest(uuid) do
     Logger.info "Attempt to retrieve prepared manifest information from mnesia DB `Manifest' table"
     Amnesia.transaction do
@@ -201,7 +221,8 @@ defmodule RAP.Storage.PostRun do
   defp inject_manifest(nil), do: nil
   defp inject_manifest(pre), do: %{ pre | __struct__: ManifestSpec }
 
-  def yield_manifests(after_unix_ts \\ -1, owner \\ :any) do
+  @spec yield_manifests(integer(), atom()) :: [%ManifestSpec{}] | {:error, String.t()}
+  def yield_manifests(after_unix_ts \\ -1, _owner \\ :any) do
     with {:ok, time_zone}  <- Application.fetch_env(:rap, :time_zone),
          {:ok, after_time} <- DateTime.from_unix(after_unix_ts) do
       date_proper = Misc.format_time(after_time, time_zone)

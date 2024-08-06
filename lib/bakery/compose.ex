@@ -5,8 +5,6 @@ defmodule RAP.Bakery.Compose do
   """
   use GenStage
   require Logger
-
-  import EEx
   
   alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.PreRun
@@ -48,17 +46,7 @@ defmodule RAP.Bakery.Compose do
     {:noreply, [], state}
   end
 
-  # Result stem/extension should be configurable and in the ManifestOutput
-  # struct, since there's no way to guarantee these are constant across
-  # runs, i.e. we could start the program with different parameters,
-  # and then past generated HTML pages may break
-  #def build_html(
-  #  html_directory,
-  #  rap_uri,
-  #  style_sheet,
-  #  time_zone,
-  #  %ManifestOutput{} = prepared 
-  #) do
+  @spec build_html(%ManifestSpec{}) :: %__MODULE__{} | {:error, String.t()}
   def build_html(%ManifestSpec{signal: sig} = prepared) when sig in [:working, :job_errors] do
     with {:ok, html_dir} <- Application.fetch_env(:rap, :html_directory),
 	 {:ok, style}    <- Application.fetch_env(:rap, :rap_style_sheet),
@@ -96,9 +84,7 @@ defmodule RAP.Bakery.Compose do
     with {:ok, html_dir} <- Application.fetch_env(:rap, :html_directory),
 	 {:ok, style}    <- Application.fetch_env(:rap, :rap_style_sheet),
 	 {:ok, prefix}   <- Application.fetch_env(:rap, :rap_uri_prefix),
-	 {:ok, tz}       <- Application.fetch_env(:rap, :time_zone),
-	 {:ok, d3}       <- Application.fetch_env(:rap, :rap_js_lib_d3),
-	 {:ok, plotly}   <- Application.fetch_env(:rap, :rap_js_lib_plotly) do
+	 {:ok, tz}       <- Application.fetch_env(:rap, :time_zone) do
       
       {html_contents, manifest_signal} =
 	doc_lead_in()
@@ -122,21 +108,30 @@ defmodule RAP.Bakery.Compose do
       :error -> {:error, "Failed to extract keywords from RAP configuration"}
     end
   end
-  
-  def doc_lead_in, do: {"<!DOCTYPE html>\n<html>\n", nil}
+
+  @type curr_document :: {String.t(), String.t()}
+  @spec doc_lead_in() :: curr_document()
+  @spec head_lead_in(curr_document())  :: curr_document()
+  @spec head_lead_out(curr_document()) :: curr_document()
+  @spec body_lead_in(curr_document())  :: curr_document()
+  @spec body_lead_out(curr_document()) :: curr_document()
+  @spec doc_lead_out(curr_document())  :: curr_document()
+  def doc_lead_in, do: {"<!DOCTYPE html>\n<html>\n", ""}
   def head_lead_in( {curr, sig}), do: {curr <> "<head>\n",  sig}
   def head_lead_out({curr, sig}), do: {curr <> "</head>\n", sig}
   def body_lead_in( {curr, sig}), do: {curr <> "<body>\n",  sig}
   def body_lead_out({curr, sig}), do: {curr <> "</body>\n", sig}
   def doc_lead_out( {curr, sig}), do: {curr <> "</html>\n", sig}
-  
+
+  @spec preamble(curr_document(), String.t(), String.t(), String.t()) :: curr_document()
   def preamble({curr, sig}, html_directory, style_sheet, uuid) do
     preamble_input = [uuid: uuid, style_sheet: style_sheet]
     preamble_fragment = EEx.eval_file("#{html_directory}/preamble.html", preamble_input)
     working_contents = curr <> preamble_fragment
     {working_contents, sig}
   end
-  
+
+  @spec manifest_info(curr_document(), String.t(), String.t(), String.t(), %ManifestSpec{}) :: curr_document()
   def manifest_info(
     {curr, _sig},
     html_directory,
@@ -203,8 +198,7 @@ defmodule RAP.Bakery.Compose do
     {working_contents, signal_full}
   end
 
-  # uuid not included in object
-  # for the maps, we don't weave in current state of document
+  @spec stage_table(String.t(), String.t(), String.t(), %TableSpec{}) :: String.t()
   def stage_table(html_directory, rap_uri, uuid,
     %TableSpec{
       resource: %ResourceSpec{base: resource_path},
@@ -226,6 +220,7 @@ defmodule RAP.Bakery.Compose do
     EEx.eval_file("#{html_directory}/table.html", table_input)
   end
 
+  @spec tables_info(curr_document(), String.t(), String.t(), String.t(), [%TableSpec{}] | nil) :: curr_document()
   def tables_info({curr, sig}, _html_dir, _uri, _uuid, nil), do: {curr, sig}
   def tables_info({curr, sig}, html_directory, rap_uri, uuid, tables) do
     tables_lead     = "<h1>Specified tables</h1>\n"
@@ -236,14 +231,17 @@ defmodule RAP.Bakery.Compose do
     {working_contents, sig}
   end
 
+  @spec stage_scope(String.t(), %ScopeSpec{}) :: String.t()
   def stage_scope(html_directory, %ScopeSpec{} = scope_spec) do
     scope_extra = scope_spec
     #|> Map.put_new(:variable_uri, RDF.IRI.to_string(variable_id))
     |> Map.to_list()
     EEx.eval_file("#{html_directory}/scope.html", scope_extra)
   end
-  
-  def stage_scope_list(_dir, nil, scope_type), do: nil
+
+  @spec stage_scope_list(String.t(), nil, String.t()) :: nil
+  @spec stage_scope_list(String.t(), [%ScopeSpec{}], String.t()) :: String.t()
+  def stage_scope_list(_dir, nil, _scope), do: nil
   def stage_scope_list(html_directory, scope_triples, scope_type) do
     scope_lead      = EEx.eval_string("<li>‘<%= type %>’ columns in scope:\n<ul>", type: scope_type)
     scope_fragments = scope_triples
@@ -252,6 +250,7 @@ defmodule RAP.Bakery.Compose do
     scope_lead <> scope_fragments <> "</ul>\n"
   end
 
+  @spec stage_job(String.t(), %JobSpec{}) :: String.t()
   def stage_job(html_directory, %JobSpec{} = job_spec) do
     descriptive = stage_scope_list(html_directory, job_spec.scope_descriptive, "Descriptive")
     collected   = stage_scope_list(html_directory, job_spec.scope_collected,   "Collected")
@@ -269,6 +268,7 @@ defmodule RAP.Bakery.Compose do
     EEx.eval_file("#{html_directory}/job.html", job_input)
   end
 
+  @spec jobs_info(curr_document(), String.t(), [%JobSpec{}] | nil) :: curr_document()
   def jobs_info({curr, sig}, _html, nil), do: {curr, sig}
   def jobs_info({curr, sig}, html_directory, jobs) do
     jobs_lead = "<h1>Specified jobs</h1>\n"
@@ -279,6 +279,7 @@ defmodule RAP.Bakery.Compose do
     {working_jobs, sig}
   end
 
+  @spec plot_result(String.t(), String.t(), String.t(), String.t(), %Result{}) :: String.t()
   def plot_result(
     html_directory,
     lib_d3,
@@ -301,14 +302,15 @@ defmodule RAP.Bakery.Compose do
     EEx.eval_file("#{html_directory}/plot_density.html", plot_input)
   end
 
-  def plot_result(_fragments, _uri, _d3, _plotly, res), do: ""
+  def plot_result(_fragments, _uri, _d3, _plotly, _res), do: ""
   
   # Assumption is that we have a notion of a completed job, (see named
   # RAP.Job.Result struct), annotated with the base name of the output file
   # As opposed to the final RAP.Bakery.ManifestOutput struct which chucks away a
   # bunch of information.
   # Call the base name of the output file contents_base since result text
-  # contents are called `contents'  
+  # contents are called `contents'
+  @spec stage_result(String.t(), String.t(), String.t(), String.t(), String.t(), String.t(), %Result{}) :: String.t()
   def stage_result(html_directory, rap_uri, lib_d3, lib_plotly, time_zone, uuid, %Result{} = result) do
     result_name = Producer.extract_id(result.__id__)
 
@@ -348,6 +350,7 @@ defmodule RAP.Bakery.Compose do
     result_main <> "\n" <> plotted
   end
 
+  @spec results_info(curr_document(), String.t(), String.t(), String.t(), String.t(), String.t(), String.t(), [%Result{}]) :: curr_document()
   def results_info({curr, sig}, _html, _uri, _d3, _plotly, _tz, _uuid, nil), do: {curr, sig}
   def results_info({curr, sig}, html_directory, rap_uri, lib_d3, lib_plotly, time_zone, uuid, results) do
     results_lead = "<h1>Results</h1>\n"
@@ -358,6 +361,7 @@ defmodule RAP.Bakery.Compose do
     {working_contents, sig}
   end
 
+  @spec write_html(%__MODULE__{}) :: String.t() | {:error, String.t()} | :error
   def write_html(%__MODULE__{} = result) do
     target_base = "#{result.output_stem}.#{result.output_ext}"
 
@@ -376,6 +380,8 @@ defmodule RAP.Bakery.Compose do
       {:error, error} ->
 	Logger.info "Fully-qualified path #{target_base} is inaccessible: #{inspect error}"
         {:error, error}
+      :error ->
+	:error
     end
   end
 end

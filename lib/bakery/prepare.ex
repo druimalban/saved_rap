@@ -35,18 +35,28 @@ defmodule RAP.Bakery.Prepare do
   use GenStage
   require Logger
 
-  alias RAP.Miscellaneous, as: Misc
   alias RAP.Storage.{PreRun, PostRun}
   alias RAP.Job.ManifestSpec
   alias RAP.Job.{Producer, Runner, Result}
   alias RAP.Provenance.Work
+
+  @type stage_dispatcher   :: GenStage.BroadcastDispatcher | GenStage.DemandDispatcher | GenStage.PartitionDispatcher
+  @type stage_type         :: :consumer | :producer_consumer | :producer
+  @type stage_subscription :: {atom(), min_demand: integer(), max_demand: integer()}
+  @type stage_state :: %{
+    rap_invoked_at:      integer(),
+    stage_dispatcher:    stage_dispatcher(),
+    stage_invoked_at:    integer(),
+    stage_subscriptions: [stage_subscription()],
+    stage_type:          atom()
+  }
   
   def start_link(initial_state) do
     Logger.info "Start link to Bakery.Prepare"
     GenStage.start_link(__MODULE__, initial_state, name: __MODULE__)
   end
 
-  def init([rap_invoked_at: rap_invoked_at] = initial_state) do
+  def init([rap_invoked_at: rap_invoked_at] = _initial_state) do
     Logger.info "Initialise Bakery.Prepare"
     curr_ts = DateTime.utc_now() |> DateTime.to_unix()
     subscription = [{ Runner, min_demand: 0, max_demand: 1 }]
@@ -81,30 +91,6 @@ defmodule RAP.Bakery.Prepare do
     |> Enum.map(&PostRun.cache_manifest/1)
     {:noreply, processed_events, stage_state}
   end
-
-  #  def handle_demand(demand, state) do
-  #    Logger.info "Bakery.Prepare: Received demand for #{inspect demand} events"
-  #    yielded   = state.staging_objects |> Enum.take(demand)
-  #    remaining = state.staging_objects |> Enum.drop(demand)
-  #    pretty    = yielded |> Enum.map(&Misc.pretty_print_object/1)
-  #    new_state = state   |> Map.put(:staging_objects, staging)
-  #    Logger.info "Yielded #{inspect(length yielded)} objects, with #{inspect(length remaining)} held in state: #{inspect pretty}"
-  #    {:noreply, yielded, new_state}
-  #  end
-
-  # Very similar to Storage.Monitor :stage_objects cast
-  def handle_cast({:trigger_rebuild, after_ts}, %{} = stage_state) do
-    with {:ok, extant}    <- Map.fetch(stage_state, :staging_objects),
-         {:ok, time_zone} <- Application.fetch(:rap, :time_zone),
-	 prepared  <- PostRun.yield_manifests(after_ts, time_zone),
-         [qh | qt] <- extant ++ prepared
-      do
-      new_state = stage_state |> Map.put(:staging_objects, qt)
-      {:noreply, [qh], new_state}
-    else
-      [] -> {:noreply, [], stage_state}
-    end
-  end
   
   @doc """
   0. Check target UUID directory doesn't already exist like when fetching
@@ -125,6 +111,7 @@ defmodule RAP.Bakery.Prepare do
 
   Therefore, this stage doesn't record a signal.
   """
+  @spec bake_data(%ManifestSpec{}, stage_state()) :: %ManifestSpec{}
   def bake_data(%ManifestSpec{signal: sig} = processed, %{} = state) when sig in [:working, :job_errors, :see_producer] do
     Logger.info "Called Prepare.bake_data/5 with signal `#{processed.signal}'"
     Logger.info "Preparing result of job(s) associated with UUID #{processed.uuid}`"
@@ -142,7 +129,7 @@ defmodule RAP.Bakery.Prepare do
       
       # default value is []
       cached_results = processed.results
-      |> Enum.map(&write_result(&1, processed.base_prefix, bakery_dir, processed.uuid))
+      |> Enum.map(&write_result(&1, bakery_dir, processed.uuid))
     
       moved_manifest_ttl = processed.submitted_manifest_base_ttl
       |> move_wrapper(cache_dir, bakery_dir, processed.uuid)
@@ -172,7 +159,9 @@ defmodule RAP.Bakery.Prepare do
 	 rap_app_init:    new_work.app_invocation,
 	 rap_stages:      new_work.stages,
 	 rap_stages_init: new_work.invocations,
-	 rap_processing:  new_work.processing
+	 rap_processing:  new_work.processing,
+	 submitted_manifest_base_ttl: moved_manifest_ttl,
+	 submitted_manifest_base_yaml: moved_manifest_yaml
       }
     else
       :error -> {:error, "Cannot fetch keywords or make new directory"}
@@ -210,6 +199,8 @@ defmodule RAP.Bakery.Prepare do
      end
   end
 
+  @type rough_prefixes :: %{required(atom()) => atom() | RDF.IRI.t()}
+  @spec write_turtle(%ManifestSpec{}, rough_prefixes()) :: %ManifestSpec{} | {:error, %Grax.ValidationError{}} | {:error, String.t()}
   def write_turtle(%ManifestSpec{} = processed, known_prefixes) do
 
     {:ok, linked_stem} = Application.fetch_env(:rap, :linked_result_stem)
@@ -257,7 +248,8 @@ defmodule RAP.Bakery.Prepare do
   When logging, the name of the job is in the file name, so no problem
   just printing that to the log.
   """
-  def write_result(%Result{signal: :working} = result, base_prefix, bakery_dir, uuid) do
+  @spec write_result(%Result{}, String.t(), String.t()) :: %Result{} | {:error, String.t()}
+  def write_result(%Result{signal: :working} = result, bakery_dir, uuid) do
     
     target_ext  = result.output_format |> String.split("/") |> Enum.at(1) # move me
     target_name = Producer.extract_id(result.__id__)
@@ -282,17 +274,17 @@ defmodule RAP.Bakery.Prepare do
         {:error, error}
     end
   end
-  def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) when signal in [:job_failure, :python_error] do
+  def write_result(%Result{signal: signal} = result, _bakery, _uuid) when signal in [:job_failure, :python_error] do
     Logger.info "Job exited with error: Not writing result to file"
     %{ result | text_signal: to_string(signal) }
   end
-  def write_result(%Result{signal: :ignored} = result, base_prefix, _bakery, _uuid) do
-    Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
+  def write_result(%Result{signal: :ignored} = result, _bakery, _uuid) do
+    Logger.info "Attempting to write #{inspect result}"
     Logger.info "Ignored/fake job: Not writing result to file"
     %{ result | text_signal: "ignored" }
   end
-  def write_result(%Result{signal: signal} = result, base_prefix, _bakery, _uuid) do
-    Logger.info "Attempting to write #{inspect result}, with 'base' prefix #{base_prefix}"
+  def write_result(%Result{signal: signal} = result, _bakery, _uuid) do
+    Logger.info "Attempting to write #{inspect result}"
     Logger.info "Invalid job: Not writing result to file"
     %{ result | text_signal: to_string(signal) }
   end
@@ -304,9 +296,11 @@ defmodule RAP.Bakery.Prepare do
   to have `_pre' before the extension, since we generate a post-results
   linking manifest as well.
   """
+  @spec move_wrapper(String.t(), String.t(), String.t(), String.t()) :: String.t()
   def move_wrapper(orig_fp, source_dir, bakery_dir, uuid) do
     move_wrapper(orig_fp, source_dir, bakery_dir, uuid, orig_fp)
   end
+  @spec move_wrapper(String.t(), String.t(), String.t(), String.t(), String.t()) :: String.t()
   def move_wrapper(orig_fp, cache_dir, bakery_dir, uuid, target_fp) do
     source_full = "#{cache_dir}/#{uuid}/#{orig_fp}"
     target_full = "#{bakery_dir}/#{uuid}/#{target_fp}"

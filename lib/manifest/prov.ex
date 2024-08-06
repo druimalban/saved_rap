@@ -1,7 +1,7 @@
 defmodule RAP.Provenance.RAPProcess do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
+  
   alias RDF.NS.RDFS
   alias RAP.Vocabulary.{PROV, SAVED}
 
@@ -9,7 +9,8 @@ defmodule RAP.Provenance.RAPProcess do
     property :label, RDFS.label, type: :string
   end
 
-  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+  @spec on_to_rdf(%__MODULE__{}, RDF.Graph.t(), keyword()) :: {:ok, RDF.Graph.t()}
+  def on_to_rdf(%__MODULE__{__id__: id} = _agent, graph, _opts) do
     {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.SoftwareAgent))}
   end
 end
@@ -17,10 +18,9 @@ end
 defmodule RAP.Provenance.RAPStageSubscription do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
 
   alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{PAV, PROV, DCAT, SAVED}
+  alias RAP.Vocabulary.{PROV, SAVED}
 
   schema SAVED.RAPStageSubscription do
     property :label,         RDFS.label,                 type: :string
@@ -34,10 +34,9 @@ end
 defmodule RAP.Provenance.RAPInvocation do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
 
   alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{PAV, PROV, DCAT, SAVED}
+  alias RAP.Vocabulary.{PAV, PROV, SAVED}
   alias RAP.Provenance.{RAPProcess, RAPStageSubscription}
 
   schema SAVED.RAPInvocation do
@@ -56,7 +55,8 @@ defmodule RAP.Provenance.RAPInvocation do
     link gen_stage_subscriptions:   SAVED.gen_stage_subscription, type: list_of(RAPStageSubscription)
   end
 
-  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+  @spec on_to_rdf(%__MODULE__{}, RDF.Graph.t(), keyword()) :: {:ok, RDF.Graph.t()}
+  def on_to_rdf(%__MODULE__{__id__: id} = _activity, graph, _opts) do
     {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.Activity))}
   end
 end
@@ -64,10 +64,9 @@ end
 defmodule RAP.Provenance.RAPStageProcessing do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
 
   alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{PAV, PROV, DCAT, SAVED}
+  alias RAP.Vocabulary.{PROV, SAVED}
   alias RAP.Provenance.RAPStageResponse
 
   schema SAVED.RAPStageProcessing do
@@ -80,7 +79,8 @@ defmodule RAP.Provenance.RAPStageProcessing do
     link generated_entities: PROV.generated, type: list_of(RAPStageResponse)
   end
 
-  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+  @spec on_to_rdf(%__MODULE__{}, RDF.Graph.t(), keyword()) :: {:ok, RDF.Graph.t()}
+  def on_to_rdf(%__MODULE__{__id__: id} = _activity, graph, _opts) do
     {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.Activity))}
   end
 end
@@ -88,17 +88,17 @@ end
 defmodule RAP.Provenance.RAPStageResponse do
 
   use Grax.Schema, depth: +5
-  import RDF.Sigils
   
   alias RDF.NS.RDFS
-  alias RAP.Vocabulary.{PAV, PROV, DCAT, SAVED}
+  alias RAP.Vocabulary.{PROV, SAVED}
 
   schema SAVED.RAPStageResponse do
     property :label,        RDFS.label,          type: :string
     property :derived_from, PROV.wasDerivedFrom, type: list_of(:iri)
   end
 
-  def on_to_rdf(%__MODULE__{__id__: id} = agent, graph, _opts) do
+  @spec on_to_rdf(%__MODULE__{}, RDF.Graph.t(), keyword()) :: {:ok, RDF.Graph.t()}
+  def on_to_rdf(%__MODULE__{__id__: id} = _entity, graph, _opts) do
     {:ok, RDF.Graph.add(graph, RDF.type(id, PROV.Entity))}
   end
 end
@@ -108,6 +108,32 @@ defmodule RAP.Provenance.Work do
   alias RAP.Provenance.{RAPProcess, RAPInvocation, RAPStageSubscription, RAPStageProcessing, RAPStageResponse}
   require Logger
 
+  @type stage_dispatcher   :: GenStage.BroadcastDispatcher | GenStage.DemandDispatcher | GenStage.PartitionDispatcher
+  @type stage_type         :: :consumer | :producer_consumer | :producer
+  @type stage_subscription :: {atom(), min_demand: integer(), max_demand: integer()}
+  @type stage_state :: %{  
+    optional(:gcp_session)     => Tesla.Client.t(),
+    optional(:staging_objects) => [GoogleApi.Storage.V1.Model.Object.t()],
+    optional(:rap_invoked_at)  => integer(),
+    stage_dispatcher:    stage_dispatcher(),
+    stage_invoked_at:    integer(),
+    stage_subscriptions: [stage_subscription()],
+    stage_type:          atom()
+  }
+  @type work_done :: %{
+    stage_pid:           String.t(),
+    stage_invoked_at:    integer(),
+    stage_type:          atom(),
+    stage_subscriptions: [stage_subscription()],
+    stage_dispatcher:    stage_dispatcher(),
+    signal:              atom(),
+    work_started_at:     integer(),
+    work_ended_at:       integer(),
+    work_input:          keyword(),
+    work_output:         keyword()
+  }
+  
+  @spec append_work((nil | keyword(work_done())), atom(), atom(), integer(), stage_state(), [RDF.IRI.t()], [RDF.IRI.t()]) :: keyword(work_done())
   def append_work(past_work, stage_atom, curr_signal, work_started_at, %{} = stage_state, work_input \\ [], work_output \\ []) do
     work_ended_at =  DateTime.utc_now() |> DateTime.to_unix()
     curr_pid = self() |> :erlang.pid_to_list() |> to_string()
@@ -143,9 +169,16 @@ defmodule RAP.Provenance.Work do
   Note, what actually invoked the stage invocation activity isn't the stage, but the RAP application. However, the RAP application is in turn invoked by something which we don't model as it's out of scope. The modelling here is slightly vague in the sense that a stage's invocation is also probably associated with the stage agent (and I model it as such)
 
   We are primarily interested in activities which went on in the pipeline, so these are primarily modelled in the serialised RDF output in terms of activities as the manifest passed through the pipeline, as opposed to just listing stages, which aren't very informative on their own.
-
-  Currently broken in the sense that sorting out what produces what is vague
-  """  
+  """
+  @type stages      :: [%RAPProcess{}, ...]
+  @type invocations :: [%RAPInvocation{}, ...]
+  @type processing  :: [%RAPStageProcessing{}, ...]
+  @type traversed :: %{ app_agent:      %RAPProcess{},
+		        app_invocation: %RAPInvocation{},
+		        stages:         stages(),
+		        invocations:    invocations(),
+		        processing:     processing()  }
+  @spec traverse_work(keyword(work_done()), String.t(), integer(), [RDF.IRI.t()]) :: traversed()
   def traverse_work(work, base_prefix, rap_invoked_at, final_output_iris) do
     rap_prefix = RAP.Vocabulary.RAP.__base_iri__
     
@@ -190,13 +223,14 @@ defmodule RAP.Provenance.Work do
     |> Enum.reduce(
          gather_base_case,
          fn(curr, acc) ->
-	   res = %{ stages:      acc.stages      ++ [curr.stage],
-		    invocations: acc.invocations ++ [curr.invocation],
-		    processing:  acc.processing  ++ [curr.processing] }
+	   %{ stages:      acc.stages      ++ [curr.stage],
+	      invocations: acc.invocations ++ [curr.invocation],
+	      processing:  acc.processing  ++ [curr.processing] }
          end)
     Map.merge(stages_work, %{app_agent: app_agent, app_invocation: app_invocation})
   end
-  
+
+  @spec uncase(atom()) :: String.t()
   defp uncase(module_atom) do
     module_atom
     |> to_string()
@@ -204,20 +238,23 @@ defmodule RAP.Provenance.Work do
     |> Enum.at(-1)
     |> Macro.underscore()
   end
-  
+
+  @spec app_agent(String.t()) :: %RAPProcess{}
   def app_agent(rap_prefix) do
     # RAP.Application -> "rap_application"
     agent_iri = RDF.IRI.new(rap_prefix <> "application")
     agent_lbl = "RAP OTP application agent"
     %RAPProcess{ __id__: agent_iri, label:  agent_lbl }
   end
+  @spec gen_stage_agent(atom(), String.t()) :: %RAPProcess{}
   def gen_stage_agent(stage_atom, rap_prefix) do
     agent_name = uncase(stage_atom)
     agent_iri  = RDF.IRI.new(rap_prefix <> "stage_" <> agent_name)
     agent_lbl = "#{stage_atom} stage agent"
     %RAPProcess{ __id__: agent_iri, label:  agent_lbl }
   end
-  
+
+  @spec app_invocation_activity(%RAPProcess{}, String.t(), integer()) :: %RAPInvocation{} | {:error, String.t()}
   def app_invocation_activity(app_agent, base_prefix, invoked_at) do
     with {:ok, time_zone} <- Application.fetch_env(:rap, :time_zone),
 	 [_|_] = spec     <- Application.spec(:rap),
@@ -246,6 +283,7 @@ defmodule RAP.Provenance.Work do
     end
   end
 
+  @spec gen_stage_subscription(stage_subscription(), String.t()) :: %RAPStageSubscription{}
   def gen_stage_subscription({target_module, min_demand: min, max_demand: max}, rap_prefix) do
     sub_iri = RDF.IRI.new(rap_prefix <> "stage_" <> uncase(target_module))
     %RAPStageSubscription{
@@ -255,7 +293,8 @@ defmodule RAP.Provenance.Work do
       max_demand:    max
     }
   end
-  
+
+  @spec gen_stage_invocation_activity(atom(), %RAPProcess{}, %RAPProcess{}, String.t(), String.t(), work_done()) :: %RAPInvocation{} | {:error, String.t()}
   def gen_stage_invocation_activity(
     stage_atom,
     stage_agent, app_agent,
@@ -297,7 +336,8 @@ defmodule RAP.Provenance.Work do
       :error -> {:error, "Cannot RAP configuration fetch keywords"}
     end
   end
-  
+
+  @spec gen_stage_processing_activity(atom(), String.t(), String.t(), work_done(), [%RAPStageResponse{}]) :: %RAPStageProcessing{}
   def gen_stage_processing_activity(
     stage_atom,
     base_prefix, rap_prefix,
@@ -335,6 +375,7 @@ defmodule RAP.Provenance.Work do
     end
   end
 
+  @spec gen_stage_output_entity(atom(), String.t(), String.t(), [RDF.IRI.t()]) :: %RAPStageResponse{}
   def gen_stage_output_entity(stage_atom, base_prefix, stage_pid, prev_output_iris) do
     stage_norm = uncase(stage_atom)
     stage_output_iri = RDF.IRI.new(base_prefix <> "stage_" <> stage_norm <> "_output")
