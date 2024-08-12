@@ -264,12 +264,18 @@ defmodule RAP.Storage.Monitor do
     else
       {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
+        :timer.sleep(interval_ms)
         {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
 	Logger.info "Call to seek new session returned #{inspect new_session}"
 	monitor_gcp(new_session, bucket, index_file, interval_ms, stage_state)
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}
+      {:error, :econnrefused} ->
+	Logger.info "Query of GCP failed: Possible SSL handshake issue?"
+        :timer.sleep(interval_ms)
+        {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
+        monitor_gcp(new_session, bucket, index_file, interval_ms, stage_state)
     end
   end
   
