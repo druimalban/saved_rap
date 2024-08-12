@@ -272,10 +272,13 @@ defmodule RAP.Storage.Monitor do
 	Logger.info "Query of GCP failed with code #{code} and error message #{msg}"
         {:error, uri, code, msg}
       {:error, :econnrefused} ->
-	Logger.info "Query of GCP failed: Possible SSL handshake issue?"
+	Logger.info "Query of GCP failed with possible SSL handshake issue?"
         :timer.sleep(interval_ms)
         {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
         monitor_gcp(new_session, bucket, index_file, interval_ms, stage_state)
+      other_error ->
+	Logger.info "Query of GCP failed with error #{inspect other_error}"
+	other_error
     end
   end
   
