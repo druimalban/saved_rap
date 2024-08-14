@@ -95,11 +95,17 @@ defmodule RAP.Storage.Monitor do
   end
 
   # Update session state from our recursive `monitor_gcp/4' function
+  # {:ok, Tesla.Client.t()} | {:error, String.t()}
   def handle_call(:update_session, _from, state) do
     Logger.info "Received call :update_session"
-    new_session = new_connection()
-    new_state   = state |> Map.put(:gcp_session, new_session)
-    {:reply, new_session, [], new_state}
+    with {:ok, %Tesla.Client{} = new_session} <- new_connection(),
+	 new_state <- Map.put(state, :gcp_session, new_session) do
+      {:reply, new_session, [], new_state}
+    else
+      {:error, error} ->
+	Logger.info "Error updating session: #{error}"
+        {:reply, nil, [], state}
+    end
   end
 
   # Allows us to retrieve the current session from the producer
@@ -226,7 +232,7 @@ defmodule RAP.Storage.Monitor do
   describes these.
   """
   @spec monitor_gcp(Tesla.Client.t(), String.t(), String.t(), integer(), stage_state()) :: nil | {:error, String.t(), integer(), String.t()}
-  def monitor_gcp(session, bucket, index_file, interval_ms, %{} = stage_state) do
+  def monitor_gcp(%Tesla.Client{} = session, bucket, index_file, interval_ms, %{} = stage_state) do
     with {:ok, objects} <- wrap_gcp_request(session, bucket) do
       Logger.info "Called RAP.Storage.Monitor.monitor_gcp/4 with interval #{interval_ms} milliseconds"
       work_started_at = DateTime.utc_now() |> DateTime.to_unix()
@@ -265,7 +271,7 @@ defmodule RAP.Storage.Monitor do
       {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
         :timer.sleep(interval_ms)
-        {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
+        {:ok, %Tesla.Client{} = new_session} = GenStage.call(__MODULE__, :update_session)
 	Logger.info "Call to seek new session returned #{inspect new_session}"
 	monitor_gcp(new_session, bucket, index_file, interval_ms, stage_state)
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
@@ -274,7 +280,7 @@ defmodule RAP.Storage.Monitor do
       {:error, :econnrefused} ->
 	Logger.info "Query of GCP failed with possible SSL handshake issue?"
         :timer.sleep(interval_ms)
-        {:ok, new_session} = GenStage.call(__MODULE__, :update_session)
+        {:ok, %Tesla.Client{} = new_session} = GenStage.call(__MODULE__, :update_session)
         monitor_gcp(new_session, bucket, index_file, interval_ms, stage_state)
       other_error ->
 	Logger.info "Query of GCP failed with error #{inspect other_error}"
@@ -284,19 +290,19 @@ defmodule RAP.Storage.Monitor do
   
   # The {:error, any()} type specification derives from GoogleApi.Storage.V1.Objects.storage_objects_list/4.
   @spec wrap_gcp_request(Tesla.Client.t(), String.t()) :: {:ok, [%GCPObj{}]} | {:error, any()}
-  defp wrap_gcp_request(session, bucket) do
+  defp wrap_gcp_request(%Tesla.Client{} = session, bucket) do
     Logger.info "Polling GCP storage bucket #{bucket} for flat objects"
     case GCPReqObjs.storage_objects_list(session, bucket) do
       {:ok, %GCPObjs{items: nil}}   -> {:ok, []}
       {:ok, %GCPObjs{items: items}} -> {:ok, items}
-      error -> error
+      error                         -> error
     end
   end
 
   @spec new_connection() :: {:ok, Tesla.Client.t()} | {:error, String.t()}
   defp new_connection() do
-    with {:ok, token} <- Goth.Token.for_scope(@gcp_scope),
-         session      <- GCPConn.new(token.token) do
+    with {:ok, token}              <- Goth.Token.for_scope(@gcp_scope),
+         %Tesla.Client{} = session <- GCPConn.new(token.token) do
       Logger.info "Called Storage.Monitor.new_connection/0"
       {:ok, session}
     else

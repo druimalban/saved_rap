@@ -84,7 +84,7 @@ defmodule RAP.Storage.GCP do
   cache results.
   """
   @spec fetch_object(%Monitor{}, String.t()) :: {:ok, String.t()} | {:error, String.t()} | {:error, String.t(), integer(), String.t()}
-  def fetch_object(obj, target_dir) do
+  def fetch_object(%Monitor{} = obj, target_dir) do
     target_base = obj.path
     # output_file => target_full
     target_full = "#{target_dir}/#{target_base}"
