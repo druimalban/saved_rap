@@ -98,7 +98,7 @@ defmodule RAP.Storage.Monitor do
   # {:ok, Tesla.Client.t()} | {:error, String.t()}
   def handle_call(:update_session, _from, state) do
     Logger.info "Received call :update_session"
-    with {:ok, %Tesla.Client{} = new_session} <- new_connection(),
+    with {:ok, %Tesla.Client{} = new_session} = signal <- new_connection(),
 	 new_state <- Map.put(state, :gcp_session, new_session) do
       {:reply, new_session, [], new_state}
     else
@@ -271,7 +271,7 @@ defmodule RAP.Storage.Monitor do
       {:error, %Tesla.Env{status: 401}} ->
 	Logger.info "Query of GCP bucket #{bucket} appeared to time out, seek new session"
         :timer.sleep(interval_ms)
-        {:ok, %Tesla.Client{} = new_session} = GenStage.call(__MODULE__, :update_session)
+        new_session = GenStage.call(__MODULE__, :update_session)
 	Logger.info "Call to seek new session returned #{inspect new_session}"
 	monitor_gcp(new_session, bucket, index_file, interval_ms, stage_state)
       {:error, %Tesla.Env{status: code, url: uri, body: msg}} ->
@@ -280,7 +280,7 @@ defmodule RAP.Storage.Monitor do
       {:error, :econnrefused} ->
 	Logger.info "Query of GCP failed with possible SSL handshake issue?"
         :timer.sleep(interval_ms)
-        {:ok, %Tesla.Client{} = new_session} = GenStage.call(__MODULE__, :update_session)
+        new_session = GenStage.call(__MODULE__, :update_session)
         monitor_gcp(new_session, bucket, index_file, interval_ms, stage_state)
       other_error ->
 	Logger.info "Query of GCP failed with error #{inspect other_error}"

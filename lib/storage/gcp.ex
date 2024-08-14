@@ -58,7 +58,7 @@ defmodule RAP.Storage.GCP do
   end
 
   @spec wrap_gcp_fetch(%Monitor{}, Tesla.Client.t()) :: {:ok, Tesla.Env.t()} | {:error, any()}
-  defp wrap_gcp_fetch(obj, session) do
+  defp wrap_gcp_fetch(%Monitor{} = obj, %Tesla.Client{} = session) do
     GCPReqObjs.storage_objects_get(session, obj.gcp_bucket, obj.gcp_name, [alt: "media"], decode: false)
   end
 
