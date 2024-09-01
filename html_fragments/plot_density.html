@@ -4,30 +4,35 @@
 <div id="plot_<%= name %>" style="<%= plot_div_style %>"></div>
 <script>
   function gen_preamble(ref, test, dec=4) {
-      var k_inf_res  = (ref.k_inf).toFixed(dec);
-      var k_inf_test = (test.k_inf).toFixed(dec);
-      var acc_res    = (ref.acc).toFixed(dec);
-      var acc_test   = (test.acc).toFixed(dec);
-      var dist_res   = (ref.dist).toFixed(dec);
-      var dist_test  = (test.dist).toFixed(dec);
+      var k_inf_res   = (ref.k_inf).toFixed(dec);
+      var k_inf_test  = (test.k_inf).toFixed(dec);
+      var k_acc_res   = (ref.k_acc).toFixed(dec);
+      var k_acc_test  = (test.k_acc).toFixed(dec);
+      var k_fall_res  = (ref.k_fall).toFixed(dec);
+      var k_fall_test = (test.k_fall).toFixed(dec);
+      var dist_res    = (ref.dist).toFixed(dec);
+      var dist_test   = (test.dist).toFixed(dec);
       var str = `
                 <table>
                   <tr>
                     <th>Distribution</th>
                     <th>Rate const.</th>
                     <th>Acc. factor</th>
+                    <th>Detatch rate</th>
                     <th>EMD</th>
                   </tr>
                   <tr>
                     <td>Reference</td>
                     <td>${k_inf_res}</td>
-                    <td>${acc_res}</td>
+                    <td>${k_acc_res}</td>
+                    <td>${k_fall_res}</td>
                     <td>${dist_res}</td>
                   </tr>
                   <tr>
                     <td>Test</td>
                     <td>${k_inf_test}</td>
-                    <td>${acc_test}</td>
+                    <td>${k_acc_test}</td>
+                    <td>${k_fall_test}</td>
                     <td>${dist_test}</td>
                   </tr>
                 </table>
