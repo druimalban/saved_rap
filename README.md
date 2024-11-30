@@ -38,6 +38,10 @@ We have a demo running, [kindly hosted on a machine in Edinburgh](https://rap.ta
 ![saved_fisdat](https://rap.tardis.ac/saved/images/fisdat.svg)
 ![saved_rap](https://rap.tardis.ac/saved/images/rap.svg)
 
+## Bibliography
+
+W. Waites, P. Gillibrand, T. Adams, D. Guthrie, C. Revie, and M. Moriarty, *Infection pressure on fish in cages,* 2024. [Pre-print](https://arxiv.org/abs/2411.05502)
+
 ## Software components and licensing
 
   - This RAP service/model validation pipeline is licensed under AGPL v3 or later. The boilerplate file under `lib/manifest/vocabulary.ex` was derived from [`https://github.com/marcelotto/rdf_vocab`](https://github.com/marcelotto/rdf_vocab) and is thus licensed under ["MIT"](https://github.com/marcelotto/rdf_vocab/blob/d0d27a5be12925216be710c43038a84d8cf149d8/LICENSE.md) likewise.
